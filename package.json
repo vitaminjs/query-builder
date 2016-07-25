@@ -1,0 +1,33 @@
+{
+  "name": "vitamin-query",
+  "version": "0.0.3",
+  "description": "A Query object based on knex query builder",
+  "main": "lib/index.js",
+  "scripts": {
+    "prepublish": "npm run build",
+    "build": "babel -q -L -D src -d lib --presets es2015",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitaminjs/query-builder.git"
+  },
+  "keywords": [
+    "query-builder",
+    "sql"
+  ],
+  "author": "absolux",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vitaminjs/query-builder/issues"
+  },
+  "homepage": "https://github.com/vitaminjs/query-builder#readme",
+  "dependencies": {
+    "knex": "^0.11.9",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.11.4",
+    "babel-preset-es2015": "^6.9.0"
+  }
+}
