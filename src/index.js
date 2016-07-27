@@ -34,23 +34,23 @@ class BaseQuery {
    * @return array
    */
   getQualifiedColumns() {
-    return this.columns.map(col => {
-      if ( _.isString(col) && col.indexOf('.') === -1 ) {
-        return this.getQualifiedColumnName(col)
+    return this.columns.map(name => {
+      if ( _.isString(name) && name.indexOf('.') === -1 ) {
+        return this.getQualifiedColumn(name)
       }
       
-      return col
+      return name
     })
   }
   
   /**
    * Get the column name prefixed by the table name
    * 
-   * @param {String} column
+   * @param {String} name
    * @return string
    */
-  getQualifiedColumnName(column) {
-    return (this.alias || this.table) + '.' + column
+  getQualifiedColumn(name) {
+    return (this.alias || this.table) + '.' + name
   }
   
   /**
