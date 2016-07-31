@@ -2,12 +2,12 @@
 import _ from 'underscore'
 
 /**
- * Base Query Builder Class
+ * Base Query Class
  */
-class BaseQuery {
+class Query {
   
   /**
-   * Query Builder constructor
+   * Query constructor
    * 
    * @param {Object} qb knex query builder
    * @constructor
@@ -35,11 +35,9 @@ class BaseQuery {
    */
   getQualifiedColumns() {
     return this.columns.map(name => {
-      if ( _.isString(name) && name.indexOf('.') === -1 ) {
-        return this.getQualifiedColumn(name)
-      }
+      var ok = (_.isString(name) && name.indexOf('.') === -1)
       
-      return name
+      return ok ? this.getQualifiedColumn(name) : name
     })
   }
   
@@ -61,7 +59,7 @@ class BaseQuery {
    * @return this query
    */
   from(table, alias) {
-    this.table = table
+    this.table = String(table)
     
     if ( alias ) {
       table += ' as ' + alias
@@ -75,18 +73,18 @@ class BaseQuery {
   /**
    * Set the columns of the query
    * 
-   * @param {String|Array} columns
+   * @param {Array} columns
    * @return this query
    */
   select(columns) {
-    this.columns.push(..._.flatten(arguments))
+  	this.columns.push(..._.flatten(arguments))
     return this
   }
   
   /**
    * Fetch many records from th database
    * 
-   * @param {String|Array} columns
+   * @param {Array} columns
    * @return promise
    */
   fetch(columns) {
@@ -97,7 +95,7 @@ class BaseQuery {
   /**
    * Fetch the first record from the database
    * 
-   * @param {String|Array} columns
+   * @param {Array} columns
    * @return promise
    */
   first(columns) {
@@ -191,18 +189,17 @@ class BaseQuery {
    * 
    * @param {Integer} page
    * @param {Integer} pageSize
-   * @param {String|Array} columns
+   * @param {Array} columns
    * @return promise
    */
-  paginate(page = 1, pageSize = 15, columns = '*') {
+  paginate(page = 1, pageSize = 15, columns = ['*']) {
     return this.offset((page - 1) * pageSize).limit(pageSize).fetch(columns)
   }
   
 }
 
-// proxies
+// query builder methods
 [
-  'insert', 'update',
   'where', 'orWhere', 'whereRaw', 'whereNot',
   'whereIn', 'orWhereIn', 'whereNotIn', 'orWhereNotIn',
   'whereNull', 'orWhereNull', 'whereNotNull', 'orWhereNotNull',
@@ -210,16 +207,20 @@ class BaseQuery {
   'whereBetween', 'orWhereBetween', 'whereNotBetween', 'orWhereNotBetween',
   'offset', 'limit', 'groupBy', 'groupByRaw', 'having', 'orderBy', 'orderByRaw',
   'join', 'innerJoin', 'leftJoin', 'rightJoin', 'outerJoin', 'crossJoin', 'joinRaw',
-  'select', 'distinct', 'from', 'union', 'unionAll', 'pluck', 'increment', 'decrement',
+  'insert', 'update', 'distinct', 'union', 'unionAll', 'pluck', 'increment', 'decrement',
 ]
 .forEach(name => {
-  if ( _.has(BaseQuery.prototype, name) ) return
+	
+	Object.defineProperty(Query.prototype, name, {
+		writable: true,
+		configurable: true,
+		value: function () {
+	    this.builder[name](...arguments)
+	    return this
+		}
+	})
   
-  BaseQuery.prototype[name] = function () {
-    this.builder[name](...arguments)
-    return this
-  }
 })
 
 // exports
-export default BaseQuery
+export default Query
