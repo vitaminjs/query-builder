@@ -34,6 +34,8 @@ class Query {
    * @return array
    */
   getQualifiedColumns() {
+  	if ( _.isEmpty(this.columns) ) this.columns = ['*']
+  	
     return this.columns.map(name => {
       var ok = (_.isString(name) && name.indexOf('.') === -1)
       
@@ -77,7 +79,10 @@ class Query {
    * @return this query
    */
   select(columns) {
-  	this.columns.push(..._.flatten(arguments))
+  	columns = _.flatten(arguments)
+  	
+  	if ( columns.length > 0 ) this.columns.push(...columns)
+  	
     return this
   }
   
