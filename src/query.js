@@ -34,12 +34,8 @@ class Query {
    * @return array
    */
   getQualifiedColumns() {
-  	if ( _.isEmpty(this.columns) ) this.columns = ['*']
-  	
-    return this.columns.map(name => {
-      var ok = (_.isString(name) && name.indexOf('.') === -1)
-      
-      return ok ? this.getQualifiedColumn(name) : name
+  	return (_.isEmpty(this.columns) ? ['*'] : this.columns).map(name => {
+      return (_.isString(name) && name.indexOf('.') === -1) ? this.getQualifiedColumn(name) : name
     })
   }
   
@@ -61,14 +57,16 @@ class Query {
    * @return this query
    */
   from(table, alias) {
-    this.table = String(table)
-    
-    if ( alias ) {
-      table += ' as ' + alias
-      this.alias = alias
-    }
-    
-    this.builder.from(table)
+  	if ( _.isString(table) ) {
+  		this.table = table
+  		
+  		if ( alias ) {
+	      this.table += ' as ' + alias
+	      this.alias = alias
+	    }
+  	}
+  	
+  	this.builder.from(table)
     return this
   }
   
