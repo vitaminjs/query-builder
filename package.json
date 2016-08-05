@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/vitaminjs/query-builder#readme",
   "dependencies": {
+    "bluebird": "^3.4.1",
     "knex": "^0.11.9",
     "underscore": "^1.8.3"
   },

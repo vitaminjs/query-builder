@@ -1,4 +1,5 @@
 
+import Promise from 'bluebird'
 import _ from 'underscore'
 
 /**
@@ -61,7 +62,7 @@ class Query {
   		this.table = table
   		
   		if ( alias ) {
-	      this.table += ' as ' + alias
+	      table = this.table + ' as ' + alias
 	      this.alias = alias
 	    }
   	}
@@ -107,12 +108,45 @@ class Query {
   }
   
   /**
+   * Insert records into the database
+   * 
+   * @param {Object} data
+   * @param {Array} returning
+   * @return promise
+   */
+  insert(data, returning = ['*']) {
+    return Promise.resolve(this.builder.insert(...arguments))
+  }
+  
+	/**
+	 * Update records in the database
+	 * 
+	 * @param {String} key
+	 * @param {Any} value
+	 * @param {Array} returning
+	 * @return promise
+	 */
+	update(key, value, returning = ['*']) {
+  	return Promise.resolve(this.builder.update(...arguments))
+  }
+
+	/**
+	 * Get an array with the values of the given column
+	 * 
+	 * @param {String} column
+	 * @return promise
+	 */
+  pluck(column) {
+		return Promise.resolve(this.builder.pluck(column))
+	}
+  
+  /**
    * Delete a record from the database
    * 
    * @return promise
    */
   destroy() {
-    return this.builder.del()
+    return Promise.resolve(this.builder.del())
   }
   
   /**
@@ -203,6 +237,8 @@ class Query {
 
 // query builder methods
 [
+	'increment', 'decrement',
+	'distinct', 'union', 'unionAll',
   'where', 'orWhere', 'whereRaw', 'whereNot',
   'whereIn', 'orWhereIn', 'whereNotIn', 'orWhereNotIn',
   'whereNull', 'orWhereNull', 'whereNotNull', 'orWhereNotNull',
@@ -210,7 +246,6 @@ class Query {
   'whereBetween', 'orWhereBetween', 'whereNotBetween', 'orWhereNotBetween',
   'offset', 'limit', 'groupBy', 'groupByRaw', 'having', 'orderBy', 'orderByRaw',
   'join', 'innerJoin', 'leftJoin', 'rightJoin', 'outerJoin', 'crossJoin', 'joinRaw',
-  'insert', 'update', 'distinct', 'union', 'unionAll', 'pluck', 'increment', 'decrement',
 ]
 .forEach(name => {
 	
