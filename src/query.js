@@ -93,7 +93,8 @@ class Query {
    */
   fetch(columns) {
     this.select(...arguments)
-    return this.builder.select(this.getQualifiedColumns())
+    
+    return Promise.resolve(this.builder.select(this.getQualifiedColumns()))
   }
   
   /**
@@ -103,8 +104,9 @@ class Query {
    * @return promise
    */
   first(columns) {
-    this.select(...arguments)
-    return this.builder.first(this.getQualifiedColumns())
+  	this.select(...arguments)
+  	
+  	return Promise.resolve(this.builder.first(this.getQualifiedColumns()))
   }
   
   /**
