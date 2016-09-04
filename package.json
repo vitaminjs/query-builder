@@ -10,9 +10,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vitaminjs/query-builder.git"
+    "url": "git+https://github.com/vitaminjs/query.git"
   },
   "keywords": [
+    "vitamin",
+    "query",
     "query-builder",
     "sql"
   ],
