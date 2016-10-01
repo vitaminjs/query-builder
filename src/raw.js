@@ -20,10 +20,6 @@ export default class {
     this.after = ''
   }
   
-  get type() {
-    return 'raw'
-  }
-  
   /**
    * 
    * 
@@ -39,14 +35,6 @@ export default class {
   
   toSQL() {
     return this.compiler.compileRaw(this)
-  }
-  
-  toString() {
-    return this.toSQL()
-  }
-  
-  getBindings() {
-    return this.bindings
   }
   
   wrap(before = '(', after = ')') {

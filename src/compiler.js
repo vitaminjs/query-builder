@@ -1,11 +1,14 @@
 
-import { isEmpty, isNull, compact } from 'underscore'
+import { isEmpty, isArray, isNull, compact, flatten } from 'underscore'
 import Raw from './raw'
 
+/**
+ * @class Compiler
+ */
 export default class {
   
   constructor() {
-    
+    this.bindings = []
   }
   
   get param() {
@@ -28,17 +31,19 @@ export default class {
   }
   
   compile(query) {
+    var sql = ''
+    
     switch ( query.type ) {
-      case 'select': return this.compileSelect(query)
+      case 'select': sql = this.compileSelect(query); break
       
-      case 'insert': return this.compileInsert(query)
+      case 'insert': sql = this.compileInsert(query); break
       
-      case 'update': return this.compileUpdate(query)
+      case 'update': sql = this.compileUpdate(query); break
       
-      case 'delete': return this.compileDelete(query)
-      
-      default: return ''
+      case 'delete': sql = this.compileDelete(query); break
     }
+    
+    return { sql, bindings: flatten(this.bindings) }
   }
   
   compileRaw(raw) {
@@ -61,38 +66,24 @@ export default class {
   }
   
   compileColumns(query) {
-    var columns = ( isEmpty(query.columns) ) ? ['*'] : query.columns
-    
-    return columns.map(col => {
-      if ( col instanceof Raw )
-        query.addBinding(col.getBindings())
-      
-      return this.escape(col)
-    }).join(', ')
+    return this.columnize(isEmpty(query.columns) ? '*' : query.columns)
   }
   
   compileFrom(query) {
     if (! isEmpty(query.table) ) {
-      let table = query.table
-      
-      if ( table instanceof Raw )
-        query.addBinding(table.getBindings())
-      
-      return 'from ' + this.alias(this.escape(table), query.alias)
+      return 'from ' + this.alias(this.escape(query.table), query.alias)
     }
   }
   
   compileLimit(query) {
     if (! isNull(query.take) ) {
-      query.addBinding(query.take)
-      return 'limit ' + this.param
+      return 'limit ' + this.parameter(query.take)
     }
   }
   
   compileOffset(query) {
     if (! isNull(query.skip) ) {
-      query.addBinding(query.skip)
-      return 'offset ' + this.param
+      return 'offset ' + this.parameter(query.skip)
     }
   }
   
@@ -104,10 +95,7 @@ export default class {
   compileOrders(query) {
     if (! isEmpty(query.orders) ) {
       return 'order by ' + query.orders.map(order => {
-        if ( order instanceof Raw ) {
-          query.addBinding(order.getBindings())
-          return order.toSQL()
-        }
+        if ( this.isRaw(order) ) return this.escape(order)
         
         return `${this.columnize(order.column)} ${order.direction}`
       }).join(', ')
@@ -126,7 +114,20 @@ export default class {
     
   }
   
-  columnize(columns = []) {
+  /**
+   * 
+   * 
+   * @param {Any} value
+   * @return this compiler
+   */
+  addBinding(value) {
+    this.bindings.push(value)
+    return this
+  }
+  
+  columnize(columns) {
+    if (! isArray(columns) ) columns = [columns]
+    
     return columns.map(col => this.escape(col)).join(', ')
   }
   
@@ -144,7 +145,10 @@ export default class {
   escape(value) {
     var asIndex
     
-    if ( value instanceof Raw ) return value.toSQL()
+    if ( this.isRaw(value) ) {
+      this.addBinding(value.bindings)
+      return value.toSQL()
+    }
     
     if ( (asIndex = value.toLowerCase().indexOf(' as ')) > 0 ) {
       let one = value.slice(0, asIndex)
@@ -163,7 +167,18 @@ export default class {
    * @return string
    */
   parameter(value) {
-    return ( value instanceof Raw ) ? value.toSQL() : this.param
+    if ( this.isRaw(value) ) {
+      this.addBinding(value.bindings)
+      return value.toSQL()
+    }
+    
+    this.addBinding(value)
+    
+    return this.param
+  }
+  
+  isRaw(value) {
+    return value instanceof Raw
   }
   
   _escape(value) {

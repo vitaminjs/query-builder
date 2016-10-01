@@ -1,9 +1,6 @@
 
 import Raw from './raw'
-import {
-  isArray, isFunction, isObject, isEmpty, isString,
-  toArray, each, flatten, values, has
-} from 'underscore'
+import { isArray, isFunction, isEmpty, isString, toArray } from 'underscore'
 
 /**
  * @class Query
@@ -27,37 +24,21 @@ export default class Query {
     this.alias = null
     this.isDistinct = false
     
-    this.bindings = []
     this.type = 'select'
     this.compiler = compiler
   }
   
-  toSQL() {
-    // reset bindings
-    this.bindings = []
-    
+  compile() {
     return this.compiler.compile(this)
   }
   
   toString() {
-    return this.toSQL()
+    return this.compile().sql
   }
   
   newQuery() {
     return new Query(this.compiler)
   }
-  
-  // /**
-  //  * 
-  //  * 
-  //  * @param {Any} column
-  //  * @param {String} operator
-  //  * @param {Any} value
-  //  * @return Criteria instance
-  //  */
-  // criteria(column, operator, value) {
-  //   return new Criteria(this.compiler).set(...arguments)
-  // }
   
   /**
    * 
@@ -105,9 +86,10 @@ export default class Query {
   selectSub(query, name) {
     query = this._wrapped(query)
     
-    if ( isString(query) ) query = this.raw(query).wrap()
+    if ( isString(query) ) 
+      query = this.raw(query).wrap()
     
-    return this.selectRaw(this._wrappedRaw(query).as(name))
+    return this.selectRaw(query.as(name))
   }
   
   /**
@@ -124,48 +106,23 @@ export default class Query {
   /**
    * 
    * 
-   * @return array
-   */
-  getBindings() {
-    return flatten(this.bindings)
-  }
-  
-  /**
-   * 
-   * 
-   * @param {Any} value
-   * @param {String} type
-   * @return this query
-   */
-  addBinding(value, type = 'where') {
-    this.bindings.push(value)
-    return this
-  }
-  
-  /**
-   * 
-   * 
-   * @param {String} columns
+   * @param {String} column
    * @param {String} as
    * @return this query
    */
-  count(columns = '*', as = null) {
-    if (! isArray(columns) ) columns = [columns]
-    
-    return this._aggregate('count', columns, as, false)
+  count(column = '*', as = null) {
+    return this._aggregate('count', column, as, false)
   }
   
   /**
    * 
    * 
-   * @param {String} columns
+   * @param {String} column
    * @param {String} as
    * @return this query
    */
-  countDistinct(columns = '*', as = null) {
-    if (! isArray(columns) ) columns = [columns]
-    
-    return this._aggregate('count', columns, as, true)
+  countDistinct(column = '*', as = null) {
+    return this._aggregate('count', column, as, true)
   }
   
   /**
@@ -176,7 +133,7 @@ export default class Query {
    * @return this query
    */
   min(column, as = null) {
-    return this._aggregate('min', [column], as)
+    return this._aggregate('min', column, as)
   }
   
   /**
@@ -187,7 +144,7 @@ export default class Query {
    * @return this query
    */
   max(column, as = null) {
-    return this._aggregate('max', [column], as)
+    return this._aggregate('max', column, as)
   }
   
   /**
@@ -198,7 +155,7 @@ export default class Query {
    * @return this query
    */
   sum(column, as = null) {
-    return this._aggregate('sum', [column], as)
+    return this._aggregate('sum', column, as)
   }
   
   /**
@@ -209,7 +166,7 @@ export default class Query {
    * @return this query
    */
   avg(column, as = null) {
-    return this._aggregate('avg', [column], as)
+    return this._aggregate('avg', column, as)
   }
   
   /**
@@ -288,14 +245,6 @@ export default class Query {
     return this
   }
   
-  isQuery(value) {
-    return value instanceof Query
-  }
-  
-  isRaw(value) {
-    return value instanceof Raw
-  }
-  
   /**
    * 
    * 
@@ -326,19 +275,22 @@ export default class Query {
       fn(value = this.newQuery())
     }
     
-    if ( this.isQuery(value) ) {
-      value = this.raw(value.toSQL(), value.getBindings()).wrap()
+    if ( value instanceof Query ) {
+      let query = value.compile()
+      
+      value = this.raw(query.sql, query.bindings).wrap()
     }
     
     return value
   }
   
-  _wrappedRaw(expr, bindings = [], wrap = false) {
-    if ( isString(expr) ) expr = this.raw(expr, bindings)
+  _wrappedRaw(expr, bindings = []) {
+    if ( isString(expr) ) 
+      expr = this.raw(expr, bindings)
     
-    if (! this.isRaw(expr) ) throw new TypeError("Invalid raw expression")
+    if ( expr instanceof Raw ) return expr 
     
-    return wrap ? expr.wrap() : expr
+    throw new TypeError("Invalid raw expression")
   }
   
   // into(table) {
