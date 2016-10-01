@@ -107,24 +107,18 @@ export default class Query {
     
     if ( isString(query) ) query = this.raw(query).wrap()
     
-    if (! this.isRaw(query) ) throw new TypeError("Invalid raw expression")
-    
-    return this.selectRaw(query.as(name))
+    return this.selectRaw(this._wrappedRaw(query).as(name))
   }
   
   /**
    * 
    * 
-   * @param {String} query
+   * @param {String} expr
    * @param {Object} bindings
    * @return this query
    */
-  selectRaw(query, bindings = []) {
-    if ( isString(query) ) query = this.raw(query, bindings)
-    
-    if (! this.isRaw(query) ) throw new TypeError("Invalid raw expression")
-    
-    return this.select(query)
+  selectRaw(expr, bindings = []) {
+    return this.select(this._wrappedRaw(...arguments))
   }
   
   /**
@@ -133,7 +127,7 @@ export default class Query {
    * @return array
    */
   getBindings() {
-    return flatten(values(this.bindings))
+    return flatten(this.bindings)
   }
   
   /**
@@ -263,19 +257,7 @@ export default class Query {
    * @return this query
    */
   groupByRaw(expr) {
-    if ( isString(expr) ) expr = this.raw(expr)
-    
-    if (! this.isRaw(expr) ) throw new TypeError("Invalid group by expression")
-    
-    return this.groupBy(expr)
-  }
-  
-  having(column, op = null, value = null) {
-    return this._having(column, op, value)
-  }
-  
-  _having(column, op = null, value = null, bool = 'and') {
-    
+    return this.groupBy(this._wrappedRaw(expr))
   }
   
   /**
@@ -302,12 +284,7 @@ export default class Query {
    * @return this query
    */
   orderByRaw(expr, bindings = []) {
-    if ( isString(expr) ) expr = this.raw(expr, bindings)
-    
-    if (! this.isRaw(expr) ) throw new TypeError("Invalid raw expression")
-    
-    this.orders.push(expr)
-    
+    this.orders.push(this._wrappedRaw(...arguments))
     return this
   }
   
@@ -350,10 +327,18 @@ export default class Query {
     }
     
     if ( this.isQuery(value) ) {
-      value = this.raw(this.toSQL(), this.getBindings()).wrap()
+      value = this.raw(value.toSQL(), value.getBindings()).wrap()
     }
     
     return value
+  }
+  
+  _wrappedRaw(expr, bindings = [], wrap = false) {
+    if ( isString(expr) ) expr = this.raw(expr, bindings)
+    
+    if (! this.isRaw(expr) ) throw new TypeError("Invalid raw expression")
+    
+    return wrap ? expr.wrap() : expr
   }
   
   // into(table) {
