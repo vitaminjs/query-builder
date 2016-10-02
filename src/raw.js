@@ -48,13 +48,4 @@ export default class {
     return this
   }
   
-  reset() {
-    this.expression = ''
-    this.bindings = []
-    this.before = ''
-    this.after = ''
-    
-    return this
-  }
-  
 }

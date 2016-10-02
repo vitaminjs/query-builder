@@ -1,5 +1,6 @@
 
 import Raw from './raw'
+import Aggregate from './aggregate'
 import { isArray, isFunction, isEmpty, isString, toArray } from 'underscore'
 
 /**
@@ -111,7 +112,7 @@ export default class Query {
    * @return this query
    */
   count(column = '*', as = null) {
-    return this._aggregate('count', column, as, false)
+    return this.selectAggregate('count', column, as, false)
   }
   
   /**
@@ -122,7 +123,7 @@ export default class Query {
    * @return this query
    */
   countDistinct(column = '*', as = null) {
-    return this._aggregate('count', column, as, true)
+    return this.selectAggregate('count', column, as, true)
   }
   
   /**
@@ -133,7 +134,7 @@ export default class Query {
    * @return this query
    */
   min(column, as = null) {
-    return this._aggregate('min', column, as)
+    return this.selectAggregate('min', column, as)
   }
   
   /**
@@ -144,7 +145,7 @@ export default class Query {
    * @return this query
    */
   max(column, as = null) {
-    return this._aggregate('max', column, as)
+    return this.selectAggregate('max', column, as)
   }
   
   /**
@@ -155,7 +156,7 @@ export default class Query {
    * @return this query
    */
   sum(column, as = null) {
-    return this._aggregate('sum', column, as)
+    return this.selectAggregate('sum', column, as)
   }
   
   /**
@@ -166,7 +167,7 @@ export default class Query {
    * @return this query
    */
   avg(column, as = null) {
-    return this._aggregate('avg', column, as)
+    return this.selectAggregate('avg', column, as)
   }
   
   /**
@@ -249,17 +250,15 @@ export default class Query {
    * 
    * 
    * @param {String} method
-   * @param {Array} columns
+   * @param {String} column
    * @param {String} name
-   * @param {Boolean} distinct
+   * @param {Boolean} isDistinct
    * @return this query
    */
-  _aggregate(method, columns, name = null, isDistinct = false) {
-    var distinct = isDistinct ? 'distinct ' : ''
+  selectAggregate(method, column, name = null, isDistinct = false) {
+    var raw = new Aggregate(this.compiler)
     
-    columns = `(${distinct}${this.compiler.columnize(columns)})`
-    
-    return this.selectRaw(this.raw(method + columns).as(name))
+    return this.selectRaw(raw.set(method, column, isDistinct).as(name))
   }
   
   /**

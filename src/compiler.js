@@ -31,7 +31,10 @@ export default class {
   }
   
   compile(query) {
-    var sql = ''
+    var sql = '' 
+    
+    // reset bindings
+    this.bindings = []
     
     switch ( query.type ) {
       case 'select': sql = this.compileSelect(query); break
@@ -54,6 +57,14 @@ export default class {
     }
     
     return (raw.name) ? this.alias(expr, raw.name) : expr
+  }
+  
+  compileAggregate(raw) {
+    var distinct = raw.isDistinct ? 'distinct ' : ''
+    
+    raw.expression += `(${distinct}${this.columnize(raw.column)})`
+    
+    return this.compileRaw(raw)
   }
   
   compileSelect(query) {

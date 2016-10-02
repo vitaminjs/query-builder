@@ -23,8 +23,8 @@ log(qb().selectSub('1 + 1', 'operation'))
 log(qb().selectRaw('count(*) as count').from('table'))
 log(qb().selectSub(qb().selectRaw('count(*)').from('table'), 'count'))
 
-log(qb().count('*', 'count').from('table'))
 log(qb().avg('likes', 'avg_likes').from('table'))
+log(qb().countDistinct('*', 'count').from('table'))
 log(qb().min('salary', 'minSalary').max('salary', 'maxSalary').from('table'))
 
 log(qb().select('t1.sum_column1').from(q => q.sum('column1', 'sum_column1').from('table'), 't1'))
