@@ -1,48 +1,42 @@
 
-import { isEmpty } from 'underscore'
-
 /**
  * @class Raw
  */
 export default class {
   
   /**
-   * Raw class constructor
    * 
-   * @param {Compiler} compiler
+   * @param {String} expression
+   * @param {Array} bindings
    * @constructor
    */
-  constructor(compiler) {
-    this.compiler = compiler
-    this.expression = ''
-    this.bindings = []
+  constructor(expression, bindings = []) {
+    this.expression = expression
+    this.bindings = bindings
+    this.name = null
     this.before = ''
     this.after = ''
+    
+    return this
   }
   
   /**
    * 
-   * 
-   * @param {String} expression
-   * @param {Object} bindings
+   * @param {String} before
+   * @param {String} after
    * @return this raw
    */
-  set(expression, bindings = []) {
-    this.expression = expression
-    this.bindings = bindings
-    return this
-  }
-  
-  toSQL() {
-    return this.compiler.compileRaw(this)
-  }
-  
   wrap(before = '(', after = ')') {
     this.before = before
     this.after = after
     return this
   }
   
+  /**
+   * 
+   * @param {String} name
+   * @return this raw
+   */
   as(name) {
     this.name = name
     return this

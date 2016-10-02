@@ -1,5 +1,6 @@
 
 import Raw from './raw'
+import Compiler from './compiler'
 import Aggregate from './aggregate'
 import { isArray, isFunction, isEmpty, isString, toArray } from 'underscore'
 
@@ -9,12 +10,10 @@ import { isArray, isFunction, isEmpty, isString, toArray } from 'underscore'
 export default class Query {
   
   /**
-   * Query builder constructor
    * 
-   * @param {Compiler} compiler
    * @constructor
    */
-  constructor(compiler) {
+  constructor() {
     this.take = null
     this.skip = null
     this.wheres = []
@@ -26,11 +25,14 @@ export default class Query {
     this.isDistinct = false
     
     this.type = 'select'
-    this.compiler = compiler
+  }
+  
+  compiler() {
+    return new Compiler()
   }
   
   compile() {
-    return this.compiler.compile(this)
+    return this.compiler().compile(this, this.type)
   }
   
   toString() {
@@ -38,7 +40,7 @@ export default class Query {
   }
   
   newQuery() {
-    return new Query(this.compiler)
+    return new Query(this.compiler())
   }
   
   /**
@@ -49,7 +51,7 @@ export default class Query {
    * @return Raw instance
    */
   raw(expression, bindings = []) {
-    return new Raw(this.compiler).set(...arguments)
+    return new Raw(expression, bindings)
   }
   
   /**
@@ -72,7 +74,7 @@ export default class Query {
   }
   
   from(table, alias = null) {
-    this.table = this._wrapped(table)
+    this.table = this._wrappedQuery(table)
     this.alias = alias
     return this
   }
@@ -85,7 +87,7 @@ export default class Query {
    * @return this query
    */
   selectSub(query, name) {
-    query = this._wrapped(query)
+    query = this._wrappedQuery(query)
     
     if ( isString(query) ) 
       query = this.raw(query).wrap()
@@ -256,9 +258,9 @@ export default class Query {
    * @return this query
    */
   selectAggregate(method, column, name = null, isDistinct = false) {
-    var raw = new Aggregate(this.compiler)
+    var raw = new Aggregate(method, column, isDistinct)
     
-    return this.selectRaw(raw.set(method, column, isDistinct).as(name))
+    return this.selectRaw(raw.as(name))
   }
   
   /**
@@ -267,7 +269,7 @@ export default class Query {
    * @param {Query|Function} value
    * @return Raw instance
    */
-  _wrapped(value) {
+  _wrappedQuery(value) {
     if ( isFunction(value) ) {
       let fn = value
       
@@ -275,14 +277,19 @@ export default class Query {
     }
     
     if ( value instanceof Query ) {
-      let query = value.compile()
+      let q = value.compile()
       
-      value = this.raw(query.sql, query.bindings).wrap()
+      value = this.raw(q.sql, q.bindings).wrap()
     }
     
     return value
   }
   
+  /**
+   * 
+   * @param {String} expr
+   * @param {Array} bindings
+   */
   _wrappedRaw(expr, bindings = []) {
     if ( isString(expr) ) 
       expr = this.raw(expr, bindings)

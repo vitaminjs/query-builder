@@ -8,25 +8,16 @@ export default class extends Raw {
   
   /**
    * 
-   * 
    * @param {String} method
    * @param {String} column
    * @param {Boolean} isDistinct
-   * @return this aggregate
+   * @constructor
    */
-  set(method, column, isDistinct = false) {
-    this.isDistinct = isDistinct
+  constructor(method, column, isDistinct = false) {
+    super(method)
+    
     this.column = column
-    super.set(method)
-    return this
-  }
-  
-  /**
-   * 
-   * @return string
-   */
-  toSQL() {
-    return this.compiler.compileAggregate(this)
+    this.isDistinct = isDistinct
   }
   
 }

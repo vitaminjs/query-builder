@@ -1,5 +1,6 @@
 
 import { isEmpty, isArray, isNull, compact, flatten } from 'underscore'
+import Aggregate from './aggregate'
 import Raw from './raw'
 
 /**
@@ -30,33 +31,34 @@ export default class {
     ]
   }
   
-  compile(query) {
-    var sql = '' 
+  /**
+   * 
+   * @param {Query} query
+   * @param {String} type
+   * @return plain object
+   */
+  compile(query, type = 'select') {
+    // camelize the compilation type
+    // TODO use _.camelize instead
+    var method = 'compile' + type.slice(0, 1).toUpperCase() + type.slice(1)
+    
+    if (! this[method] )
+      throw new TypeError("Unknown compilation method")
     
     // reset bindings
     this.bindings = []
     
-    switch ( query.type ) {
-      case 'select': sql = this.compileSelect(query); break
-      
-      case 'insert': sql = this.compileInsert(query); break
-      
-      case 'update': sql = this.compileUpdate(query); break
-      
-      case 'delete': sql = this.compileDelete(query); break
-    }
+    var sql = this[method](query)
     
     return { sql, bindings: flatten(this.bindings) }
   }
   
   compileRaw(raw) {
-    var expr = raw.expression
+    var expr = raw.before + raw.expression + raw.after
     
-    if ( raw.before && raw.after ) {
-      expr = raw.before + expr + raw.after
-    }
+    if ( raw.name ) expr = this.alias(expr, raw.name)
     
-    return (raw.name) ? this.alias(expr, raw.name) : expr
+    return { sql: expr, bindings: raw.bindings }
   }
   
   compileAggregate(raw) {
@@ -106,22 +108,22 @@ export default class {
   compileOrders(query) {
     if (! isEmpty(query.orders) ) {
       return 'order by ' + query.orders.map(order => {
-        if ( this.isRaw(order) ) return this.escape(order)
+        if ( this.isRaw(order) ) return this.escapeRaw(order)
         
         return `${this.columnize(order.column)} ${order.direction}`
       }).join(', ')
     }
   }
   
-  compileInsert() {
+  compileInsert(query) {
     
   }
   
-  compileUpdate() {
+  compileUpdate(query) {
     
   }
   
-  compileDelete() {
+  compileDelete(query) {
     
   }
   
@@ -156,10 +158,9 @@ export default class {
   escape(value) {
     var asIndex
     
-    if ( this.isRaw(value) ) {
-      this.addBinding(value.bindings)
-      return value.toSQL()
-    }
+    if ( this.isAggregate(value) ) return this.escapeAggregate(value)
+    
+    if ( this.isRaw(value) ) return this.escapeRaw(value)
     
     if ( (asIndex = value.toLowerCase().indexOf(' as ')) > 0 ) {
       let one = value.slice(0, asIndex)
@@ -173,19 +174,53 @@ export default class {
   
   /**
    * 
+   * @param {Aggregate} value
+   * @return string
+   */
+  escapeAggregate(value) {
+    var obj = this.compileAggregate(value)
+    
+    this.addBinding(obj.bindings)
+    
+    return obj.sql
+  }
+  
+  /**
+   * 
+   * @param {Raw} value
+   * @return string
+   */
+  escapeRaw(value) {
+    var obj = this.compileRaw(value)
+    
+    this.addBinding(obj.bindings)
+    
+    return obj.sql
+  }
+  
+  /**
+   * 
    * 
    * @param {Any} value
    * @return string
    */
   parameter(value) {
-    if ( this.isRaw(value) ) {
-      this.addBinding(value.bindings)
-      return value.toSQL()
-    }
+    if ( this.isRaw(value) ) return this.escapeRaw(value)
     
     this.addBinding(value)
     
     return this.param
+  }
+  
+  /**
+   * 
+   * @param {String} method
+   * @param {String} column
+   * @param {Boolean} isDistinct
+   * @return Aggregate instance
+   */
+  isAggregate(value) {
+    return value instanceof Aggregate
   }
   
   isRaw(value) {

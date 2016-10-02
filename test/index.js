@@ -1,8 +1,7 @@
 
 var Query = require('../lib/builder').default
-var Compiler = require('../lib/compiler').default
 
-var qb = () => new Query(new Compiler)
+var qb = () => new Query()
 
 var log = q => { q = q.compile(); console.log(q.sql, q.bindings.length ? q.bindings : '') }
 
