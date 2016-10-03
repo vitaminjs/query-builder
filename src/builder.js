@@ -1,8 +1,9 @@
 
 import Raw from './raw'
 import Compiler from './compiler'
+import Criteria from './criteria'
 import Aggregate from './aggregate'
-import { isArray, isFunction, isEmpty, isString, toArray } from 'underscore'
+import { isArray, isFunction, isEmpty, isString, isObject, toArray } from 'underscore'
 
 /**
  * @class Query
@@ -20,6 +21,7 @@ export default class Query {
     this.groups = []
     this.orders = []
     this.columns = []
+    this.havings = []
     this.table = null
     this.alias = null
     this.isDistinct = false
@@ -220,6 +222,42 @@ export default class Query {
     return this.groupBy(this._wrappedRaw(expr))
   }
   
+  having(column, operator = 'eq', value = null) {
+    this.havings.push(this._and(...arguments))
+    return this
+  }
+  
+  orHaving(column, operator = 'eq', value = null) {
+    this.havings.push(this._or(...arguments))
+    return this
+  }
+  
+  andHaving(column, operator = 'eq', value = null) {
+    return this.having(...arguments)
+  }
+  
+  /**
+   * 
+   * @param {String} expr
+   * @param {Array} bindings
+   * @return this query
+   */
+  havingRaw(raw, bindings = []) {
+    this.havings.push(this._andRaw(...arguments))
+    return this
+  }
+  
+  /**
+   * 
+   * @param {String} expr
+   * @param {Array} bindings
+   * @return this query
+   */
+  orHavingRaw(raw, bindings = []) {
+    this.havings.push(this._orRaw(...arguments))
+    return this
+  }
+  
   /**
    * 
    * 
@@ -292,9 +330,42 @@ export default class Query {
     if ( isString(expr) ) 
       expr = this.raw(expr, bindings)
     
-    if ( expr instanceof Raw ) return expr 
+    if ( expr instanceof Raw ) return expr
     
     throw new TypeError("Invalid raw expression")
+  }
+  
+  _and(column, operator = 'eq', value = null) {
+    if ( arguments.length === 2 ) {
+      value = operator
+      operator = 'eq'
+    }
+    
+    if ( isObject(column) && !(column instanceof Raw) ) {
+      return Criteria.group(column)
+    }
+    
+    return Criteria.basic(column, operator, value)
+  }
+  
+  /**
+   * 
+   * @return Criteria instance
+   */
+  _andRaw(expr, bindings = []) {
+    return this._and(this._wrappedRaw(...arguments))
+  }
+  
+  _or(column, operator = 'eq', value = null) {
+    return this._and(...arguments).or()
+  }
+  
+  /**
+   * 
+   * @return Criteria instance
+   */
+  _orRaw(expr, bindings = []) {
+    return this._andRaw(...arguments).or()
   }
   
   // into(table) {

@@ -1,5 +1,5 @@
 
-import { isEmpty, isArray, isNull, compact, flatten } from 'underscore'
+import { isEmpty, isArray, isNumber, compact, flatten } from 'underscore'
 import Aggregate from './aggregate'
 import Raw from './raw'
 
@@ -22,9 +22,9 @@ export default class {
       'From',
       // 'Joins',
       // 'Wheres',
-      // 'Unions',
       'Groups',
-      // 'Havings',
+      'Havings',
+      // 'Unions',
       'Orders',
       'Limit',
       'Offset',
@@ -91,13 +91,13 @@ export default class {
   }
   
   compileLimit(query) {
-    if (! isNull(query.take) ) {
+    if ( isNumber(query.take) ) {
       return 'limit ' + this.parameter(query.take)
     }
   }
   
   compileOffset(query) {
-    if (! isNull(query.skip) ) {
+    if ( isNumber(query.skip) ) {
       return 'offset ' + this.parameter(query.skip)
     }
   }
@@ -105,6 +105,53 @@ export default class {
   compileGroups(query) {
     if (! isEmpty(query.groups) ) 
       return 'group by ' + this.columnize(query.groups)
+  }
+  
+  compileHavings(query) {
+    if (! isEmpty(query.havings) ) {
+      return 'having ' + this.compileCriteria(query.havings)
+    }
+  }
+  
+  compileCriteria(rules = []) {
+    return rules.map(cr => this.compileCriterion(cr)).join(' ').substring(3).trim()
+  }
+  
+  /**
+   * 
+   * @param {Criteria} criteria
+   * @return string
+   */
+  compileCriterion(criterion) {
+    var column = criterion.column
+    
+    if ( this.isRaw(column) ) 
+      return `${criterion.prefix}` + this.escapeRaw(column)
+    
+    if ( isArray(column) )
+      return `(${this.compileCriteria(column)})`
+    
+    switch ( criterion.type ) {
+      case 'basic': return this.compileBasicCriterion(criterion)
+    }
+    
+    return ''
+  }
+  
+  compileBasicCriterion(criterion) {
+    var bool = criterion.prefix
+    var not = criterion.negate ? ' not' : ''
+    var column = this.escape(criterion.column)
+    var value = this.parameter(criterion.value)
+    var operator = this.operator(criterion.operator)
+    
+    return `${bool}${not} ${column} ${operator} ${value}`
+  }
+  
+  operator(value) {
+    if (! value ) value = 'eq'
+    
+    return value
   }
   
   compileOrders(query) {
