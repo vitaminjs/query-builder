@@ -58,15 +58,17 @@ export default class {
     
     if ( raw.name ) expr = this.alias(expr, raw.name)
     
-    return { sql: expr, bindings: raw.bindings }
+    return expr
   }
   
-  compileAggregate(raw) {
-    var distinct = raw.isDistinct ? 'distinct ' : ''
+  compileAggregate(obj) {
+    var column = this.columnize(obj.column)
+    var distinct = obj.isDistinct ? 'distinct ' : ''
+    var expr = `${obj.method}(${distinct}${column})`
     
-    raw.expression += `(${distinct}${this.columnize(raw.column)})`
+    if ( obj.name ) expr = this.alias(expr, obj.name)
     
-    return this.compileRaw(raw)
+    return expr
   }
   
   compileSelect(query) {
@@ -158,7 +160,7 @@ export default class {
   escape(value) {
     var asIndex
     
-    if ( this.isAggregate(value) ) return this.escapeAggregate(value)
+    if ( this.isAggregate(value) ) return this.compileAggregate(value)
     
     if ( this.isRaw(value) ) return this.escapeRaw(value)
     
@@ -174,28 +176,15 @@ export default class {
   
   /**
    * 
-   * @param {Aggregate} value
-   * @return string
-   */
-  escapeAggregate(value) {
-    var obj = this.compileAggregate(value)
-    
-    this.addBinding(obj.bindings)
-    
-    return obj.sql
-  }
-  
-  /**
-   * 
    * @param {Raw} value
    * @return string
    */
   escapeRaw(value) {
-    var obj = this.compileRaw(value)
+    var sql = this.compileRaw(value)
     
-    this.addBinding(obj.bindings)
+    this.addBinding(value.bindings)
     
-    return obj.sql
+    return sql
   }
   
   /**

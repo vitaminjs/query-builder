@@ -1,22 +1,21 @@
 
-import Raw from './raw'
-
 /**
  * @class Aggregate
  */
-export default class extends Raw {
+export default class {
   
   /**
    * 
    * @param {String} method
    * @param {String} column
+   * @param {String} name
    * @param {Boolean} isDistinct
    * @constructor
    */
-  constructor(method, column, isDistinct = false) {
-    super(method)
-    
-    this.column = column
+  constructor(method, column, name = null, isDistinct = false) {
+    this.name       = name
+    this.method     = method
+    this.column     = column
     this.isDistinct = isDistinct
   }
   

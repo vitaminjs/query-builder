@@ -258,9 +258,7 @@ export default class Query {
    * @return this query
    */
   selectAggregate(method, column, name = null, isDistinct = false) {
-    var raw = new Aggregate(method, column, isDistinct)
-    
-    return this.selectRaw(raw.as(name))
+    return this.select(new Aggregate(...arguments))
   }
   
   /**
