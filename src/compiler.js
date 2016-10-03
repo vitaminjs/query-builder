@@ -75,7 +75,7 @@ export default class {
     var distinct = query.isDistinct ? 'distinct ' : ''
     var sql = this.selectComponents.map(c => this['compile' + c](query))
     
-    if ( isEmpty(query.columns) && isEmpty(query.table) ) return ''
+    if ( isEmpty(query.columns) && isEmpty(query.tables) ) return ''
     
     return 'select ' + distinct + compact(sql).join(' ')
   }
@@ -85,8 +85,12 @@ export default class {
   }
   
   compileFrom(query) {
-    if (! isEmpty(query.table) ) {
-      return 'from ' + this.alias(this.escape(query.table), query.alias)
+    if (! isEmpty(query.tables) ) {
+      return 'from ' + query.tables.map(table => {
+        if ( this.isRaw(table) ) return this.escapeRaw(table)
+        
+        return this.alias(this.escape(table.name), table.alias)
+      }).join(', ')
     }
   }
   

@@ -20,6 +20,7 @@ export default class Query {
     this.wheres = []
     this.groups = []
     this.orders = []
+    this.tables = []
     this.columns = []
     this.havings = []
     this.table = null
@@ -76,8 +77,13 @@ export default class Query {
   }
   
   from(table, alias = null) {
-    this.table = this._wrappedQuery(table)
-    this.alias = alias
+    if ( isString(table) ) table = { 'name': table, alias }
+    else {
+      table = this._wrappedQuery(table).as(alias)
+    }
+    
+    this.tables.push(table)
+    
     return this
   }
   

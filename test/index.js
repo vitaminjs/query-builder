@@ -10,6 +10,8 @@ log(qb())
 log(qb().from('table'))
 log(qb().from('table', 't'))
 log(qb().distinct().from('table'))
+log(qb().from('table', 't1').from('table2'))
+log(qb().from('photos', 'p').from(q => q.from('videos'), 'v'))
 
 log(qb().select('column').from('table', 't'))
 log(qb().select('column as c').from('table'))
