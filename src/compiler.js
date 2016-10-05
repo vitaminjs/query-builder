@@ -1,6 +1,7 @@
 
-import { isEmpty, isArray, isNumber, compact, flatten } from 'underscore'
+import { isEmpty, isArray, isNumber, compact, flatten } from 'lodash'
 import Aggregate from './aggregate'
+import Criteria from './criteria'
 import Raw from './raw'
 
 /**
@@ -21,7 +22,7 @@ export default class {
       'Columns',
       'From',
       // 'Joins',
-      // 'Wheres',
+      'Wheres',
       'Groups',
       'Havings',
       // 'Unions',
@@ -113,12 +114,22 @@ export default class {
   
   compileHavings(query) {
     if (! isEmpty(query.havings) ) {
-      return 'having ' + this.compileCriteria(query.havings)
+      return 'having ' + this.compileConditions(query.havings)
     }
   }
   
-  compileCriteria(rules = []) {
-    return rules.map(cr => this.compileCriterion(cr)).join(' ').substring(3).trim()
+  compileWheres(query) {
+    if (! isEmpty(query.wheres) ) {
+      return 'where ' + this.compileConditions(query.wheres)
+    }
+  }
+  
+  compileConditions(conditions = []) {
+    return conditions.map(cr => this.compileCriteria(cr)).join(' ').substr(3).trim()
+  }
+  
+  compileCriteria(criteria) {
+    return criteria.conditions.map(c => this.compileCriterion(c)).join(' ')
   }
   
   /**
@@ -128,34 +139,83 @@ export default class {
    */
   compileCriterion(criterion) {
     var column = criterion.column
+    var bool = `${criterion.prefix} `
+    var not = criterion.negate ? 'not ' : ''
     
-    if ( this.isRaw(column) ) 
-      return `${criterion.prefix}` + this.escapeRaw(column)
+    if ( this.isRaw(column) )
+      return bool + this.escapeRaw(column)
     
-    if ( isArray(column) )
-      return `(${this.compileCriteria(column)})`
-    
-    switch ( criterion.type ) {
-      case 'basic': return this.compileBasicCriterion(criterion)
+    if ( column instanceof Criteria ) {
+      let criteria = this.compileCriteria(column)
+      
+      return bool + not + `(${criteria.substring(3).trim()})`
     }
     
-    return ''
+    switch ( criterion.operator ) {
+      case 'is':
+      case 'is not':
+        return bool + this.compileWhereNull(criterion)
+      
+      case 'in':
+      case 'not in':
+        return bool + this.compileWhereIn(criterion)
+      
+      case 'exists':
+      case 'not exists':
+        return bool + this.compileWhereExists(criterion)
+      
+      case 'between':
+      case 'not between':
+        return bool + this.compileWhereBetween(criterion)
+      
+      default: 
+        return bool + this.compileBasicCriterion(criterion)
+    }
   }
   
-  compileBasicCriterion(criterion) {
-    var bool = criterion.prefix
-    var not = criterion.negate ? ' not' : ''
+  compileWhereBetween(criterion) {
+    var not = criterion.negate ? 'not ' : ''
+    var column = this.escape(criterion.column)
+    var value1 = this.parameter(criterion.value[0])
+    var value2 = this.parameter(criterion.value[1])
+    var operator = this.operator(criterion.operator)
+    
+    return `${not}${column} ${operator} ${value1} and ${value2}`
+  }
+  
+  compileWhereNull(criterion) {
+    var column = this.escape(criterion.column)
+    var operator = this.operator(criterion.operator)
+    
+    return `${column} ${operator} null`
+  }
+  
+  compileWhereIn(criterion) {
+    if ( isEmpty(criterion.value) ) {
+      return '1 = ' + (criterion.operator === 'in' ? '0' : '1')
+    }
+    
     var column = this.escape(criterion.column)
     var value = this.parameter(criterion.value)
     var operator = this.operator(criterion.operator)
     
-    return `${bool}${not} ${column} ${operator} ${value}`
+    return `${column} ${operator} (${value})`
   }
   
-  operator(value) {
-    if (! value ) value = 'eq'
+  compileWhereExists(criterion) {
+    var value = this.parameter(criterion.value)
+    var operator = this.operator(criterion.operator)
     
-    return value
+    return `${operator} (${value})`
+  }
+  
+  compileBasicCriterion(criterion) {
+    var not = criterion.negate ? 'not ' : ''
+    var column = this.escape(criterion.column)
+    var value = this.parameter(criterion.value)
+    var operator = this.operator(criterion.operator)
+    
+    return `${not}${column} ${operator} ${value}`
   }
   
   compileOrders(query) {
@@ -187,6 +247,8 @@ export default class {
    * @return this compiler
    */
   addBinding(value) {
+    if ( true )
+    
     this.bindings.push(value)
     return this
   }
@@ -211,7 +273,8 @@ export default class {
   escape(value) {
     var asIndex
     
-    if ( this.isAggregate(value) ) return this.compileAggregate(value)
+    if ( value instanceof Aggregate ) 
+      return this.compileAggregate(value)
     
     if ( this.isRaw(value) ) return this.escapeRaw(value)
     
@@ -249,18 +312,20 @@ export default class {
     
     this.addBinding(value)
     
+    if ( isArray(value) ) {
+      return value.map(() => this.param).join(', ')
+    }
+    
     return this.param
   }
   
   /**
    * 
-   * @param {String} method
-   * @param {String} column
-   * @param {Boolean} isDistinct
-   * @return Aggregate instance
+   * @param {String} value
+   * @return string
    */
-  isAggregate(value) {
-    return value instanceof Aggregate
+  operator(value) {
+    return value || '='
   }
   
   isRaw(value) {

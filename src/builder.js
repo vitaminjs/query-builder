@@ -3,7 +3,7 @@ import Raw from './raw'
 import Compiler from './compiler'
 import Criteria from './criteria'
 import Aggregate from './aggregate'
-import { isArray, isFunction, isEmpty, isString, isObject, toArray } from 'underscore'
+import { isArray, isFunction, isEmpty, isString, isObject, toArray } from 'lodash'
 
 /**
  * @class Query
@@ -44,6 +44,10 @@ export default class Query {
   
   newQuery() {
     return new Query(this.compiler())
+  }
+  
+  newCriteria() {
+    return new Criteria(this)
   }
   
   /**
@@ -228,17 +232,16 @@ export default class Query {
     return this.groupBy(this._wrappedRaw(expr))
   }
   
-  having(column, operator = 'eq', value = null) {
-    this.havings.push(this._and(...arguments))
+  having(column, operator, value, prefix = 'and', negate = false) {
+    this.havings.push(this.newCriteria().where(...arguments))
     return this
   }
   
-  orHaving(column, operator = 'eq', value = null) {
-    this.havings.push(this._or(...arguments))
-    return this
+  orHaving(column, operator, value) {
+    return this.having(column, operator, value, 'or')
   }
   
-  andHaving(column, operator = 'eq', value = null) {
+  andHaving(column, operator, value) {
     return this.having(...arguments)
   }
   
@@ -246,10 +249,11 @@ export default class Query {
    * 
    * @param {String} expr
    * @param {Array} bindings
+   * @param {String} prefix
    * @return this query
    */
-  havingRaw(raw, bindings = []) {
-    this.havings.push(this._andRaw(...arguments))
+  havingRaw(expr, bindings = [], prefix = 'and') {
+    this.havings.push(this.newCriteria().whereRaw(...arguments))
     return this
   }
   
@@ -259,9 +263,8 @@ export default class Query {
    * @param {Array} bindings
    * @return this query
    */
-  orHavingRaw(raw, bindings = []) {
-    this.havings.push(this._orRaw(...arguments))
-    return this
+  orHavingRaw(expr, bindings = []) {
+    return this.havingRaw(expr, bindings, 'or')
   }
   
   /**
@@ -341,92 +344,12 @@ export default class Query {
     throw new TypeError("Invalid raw expression")
   }
   
-  _and(column, operator = 'eq', value = null) {
-    if ( arguments.length === 2 ) {
-      value = operator
-      operator = 'eq'
-    }
-    
-    if ( isObject(column) && !(column instanceof Raw) ) {
-      return Criteria.group(column)
-    }
-    
-    return Criteria.basic(column, operator, value)
-  }
-  
-  /**
-   * 
-   * @return Criteria instance
-   */
-  _andRaw(expr, bindings = []) {
-    return this._and(this._wrappedRaw(...arguments))
-  }
-  
-  _or(column, operator = 'eq', value = null) {
-    return this._and(...arguments).or()
-  }
-  
-  /**
-   * 
-   * @return Criteria instance
-   */
-  _orRaw(expr, bindings = []) {
-    return this._andRaw(...arguments).or()
-  }
-  
   // into(table) {
   //   return this.from(table)
   // }
   
   // join(table, one, op = null, two = null, type = 'inner') {
   //   // TODO
-  // }
-  
-  // where(column, op = null, value = null, bool = 'AND') {
-  //   if ( isObject(column) ) return this.whereObject(column, bool)
-    
-  //   if ( isFunction(column) ) return this._addObjectWhere(column, bool)
-    
-  //   if ( arguments.length === 2 ) {
-  //     value = op
-  //     op = '='
-  //   }
-    
-  //   if ( isArray(value) ) return this.whereIn(column, value)
-    
-  //   this.wheres.push({ column, op, value, type: 'basic' })
-    
-  //   return this
-  // }
-  
-  // _addObjectWhere(obj, bool = 'AND', method = 'where') {
-  //   return this.whereNested(q => {
-      
-  //     each(obj, (value, key) => {
-  //       q[method](key, value, null, bool)
-  //     })
-      
-  //   }, bool)
-  // }
-  
-  // whereNested(fn, bool = 'AND') {
-  //   var query = this.newQuery().from(this._table, this._alias)
-    
-  //   fn.call(null, query)
-    
-  //   return this.addNestedQuery(query, bool)
-  // }
-  
-  // addNestedQuery(query, bool = 'AND') {
-  //   if (! isEmpty(query.wheres) ) {
-      
-  //   }
-    
-  //   return this
-  // }
-  
-  // orWhere(column, op = null, value = null) {
-  //   return this.where(column, op, value, 'OR')
   // }
   
 }
