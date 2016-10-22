@@ -208,6 +208,182 @@ export default class Query {
     return this
   }
   
+  where(column, operator, value, prefix = 'and', negate = false) {
+    this.wheres.push(this.newCriteria().where(...arguments))
+    return this
+  }
+  
+  andWhere(column, operator, value) {
+    return this.where(column, operator, value)
+  }
+  
+  orWhere(column, operator, value) {
+    return this.where(column, operator, value, 'or')
+  }
+  
+  whereNot(column, operator, value) {
+    return this.where(column, operator, value, 'and', true)
+  }
+  
+  andWhereNot(column, operator, value) {
+    return this.whereNot(column, operator, value)
+  }
+  
+  orWhereNot(column, operator, value) {
+    return this.where(column, operator, value, 'or', true)
+  }
+  
+  whereBetween(column, value, prefix = 'and', negate = true) {
+    this.wheres.push(this.newCriteria().whereBetween(...arguments))
+    return this
+  }
+  
+  andWhereBetween(column, value) {
+    return this.whereBetween(column, value)
+  }
+  
+  orWhereBetween(column, value) {
+    return this.whereBetween(column, value, 'or')
+  }
+  
+  whereNotBetween(column, value) {
+    return this.whereBetween(column, value, 'and', true)
+  }
+  
+  andWhereNotBetween(column, value) {
+    return this.whereNotBetween(column, value)
+  }
+  
+  orWhereNotBetween(column, value) {
+    return this.whereBetween(column, value, 'or', true)
+  }
+  
+  whereLike(column, value, prefix = 'and', negate = false) {
+    this.wheres.push(this.newCriteria().whereLike(...arguments))
+    return this
+  }
+  
+  andWhereLike(column, value) {
+    return this.whereLike(column, value)
+  }
+  
+  orWhereLike(column, value) {
+    return this.whereLike(column, value, 'or')
+  }
+  
+  whereNotLike(column, value) {
+    return this.whereLike(column, value, 'and', true)
+  }
+  
+  andWhereNotLike(column, value) {
+    return this.whereNotLike(column, value)
+  }
+  
+  orWhereNotLike(column, value) {
+    return this.whereLike(column, value, 'or', true)
+  }
+  
+  whereIn(column, value, prefix = 'and', negate = false) {
+    this.wheres.push(this.newCriteria().whereIn(...arguments))
+    return this
+  }
+  
+  andWhereIn(column, value) {
+    return this.whereIn(column, value)
+  }
+  
+  orWhereIn(column, value) {
+    return this.whereIn(column, value, 'or')
+  }
+  
+  whereNotIn(column, value) {
+    return this.whereIn(column, value, 'and', true)
+  }
+  
+  andWhereNotIn(column, value) {
+    return this.whereNotIn(column, value)
+  }
+  
+  orWhereNotIn(column, value) {
+    return this.whereIn(column, value, 'or', true)
+  }
+  
+  whereNull(column, prefix = 'and', negate = false) {
+    this.wheres.push(this.newCriteria().whereNull(...arguments))
+    return this
+  }
+  
+  andWhereNull(column) {
+    return this.whereNull(column)
+  }
+  
+  orWhereNull(column) {
+    return this.whereNull(column, 'or')
+  }
+  
+  whereNotNull(column) {
+    return this.whereNull(column, 'and', true)
+  }
+  
+  andWhereNotNull(column) {
+    return this.whereNotNull(column)
+  }
+  
+  orWhereNotNull(column) {
+    return this.whereNull(column, 'or', true)
+  }
+  
+  whereRaw(expr, bindings = [], prefix = 'and') {
+    this.wheres.push(this.newCriteria().whereRaw(...arguments))
+    return this
+  }
+  
+  andWhereRaw(expr, bindings = []) {
+    return this.whereRaw(expr, bindings)
+  }
+  
+  orWhereRaw(expr, bindings = []) { 
+    return this.whereRaw(expr, bindings, 'or')
+  }
+  
+  whereExists(value, prefix = 'and', negate = false) {
+    this.wheres.push(this.newCriteria().whereExists(...arguments))
+    return this
+  }
+  
+  andWhereExists(value) {
+    return this.whereExists(value)
+  }
+  
+  orWhereExists(value) {
+    return this.whereExists(value, 'or')
+  }
+  
+  whereNotExists(value) {
+    return this.whereExists(value, 'and', true)
+  }
+  
+  andWhereNotExists(value) {
+    return this.whereNotExists(value)
+  }
+  
+  orWhereNotExists(value) {
+    return this.whereExists(value, 'or', true)
+  }
+  
+  whereColumn(first, operator, second, prefix = 'and') {
+    this.wheres.push(this.newCriteria().whereColumn(...arguments))
+    return this
+  }
+  
+  andWhereColumn(first, operator, second) {
+    return this.whereColumn(first, operator, second)
+  }
+  
+  orWhereColumn(first, operator, second) {
+    return this.whereColumn(first, operator, second, 'or')
+  }
+  
   /**
    * 
    * 
@@ -343,13 +519,5 @@ export default class Query {
     
     throw new TypeError("Invalid raw expression")
   }
-  
-  // into(table) {
-  //   return this.from(table)
-  // }
-  
-  // join(table, one, op = null, two = null, type = 'inner') {
-  //   // TODO
-  // }
   
 }

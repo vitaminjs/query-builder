@@ -210,10 +210,11 @@ export default class {
   }
   
   compileBasicCriterion(criterion) {
-    var not = criterion.negate ? 'not ' : ''
-    var column = this.escape(criterion.column)
-    var value = this.parameter(criterion.value)
+    var method = criterion.isColumn ? 'escape' : 'parameter'
     var operator = this.operator(criterion.operator)
+    var column = this.escape(criterion.column)
+    var value = this[method](criterion.value)
+    var not = criterion.negate ? 'not ' : ''
     
     return `${not}${column} ${operator} ${value}`
   }

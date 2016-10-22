@@ -274,11 +274,11 @@ export default class {
     return this.whereNotNull(column)
   }
   
-  andWhereIsNull(column) {
+  andWhereNull(column) {
     return this.whereNull(column)
   }
   
-  andWhereisNotNull(column) {
+  andWhereNotNull(column) {
     return this.whereNotNull(column)
   }
   
@@ -335,6 +335,27 @@ export default class {
   
   orRaw(expr, bindings = []) {
     return this.orWhereRaw(expr, bindings)
+  }
+  
+  whereColumn(first, operator, second, prefix = 'and') {
+    if ( !isUndefined(operator) && isUndefined(second) ) {
+      second = operator
+      operator = '='
+    }
+    
+    this.conditions.push({
+      column: first, operator, value: second, prefix, isColumn: true
+    })
+    
+    return this
+  }
+  
+  andWhereColumn(first, operator, second) {
+    return this.whereColumn(first, operator, second)
+  }
+  
+  orWhereColumn(first, operator, second) {
+    return this.whereColumn(first, operator, second, 'or')
   }
   
   whereSub(column, operator, value, prefix = 'and', negate = false) {
