@@ -34,7 +34,7 @@ log(qb().select().from('products').orderBy('price', 'desc'))
 log(qb().select().from('products').limit(15).offset(45).orderByRaw('price = ?', 3))
 
 log(qb().select('department').sum('amount', 'sales').from('orders')
-.groupBy('department').having('sales', '>', 5000).orHavingRaw('saled < ?', [2000]))
+.groupBy('department').having('sales', '>', 5000).orHavingRaw('sales < ?', [2000]))
 
 log(qb().select().from('users').where('id', 1))
 log(qb().select().from('users').where('name', '>', 100))

@@ -1,6 +1,8 @@
 
+import QueryBuilder from './query/builder'
+import Compiler from './query/compiler'
+import { extend } from 'lodash'
 import Promise from 'bluebird'
-import { extend } from 'underscore'
 
 /**
  * @class MysqlClient
@@ -8,9 +10,10 @@ import { extend } from 'underscore'
 export default class {
   
   /**
-   * Mysql Client constructor
+   * MysqlClient constructor
    * 
    * @param {String|Object} config
+   * @constructor
    */
   constructor(config = {}) {
     this.pool = this.driver.createPool(this.config = config)
@@ -22,7 +25,7 @@ export default class {
    * @var {Object}
    */
   get driver() {
-    return require('mysql2')
+    return require('mysql')
   }
   
   /**
@@ -55,8 +58,12 @@ export default class {
     })
   }
   
-  queryBuilder() {
-    
+  newQuery() {
+    return new QueryBuilder(this)
+  }
+  
+  compiler() {
+    return new Compiler(this)
   }
   
 }

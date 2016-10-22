@@ -1,22 +1,25 @@
 
-import QueryBuilder from '../../query/builder'
+import QueryBuilder from '../../builder'
 
 /**
- * @class MysqlQuery
+ * @class MysqlQueryBuilder
  */
 export default class extends QueryBuilder {
   
+  /**
+   * MysqlQueryBuilder constructor
+   * 
+   * @param {Client} client
+   * @constructor
+   */
   constructor(client) {
-    super(client.compiler)
+    super()
     
     this.client = client
   }
   
-  /**
-   * to override
-   */
-  get compiler() {
-    return null
+  compiler() {
+    return this.client.compiler()
   }
   
   newQuery() {

@@ -43,7 +43,7 @@ export default class Query {
   }
   
   newQuery() {
-    return new Query(this.compiler())
+    return new Query()
   }
   
   newCriteria() {
