@@ -75,6 +75,14 @@ export default class Query {
     return this
   }
   
+  /**
+   * Set the query columns
+   */
+  setColumns(columns) {
+    this.columns = []
+    return this.select(...arguments)
+  }
+  
   distinct(bool = true) {
     this.isDistinct = bool
     return this
@@ -89,6 +97,14 @@ export default class Query {
     this.tables.push(table)
     
     return this
+  }
+  
+  /**
+   * 
+   */
+  setTables(name, alias = null) {
+    this.tables = []
+    return this.from(name, alias)
   }
   
   /**
