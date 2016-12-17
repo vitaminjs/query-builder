@@ -6,9 +6,9 @@ import Aggregate from './aggregate'
 import { isArray, isFunction, isEmpty, isString, isObject, toArray } from 'lodash'
 
 /**
- * @class Query
+ * @class QueryBuilder
  */
-export default class Query {
+export default class QueryBuilder {
   
   /**
    * 
@@ -43,7 +43,7 @@ export default class Query {
   }
   
   newQuery() {
-    return new Query()
+    return new QueryBuilder()
   }
   
   newCriteria() {
@@ -62,7 +62,7 @@ export default class Query {
   }
   
   /**
-   * 
+   * Add columns to the query
    * 
    * @param {Any} columns
    * @return this query
@@ -77,6 +77,9 @@ export default class Query {
   
   /**
    * Set the query columns
+   * 
+   * @param {Array} columns
+   * @return this query
    */
   setColumns(columns) {
     this.columns = []
@@ -89,7 +92,7 @@ export default class Query {
   }
   
   from(table, alias = null) {
-    if ( isString(table) ) table = { 'name': table, alias }
+    if ( isString(table) ) table = { table, alias }
     else {
       table = this._wrappedQuery(table).as(alias)
     }
@@ -503,7 +506,7 @@ export default class Query {
   /**
    * 
    * 
-   * @param {Query|Function} value
+   * @param {QueryBuilder|Function} value
    * @return Raw instance
    */
   _wrappedQuery(value) {
@@ -513,7 +516,7 @@ export default class Query {
       fn(value = this.newQuery())
     }
     
-    if ( value instanceof Query ) {
+    if ( value instanceof QueryBuilder ) {
       let q = value.compile()
       
       value = this.raw(q.sql, q.bindings).wrap()

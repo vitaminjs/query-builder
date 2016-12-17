@@ -1,5 +1,5 @@
 
-import { isEmpty, isArray, isNumber, compact, flatten } from 'lodash'
+import { isEmpty, isArray, isNumber, compact, flattenDeep, capitalize } from 'lodash'
 import Aggregate from './aggregate'
 import Criteria from './criteria'
 import Raw from './raw'
@@ -39,9 +39,7 @@ export default class {
    * @return plain object
    */
   compile(query, type = 'select') {
-    // camelize the compilation type
-    // TODO use _.camelize instead
-    var method = 'compile' + type.slice(0, 1).toUpperCase() + type.slice(1)
+    var method = 'compile' + capitalize(type)
     
     if (! this[method] )
       throw new TypeError("Unknown compilation method")
@@ -51,7 +49,7 @@ export default class {
     
     var sql = this[method](query)
     
-    return { sql, bindings: flatten(this.bindings) }
+    return { sql, bindings: flattenDeep(this.bindings) }
   }
   
   compileRaw(raw) {
@@ -87,10 +85,10 @@ export default class {
   
   compileFrom(query) {
     if (! isEmpty(query.tables) ) {
-      return 'from ' + query.tables.map(table => {
-        if ( this.isRaw(table) ) return this.escapeRaw(table)
+      return 'from ' + query.tables.map(obj => {
+        if ( this.isRaw(obj) ) return this.escapeRaw(obj)
         
-        return this.alias(this.escape(table.name), table.alias)
+        return this.alias(this.escape(obj.table), obj.alias)
       }).join(', ')
     }
   }

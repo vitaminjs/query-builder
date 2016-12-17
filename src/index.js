@@ -1,3 +1,3 @@
 
 // exports
-module.exports = require('./query').default
+module.exports = require('./builder').default

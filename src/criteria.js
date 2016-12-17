@@ -1,8 +1,5 @@
 
-import {
-  isFunction, isString, isNull, isArray, each, isPlainObject, isUndefined
-} from 'lodash'
-
+import { isFunction, isString, isNull, isArray, each, isPlainObject, isUndefined } from 'lodash'
 import Raw from './raw'
 
 /**
@@ -19,6 +16,9 @@ export default class {
     this.conditions = []
   }
   
+  /**
+   * 
+   */
   where(column, operator, value, prefix = 'and', negate = false) {
     // support for .where(new Raw(expr, bindings))
     if ( column instanceof Raw ) 
