@@ -172,13 +172,12 @@ export default class {
   }
   
   compileWhereBetween(criterion) {
-    var not = criterion.negate ? 'not ' : ''
     var column = this.escape(criterion.column)
     var value1 = this.parameter(criterion.value[0])
     var value2 = this.parameter(criterion.value[1])
     var operator = this.operator(criterion.operator)
     
-    return `${not}${column} ${operator} ${value1} and ${value2}`
+    return `${column} ${operator} ${value1} and ${value2}`
   }
   
   compileWhereNull(criterion) {

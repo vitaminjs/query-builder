@@ -105,9 +105,9 @@ export default class QueryBuilder {
   /**
    * 
    */
-  setTables(name, alias = null) {
+  setFrom(table, alias = null) {
     this.tables = []
-    return this.from(name, alias)
+    return this.from(table, alias)
   }
   
   /**
