@@ -282,24 +282,96 @@ export default class QueryBuilder {
     return this
   }
   
+  whereContains(column, value, prefix = 'and', negate = false) {
+    return this.whereLike(column, `%${value}%`, prefix, negate)
+  }
+  
+  whereStartsWith(column, value, prefix = 'and', negate = false) {
+    return this.whereLike(column, `%${value}`, prefix, negate)
+  }
+  
+  whereEndsWith(column, value, prefix = 'and', negate = false) {
+    return this.whereLike(column, `${value}%`, prefix, negate)
+  }
+  
   andWhereLike(column, value) {
     return this.whereLike(column, value)
+  }
+  
+  andWhereContains(column, value) {
+    return this.whereContains(column, value)
+  }
+  
+  andWhereStartsWith(column, value) {
+    return this.whereStartsWith(column, value)
+  }
+  
+  andWhereEndsWith(column, value) {
+    return this.whereEndsWith(column, value)
   }
   
   orWhereLike(column, value) {
     return this.whereLike(column, value, 'or')
   }
   
+  orWhereContains(column, value) {
+    return this.whereContains(column, value, 'or')
+  }
+  
+  orWhereStartsWith(column, value) {
+    return this.whereStartsWith(column, value, 'or')
+  }
+  
+  orWhereEndsWith(column, value) {
+    return this.whereEndsWith(column, value, 'or')
+  }
+  
   whereNotLike(column, value) {
     return this.whereLike(column, value, 'and', true)
+  }
+  
+  whereDoesntContain(column, value) {
+    return this.whereContains(column, value, 'and', true)
+  }
+  
+  whereDoesntStartWith(column, value) {
+    return this.whereStartsWith(column, value, 'and', true)
+  }
+  
+  whereDoesntEndWith(column, value) {
+    return this.whereEndsWith(column, value, 'and', true)
   }
   
   andWhereNotLike(column, value) {
     return this.whereNotLike(column, value)
   }
   
+  andWhereDoesntContain(column, value) {
+    return this.whereDoesntContain(column, value)
+  }
+  
+  andWhereDoesntStartWith(column, value) {
+    return this.whereDoesntStartWith(column, value)
+  }
+  
+  andWhereDoesntEndWith(column, value) {
+    return this.whereDoesntEndWith(column, value)
+  }
+  
   orWhereNotLike(column, value) {
     return this.whereLike(column, value, 'or', true)
+  }
+  
+  orWhereDoesntContain(column, value) {
+    return this.whereContains(column, value, 'or', true)
+  }
+  
+  orWhereDoesntStartWith(column, value) {
+    return this.whereStartsWith(column, value, 'or', true)
+  }
+  
+  orWhereDoesntEndWith(column, value) {
+    return this.whereEndsWith(column, value, 'or', true)
   }
   
   whereIn(column, value, prefix = 'and', negate = false) {
