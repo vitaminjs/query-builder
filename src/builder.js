@@ -1,8 +1,8 @@
 
 import Raw from './raw'
-import Compiler from './compiler'
 import Criteria from './criteria'
 import Aggregate from './aggregate'
+import { createCompiler } from './compiler/factory'
 import { isArray, isFunction, isEmpty, isString, isObject, toArray } from 'lodash'
 
 /**
@@ -12,15 +12,17 @@ export default class QueryBuilder {
   
   /**
    * 
+   * @param {String} dialect
    * @constructor
    */
-  constructor() {
+  constructor(dialect) {
     this.take = null
     this.skip = null
     this.wheres = []
     this.groups = []
     this.orders = []
     this.tables = []
+    this.unions = []
     this.columns = []
     this.havings = []
     this.table = null
@@ -28,14 +30,14 @@ export default class QueryBuilder {
     this.isDistinct = false
     
     this.type = 'select'
+    this.dialect = dialect
   }
   
-  compiler() {
-    return new Compiler()
-  }
-  
+  /**
+   * @return plain object
+   */
   compile() {
-    return this.compiler().compile(this, this.type)
+    return createCompiler(this.dialect).compile(this, this.type)
   }
   
   toString() {
@@ -43,22 +45,11 @@ export default class QueryBuilder {
   }
   
   newQuery() {
-    return new QueryBuilder()
+    return new QueryBuilder(this.dialect)
   }
   
   newCriteria() {
     return new Criteria(this)
-  }
-  
-  /**
-   * 
-   * 
-   * @param {String} expression
-   * @param {Array} bindings
-   * @return Raw instance
-   */
-  raw(expression, bindings = []) {
-    return new Raw(expression, bindings)
   }
   
   /**
@@ -73,6 +64,17 @@ export default class QueryBuilder {
     if (! isEmpty(columns) ) this.columns.push(...columns)
     
     return this
+  }
+  
+  /**
+   * Add distinct columns to the query
+   * 
+   * @param {Any} columns
+   * @return this query builder
+   */
+  selectDistinct(columns) {
+    this.isDistinct = true
+    return this.select(...arguments)
   }
   
   /**
@@ -91,6 +93,12 @@ export default class QueryBuilder {
     return this
   }
   
+  /**
+   * 
+   * @param {Any} table
+   * @param {String} alias
+   * @return this query builder
+   */
   from(table, alias = null) {
     if ( isString(table) ) table = { table, alias }
     else {
@@ -104,8 +112,11 @@ export default class QueryBuilder {
   
   /**
    * 
+   * @param {Any} table
+   * @param {String} alias
+   * @return this query builder
    */
-  setFrom(table, alias = null) {
+  setTables(table, alias = null) {
     this.tables = []
     return this.from(table, alias)
   }
@@ -121,7 +132,7 @@ export default class QueryBuilder {
     query = this._wrappedQuery(query)
     
     if ( isString(query) ) 
-      query = this.raw(query).wrap()
+      query = new Raw(query).wrap()
     
     return this.selectRaw(query.as(name))
   }
@@ -509,7 +520,7 @@ export default class QueryBuilder {
   }
   
   andHaving(column, operator, value) {
-    return this.having(...arguments)
+    return this.having(column, operator, value)
   }
   
   /**
@@ -591,7 +602,7 @@ export default class QueryBuilder {
     if ( value instanceof QueryBuilder ) {
       let q = value.compile()
       
-      value = this.raw(q.sql, q.bindings).wrap()
+      value = new Raw(q.sql, q.bindings).wrap()
     }
     
     return value
@@ -604,7 +615,7 @@ export default class QueryBuilder {
    */
   _wrappedRaw(expr, bindings = []) {
     if ( isString(expr) ) 
-      expr = this.raw(expr, bindings)
+      expr = new Raw(expr, bindings)
     
     if ( expr instanceof Raw ) return expr
     
