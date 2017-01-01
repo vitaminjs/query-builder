@@ -216,6 +216,49 @@ export default class QueryBuilder {
   
   /**
    * 
+   * @param {Any} query
+   * @param {Boolean} all
+   * @return this query builder
+   */
+  union(query, all = false) {
+    if ( isString(query) )
+      query = this._wrappedRaw(query).wrap()
+    else
+      query = this._wrappedQuery(query)
+    
+    // TODO ensure query is a raw expression
+    
+    this.unions.push({ query, all })
+    
+    return this
+  }
+  
+  /**
+   * 
+   * @param {Any} query
+   * @return this query builder
+   */
+  unionAll(query) {
+    return this.union(query, true)
+  }
+  
+  /**
+   * 
+   * @param {Array} queries
+   * @return this query builder
+   */
+  setUnions(queries) {
+    this.unions = []
+    
+    if (! isArray(queries) ) queries = [queries]
+    
+    queries.forEach(q => this.union(q))
+    
+    return this
+  }
+  
+  /**
+   * 
    * 
    * @param {Integer} value
    * @return this query
@@ -591,6 +634,7 @@ export default class QueryBuilder {
    * 
    * @param {QueryBuilder|Function} value
    * @return Raw instance
+   * @private
    */
   _wrappedQuery(value) {
     if ( isFunction(value) ) {
@@ -610,8 +654,9 @@ export default class QueryBuilder {
   
   /**
    * 
-   * @param {String} expr
+   * @param {String|Raw} expr
    * @param {Array} bindings
+   * @private
    */
   _wrappedRaw(expr, bindings = []) {
     if ( isString(expr) ) 

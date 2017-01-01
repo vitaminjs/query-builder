@@ -30,26 +30,6 @@ export default class {
   }
   
   /**
-   * Get the `select` clause components 
-   * 
-   * @type Array
-   */
-  get selectComponents() {
-    return [
-      'columns',
-      'tables',
-      'joins',
-      'wheres',
-      'groups',
-      'havings',
-      'unions',
-      'orders',
-      'limit',
-      'offset',
-    ]
-  }
-  
-  /**
    * Compile the query builder
    * 
    * @param {QueryBuilder} qb
@@ -81,18 +61,30 @@ export default class {
     if ( isEmpty(qb.columns) && isEmpty(qb.tables) ) return ''
     
     var distinct = qb.isDistinct ? 'distinct ' : ''
-    var sql = this.selectComponents.map(component => {
-      
-      var method = 'compile' + capitalize(component)
-      
-      if (! isFunction(this[method]) )
-        throw new TypeError("Unknown compilation method")
-      
-      return this[method](qb)
-      
-    })
+    var sql = `select ${distinct}${this.compileSelectComponents(qb)}`
     
-    return 'select ' + distinct + compact(sql).join(' ')
+    return isEmpty(qb.unions) ? sql : `(${sql}) ${this.compileUnions(qb)}`
+  }
+  
+  /**
+   * 
+   * @param {QueryBuilder} qb
+   * @return string
+   */
+  compileSelectComponents(qb) {
+    var sql = [
+      this.compileColumns(qb),
+      this.compileTables(qb),
+      this.compileJoins(qb),
+      this.compileWheres(qb),
+      this.compileGroups(qb),
+      this.compileHavings(qb),
+      this.compileOrders(qb),
+      this.compileLimit(qb),
+      this.compileOffset(qb),
+    ]
+    
+    return compact(sql).join(' ')
   }
   
   /**
@@ -167,15 +159,6 @@ export default class {
    * @param {QueryBuilder} qb
    * @return string
    */
-  compileUnions(qb) {
-    // TODO
-  }
-  
-  /**
-   * 
-   * @param {QueryBuilder} qb
-   * @return string
-   */
   compileOrders(qb) {
     if (! isEmpty(qb.orders) ) {
       return 'order by ' + qb.orders.map(order => {
@@ -207,6 +190,22 @@ export default class {
     if ( isNumber(qb.skip) ) {
       return 'offset ' + this.parameterize(qb.skip)
     }
+  }
+  
+  /**
+   * 
+   * @param {QueryBuilder} qb
+   * @return string
+   */
+  compileUnions(qb) {
+    var unions = qb.unions.map(obj => {
+      var all = (obj.all ? 'all ' : '')
+      var sql = this.compileRaw(obj.query)
+      
+      return isEmpty(sql) ? '' : `union ${all}${sql}`
+    })
+    
+    return compact(unions).join(' ')
   }
   
   /**
