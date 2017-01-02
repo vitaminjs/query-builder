@@ -33,37 +33,64 @@ export default class {
    * Compile the query builder
    * 
    * @param {QueryBuilder} qb
-   * @param {String} type
+   * @param {String} method
    * @return plain object
    */
-  compile(qb, type = 'select') {
-    var method = 'compile' + capitalize(type)
-    
-    if (! isFunction(this[method]) )
-      throw new TypeError("Unknown compilation method")
+  compile(qb, method = 'select') {
+    var sql = ''
     
     // reset the query bindings
     this.bindings = []
     
-    var sql = this[method](qb)
-    var bindings = flattenDeep(this.bindings)
+    switch ( method.toLowerCase() ) {
+      case 'select':
+        sql = this.compileSelect(qb)
+        break
+      
+      case 'insert':
+        
+        break
+      
+      case 'update':
+        
+        break
+      
+      case 'delete':
+        
+        break
+      
+      default: throw new TypeError("Unknown compilation method")
+    }
     
-    return { sql, bindings }
+    return { sql, bindings: flattenDeep(this.bindings) }
   }
   
   /**
-   * Compile the select query
+   * Compile a basic select query
    * 
    * @param {QueryBuilder} qb
    * @return string
    */
   compileSelect(qb) {
+    if (! isEmpty(qb.unions) ) return this.compileCompoundSelect(qb)
+    
     if ( isEmpty(qb.columns) && isEmpty(qb.tables) ) return ''
     
     var distinct = qb.isDistinct ? 'distinct ' : ''
-    var sql = `select ${distinct}${this.compileSelectComponents(qb)}`
     
-    return isEmpty(qb.unions) ? sql : `(${sql}) ${this.compileUnions(qb)}`
+    return `select ${distinct}${this.compileSelectComponents(qb)}`
+  }
+  
+  /**
+   * Compile a compound select query with unions
+   * 
+   * @param {QueryBuilder} qb
+   * @return string
+   */
+  compileCompoundSelect(qb) {
+    var sql = this.escapeRaw(qb.getUnionSavePoint())
+    
+    return `(${sql}) ${this.compileCompoundSelectComponents(qb)}`
   }
   
   /**
@@ -76,6 +103,25 @@ export default class {
       this.compileColumns(qb),
       this.compileTables(qb),
       this.compileJoins(qb),
+      this.compileWheres(qb),
+      this.compileGroups(qb),
+      this.compileHavings(qb),
+      this.compileOrders(qb),
+      this.compileLimit(qb),
+      this.compileOffset(qb),
+    ]
+    
+    return compact(sql).join(' ')
+  }
+  
+  /**
+   * 
+   * @param {QueryBuilder} qb
+   * @return string
+   */
+  compileCompoundSelectComponents(qb) {
+    var sql = [
+      this.compileUnions(qb),
       this.compileWheres(qb),
       this.compileGroups(qb),
       this.compileHavings(qb),
@@ -200,7 +246,7 @@ export default class {
   compileUnions(qb) {
     var unions = qb.unions.map(obj => {
       var all = (obj.all ? 'all ' : '')
-      var sql = this.compileRaw(obj.query)
+      var sql = this.escapeRaw(obj.query)
       
       return isEmpty(sql) ? '' : `union ${all}${sql}`
     })

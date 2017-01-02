@@ -31,6 +31,11 @@ export default class QueryBuilder {
     
     this.type = 'select'
     this.dialect = dialect
+    
+    // the union save point is used the keep a raw state of the query
+    // when a union query is added. 
+    // This helps to construct complex compound queries
+    this._union_save_point = false
   }
   
   /**
@@ -222,12 +227,18 @@ export default class QueryBuilder {
    */
   union(query, all = false) {
     if ( isString(query) )
-      query = this._wrappedRaw(query).wrap()
+      query = new Raw(query).wrap()
     else
       query = this._wrappedQuery(query)
     
-    // TODO ensure query is a raw expression
+    // ensure query is a raw expression
+    if (! (query instanceof Raw) )
+      throw new TypeError("Invalid union query")
     
+    // create a savepoint of the current query
+    this.createUnionSavePoint()
+    
+    // add the union query to the list
     this.unions.push({ query, all })
     
     return this
@@ -255,6 +266,35 @@ export default class QueryBuilder {
     queries.forEach(q => this.union(q))
     
     return this
+  }
+  
+  /**
+   * 
+   * @return this query builder
+   */
+  createUnionSavePoint() {
+    if (! this._union_save_point ) {
+      // create a raw expression of the current query
+      this._union_save_point = this.toRaw()
+      
+      // reset query blocks
+      this.take = null
+      this.skip = null
+      this.wheres = []
+      this.groups = []
+      this.orders = []
+      this.havings = []
+    }
+    
+    return this
+  }
+  
+  /**
+   * 
+   * @return Raw object
+   */
+  getUnionSavePoint() {
+    return this._union_save_point
   }
   
   /**
@@ -630,6 +670,17 @@ export default class QueryBuilder {
   }
   
   /**
+   * Convert the query builder to Raw instance
+   * 
+   * @return Raw object
+   */
+  toRaw() {
+    var obj = this.compile()
+      
+    return new Raw(obj.sql, obj.bindings)
+  }
+  
+  /**
    * 
    * 
    * @param {QueryBuilder|Function} value
@@ -644,9 +695,7 @@ export default class QueryBuilder {
     }
     
     if ( value instanceof QueryBuilder ) {
-      let q = value.compile()
-      
-      value = new Raw(q.sql, q.bindings).wrap()
+      value = value.toRaw().wrap()
     }
     
     return value

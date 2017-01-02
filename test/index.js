@@ -44,5 +44,5 @@ log(qb().select().from('users').whereColumn('first_name', 'last_name'))
 log(qb().select().from('users').where({ is_admin: true, active: false }))
 log(qb().select().from('users').where(q => q.where('is_admin', true).or('status', 'active')))
 
-log(qb().from('users').whereNull('last_name').union(q => q.select('*').from('users').whereNotNull('first_name')))
-log(qb().select().from(q => q.from("foo").limit(5).unionAll(q => q.from('bar')), 'table').orderBy('a_column'))
+log(qb().from('users').whereNull('last_name').orderBy('x').union(q => q.select('*').from('users').whereNotNull('first_name')).limit(10))
+log(qb().select().from(q => q.from("foo").unionAll(q => q.from('bar').limit(5)), 'table').orderBy('a_column'))
