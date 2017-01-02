@@ -88,7 +88,7 @@ export default class {
    * @return string
    */
   compileCompoundSelect(qb) {
-    var sql = this.escapeRaw(qb.getUnionSavePoint())
+    var sql = this.compileRaw(qb.getUnionSavePoint())
     
     return `(${sql}) ${this.compileCompoundSelectComponents(qb)}`
   }
@@ -152,7 +152,7 @@ export default class {
     if (! isEmpty(qb.tables) ) {
       return 'from ' + qb.tables.map(obj => {
         // escape raw expressions
-        if ( obj instanceof Raw ) return this.escapeRaw(obj)
+        if ( obj instanceof Raw ) return this.compileRaw(obj)
         
         return this.alias(this.escape(obj.table), obj.alias)
       }).join(', ')
@@ -209,7 +209,7 @@ export default class {
     if (! isEmpty(qb.orders) ) {
       return 'order by ' + qb.orders.map(order => {
         // escape raw expressions
-        if ( order instanceof Raw ) return this.escapeRaw(order)
+        if ( order instanceof Raw ) return this.compileRaw(order)
         
         return this.columnize(order.column) + ' ' + order.direction
       }).join(', ')
@@ -246,7 +246,7 @@ export default class {
   compileUnions(qb) {
     var unions = qb.unions.map(obj => {
       var all = (obj.all ? 'all ' : '')
-      var sql = this.escapeRaw(obj.query)
+      var sql = this.compileRaw(obj.query)
       
       return isEmpty(sql) ? '' : `union ${all}${sql}`
     })
@@ -283,7 +283,7 @@ export default class {
     
     // compile raw expressions
     if ( column instanceof Raw )
-      return bool + this.escapeRaw(column)
+      return bool + this.compileRaw(column)
     
     if ( column instanceof Criteria ) {
       let expr = this.compileCriteria(column)
@@ -391,6 +391,12 @@ export default class {
    * @return string
    */
   compileRaw(value) {
+    var bindings = value.bindings
+    
+    if (! isArray(bindings) ) bindings = [bindings]
+    
+    bindings.forEach(v => this.addBinding(v))
+    
     return this.alias(value.before + value.expression + value.after, value.name)
   }
   
@@ -425,7 +431,7 @@ export default class {
   parameterize(value) {
     // escape raw expressions
     if ( value instanceof Raw )
-      return this.escapeRaw(value)
+      return this.compileRaw(value)
     
     if (! isArray(value) ) value = [value]
     
@@ -473,11 +479,11 @@ export default class {
     
     // escape raw expressions
     if ( value instanceof Raw )
-      return this.escapeRaw(value)
+      return this.compileRaw(value)
     
     // escape aggregate columns
     if ( value instanceof Aggregate )
-      return this.escapeAggregate(value)
+      return this.compileAggregate(value)
     
     if (! isString(value) ) 
       throw new TypeError("Invalid value to escape")
@@ -500,32 +506,6 @@ export default class {
    */
   escapeIdentifier(value) {
     return (value === '*') ? value : `"${value.trim().replace('"', '""')}"`
-  }
-  
-  /**
-   * 
-   * @param {Raw} value
-   * @return string
-   */
-  escapeRaw(value) {
-    // compile the expression before getting its bindings
-    var expr = this.compileRaw(value)
-    var bindings = value.bindings
-    
-    if (! isArray(bindings) ) bindings = [bindings]
-    
-    bindings.forEach(v => this.addBinding(v))
-    
-    return expr
-  }
-  
-  /**
-   * 
-   * @param {Aggregate} value
-   * @return string
-   */
-  escapeAggregate(value) {
-    return this.compileAggregate(value)
   }
   
   /**
