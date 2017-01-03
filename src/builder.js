@@ -25,12 +25,13 @@ export default class QueryBuilder {
     this.unions = []
     this.columns = []
     this.havings = []
-    this.table = null
-    this.alias = null
     this.isDistinct = false
     
     this.type = 'select'
     this.dialect = dialect
+    
+    // alias name for the current query
+    this._alias = null
     
     // the union save point is used the keep a raw state of the query
     // when a union query is added. 
@@ -676,8 +677,21 @@ export default class QueryBuilder {
    */
   toRaw() {
     var obj = this.compile()
+    var raw = new Raw(obj.sql, obj.bindings)
+    
+    if ( this._alias != null ) raw.wrap().as(this._alias)
       
-    return new Raw(obj.sql, obj.bindings)
+    return raw
+  }
+  
+  /**
+   * 
+   * @param {String} name
+   * @return 
+   */
+  as(name) {
+    this._alias = name
+    return this
   }
   
   /**
