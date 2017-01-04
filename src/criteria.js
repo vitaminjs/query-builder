@@ -514,9 +514,7 @@ export default class {
     }
     
     if ( value instanceof this.builder.constructor ) {
-      let query = value.compile()
-      
-      value = new Raw(query.sql, query.bindings).wrap()
+      value = value.toRaw().wrap()
       
       this.conditions.push({ column, operator, value, prefix, negate })
       
@@ -524,6 +522,26 @@ export default class {
     }
     
     throw new TypeError("Invalid sub-query expression")
+  }
+  
+  andWhereSub(column, operator, value) {
+    return this.whereSub(column, operator, value)
+  }
+  
+  orWhereSub(column, operator, value) {
+    return this.whereSub(column, operator, value, 'or')
+  }
+  
+  whereScalar(scalar, operator, value, prefix = 'and') {
+    return this.whereSub(new Raw(scalar), operator, value, prefix)
+  }
+  
+  andWhereScalar(scalar, operator, value) {
+    return this.whereScalar(scalar, operator, value)
+  }
+  
+  orWhereScalar(scalar, operator, value) {
+    return this.whereScalar(scalar, operator, value, 'or')
   }
   
   whereExists(value, prefix = 'and', negate = false) {

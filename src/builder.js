@@ -671,6 +671,32 @@ export default class QueryBuilder {
     return this.whereColumn(first, operator, second, 'or')
   }
   
+  whereSub(column, operator, value, prefix = 'and') {
+    this.wheres.push(this.newCriteria().whereSub(...arguments))
+    return this
+  }
+  
+  andWhereSub(column, operator, value) {
+    return this.whereSub(column, operator, value)
+  }
+  
+  orWhereSub(column, operator, value) {
+    return this.whereSub(column, operator, value, 'or')
+  }
+  
+  whereScalar(scalar, operator, value, prefix = 'and') {
+    this.wheres.push(this.newCriteria().whereScalar(...arguments))
+    return this
+  }
+  
+  andWhereScalar(scalar, operator, value) {
+    return this.whereScalar(scalar, operator, value)
+  }
+  
+  orWhereScalar(scalar, operator, value) {
+    return this.whereScalar(scalar, operator, value, 'or')
+  }
+  
   /**
    * 
    * 
