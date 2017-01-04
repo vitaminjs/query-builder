@@ -54,11 +54,8 @@ export default class {
       return this.whereNull(column, prefix, negate)
     
     // support for sub-queries
-    if ( isFunction(value) || value instanceof this.builder.constructor ) {
-      if ( operator === '=' ) operator = 'in'
-      
-      return this.whereSub(column, operator, value, prefix, negate)
-    }
+    if ( isFunction(value) || value instanceof this.builder.constructor )
+      return this.whereSub(column, operator, value, prefix)
     
     // support for .where('column', [...])
     if ( isArray(value) && operator === '=' ) operator = 'in'
