@@ -165,7 +165,19 @@ export default class {
    * @return string
    */
   compileJoins(qb) {
-    // TODO
+    var joins = qb.joins.map(join => {
+      if ( join instanceof Raw )
+        return this.compileRaw(join)
+      
+      var expr = join.type +' join '+ this.escape(join.table)
+      
+      if ( join.criteria )
+        expr += ' on ' + this.compileCriteria(join.criteria).substr(4)
+      
+      return expr
+    })
+    
+    return compact(joins).join(' ')
   }
   
   /**
@@ -285,11 +297,12 @@ export default class {
     if ( column instanceof Raw )
       return bool + this.compileRaw(column)
     
+    // compile nested criteria
     if ( column instanceof Criteria ) {
       let expr = this.compileCriteria(column)
-      let not = criterion.negate ? 'not' : ''
+      let not = criterion.negate ? 'not ' : ''
       
-      return bool + `${not} (${expr.substr(3).trim()})`
+      return bool + `${not}(${expr.substr(3).trim()})`
     }
     
     switch ( criterion.operator ) {
@@ -380,9 +393,9 @@ export default class {
     var operator = this.operator(criterion.operator)
     var column = this.escape(criterion.column)
     var value = this[method](criterion.value)
-    var not = criterion.negate ? 'not' : ''
+    var not = criterion.negate ? 'not ' : ''
     
-    return `${not} ${column} ${operator} ${value}`
+    return `${not}${column} ${operator} ${value}`
   }
   
   /**

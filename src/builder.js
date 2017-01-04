@@ -18,6 +18,7 @@ export default class QueryBuilder {
   constructor(dialect) {
     this.take = null
     this.skip = null
+    this.joins = []
     this.wheres = []
     this.groups = []
     this.orders = []
@@ -322,6 +323,106 @@ export default class QueryBuilder {
     return this
   }
   
+  /**
+   * 
+   * @param {String} table
+   * @param {String} first
+   * @param {String} operator
+   * @param {String} second
+   * @param {String} type
+   * @return this query builder
+   */
+  join(table, first, operator, second, type = 'inner') {
+    var criteria = null
+    
+    if ( first != null ) {
+      criteria = this.newCriteria()
+      
+      if ( isString(first) )
+        criteria.whereColumn(first, operator, second)
+      else
+        criteria.where(first, operator, second)
+    }
+    
+    this.joins.push({ table, criteria, type })
+    
+    return this
+  }
+  
+  /**
+   * 
+   * @param {String|Raw} expr
+   * @param {Array} bindings
+   * @return this query builder
+   */
+  joinRaw(expr, bindings = []) {
+    this.joins.push(this._wrappedRaw(expr, bindings))
+    return this
+  }
+  
+  /**
+   * 
+   * @param {String} table
+   * @param {String} first
+   * @param {String} operator
+   * @param {String} second
+   * @return this query builder
+   */
+  innerJoin(table, first, operator, second) {
+    return this.join(table, first, operator, second)
+  }
+  
+  /**
+   * 
+   * @param {String} table
+   * @param {String} first
+   * @param {String} operator
+   * @param {String} second
+   * @return this query builder
+   */
+  crossJoin(table, first, operator, second) {
+    return this.join(table, first, operator, second, 'cross')
+  }
+  
+  /**
+   * 
+   * @param {String} table
+   * @param {String} first
+   * @param {String} operator
+   * @param {String} second
+   * @return this query builder
+   */
+  rightJoin(table, first, operator, second) {
+    return this.join(table, first, operator, second, 'right')
+  }
+  
+  /**
+   * 
+   * @param {String} table
+   * @param {String} first
+   * @param {String} operator
+   * @param {String} second
+   * @return this query builder
+   */
+  leftJoin(table, first, operator, second) {
+    return this.join(table, first, operator, second, 'left')
+  }
+  
+  /**
+   * 
+   * @param {String} table
+   * @param {String} first
+   * @param {String} operator
+   * @param {String} second
+   * @return this query builder
+   */
+  outerJoin(table, first, operator, second) {
+    return this.join(table, first, operator, second, 'outer')
+  }
+  
+  /**
+   * 
+   */
   where(column, operator, value, prefix = 'and', negate = false) {
     this.wheres.push(this.newCriteria().where(...arguments))
     return this

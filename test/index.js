@@ -1,7 +1,7 @@
 
 var Query = require('../lib/builder').default
 
-var qb = () => new Query()
+var qb = () => new Query('base')
 
 var log = q => { q = q.compile(); console.log(q.sql, q.bindings.length ? q.bindings : '') }
 
@@ -39,10 +39,15 @@ log(qb().select('department').sum('amount', 'sales').from('orders')
 log(qb().select().from('users').where('id', 1))
 log(qb().select().from('users').where('name', '>', 100))
 log(qb().select().from('users').where('age', 'between', [25, 40]))
-log(qb().select().from('users').where('column', 'in', ['foo', 'bar']))
+log(qb().select().from('users').where('name', 'in', ['foo', 'bar']))
 log(qb().select().from('users').whereColumn('first_name', 'last_name'))
 log(qb().select().from('users').where({ is_admin: true, active: false }))
-log(qb().select().from('users').where(q => q.where('is_admin', true).or('status', 'active')))
+log(qb().select().from('users').where(q => q.where('is_admin', true).orNot('status', 'active')))
 
 log(qb().from('users').whereNull('last_name').orderBy('x').union(q => q.select('*').from('users').whereNotNull('first_name')).limit(10))
 log(qb().select().from(q => q.from("foo").unionAll(q => q.from('bar').limit(5)), 'table').orderBy('a_column'))
+
+log(qb().from('foo').crossJoin('bar').whereNull('field'))
+log(qb().from('foo').join('bar', 'first', 'second').limit(15))
+log(qb().from('users').leftJoin('profiles as p', 'p.user_id', 'users.id'))
+log(qb().from('foo as f').join('bar as b', cr => cr.whereColumn('a.x', '=', 'f.y')))
