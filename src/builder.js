@@ -31,13 +31,12 @@ export default class QueryBuilder {
     this.type = 'select'
     this.dialect = dialect
     
+    this.unionOrders = []
+    this.unionLimit = null
+    this.unionOffset = null
+    
     // alias name for the current query
     this._alias = null
-    
-    // the union save point is used the keep a raw state of the query
-    // when a union query is added. 
-    // This helps to construct complex compound queries
-    this._union_save_point = false
   }
   
   /**
@@ -237,9 +236,6 @@ export default class QueryBuilder {
     if (! (query instanceof Raw) )
       throw new TypeError("Invalid union query")
     
-    // create a savepoint of the current query
-    this.createUnionSavePoint()
-    
     // add the union query to the list
     this.unions.push({ query, all })
     
@@ -272,41 +268,13 @@ export default class QueryBuilder {
   
   /**
    * 
-   * @return this query builder
-   */
-  createUnionSavePoint() {
-    if (! this._union_save_point ) {
-      // create a raw expression of the current query
-      this._union_save_point = this.toRaw()
-      
-      // reset query blocks
-      this.take = null
-      this.skip = null
-      this.wheres = []
-      this.groups = []
-      this.orders = []
-      this.havings = []
-    }
-    
-    return this
-  }
-  
-  /**
-   * 
-   * @return Raw object
-   */
-  getUnionSavePoint() {
-    return this._union_save_point
-  }
-  
-  /**
-   * 
    * 
    * @param {Integer} value
    * @return this query
    */
   limit(value) {
-    if ( (value = parseInt(value, 10)) > 0 ) this.take = value
+    if ( (value = parseInt(value, 10)) > 0 )
+      this[this.unions.length ? 'unionLimit' : 'take'] = value
     
     return this
   }
@@ -318,7 +286,8 @@ export default class QueryBuilder {
    * @return this query
    */
   offset(value) {
-    if ( (value = parseInt(value, 10)) >= 0 ) this.skip = value
+    if ( (value = parseInt(value, 10)) >= 0 )
+      this[this.unions.length ? 'unionOffset' : 'skip'] = value
     
     return this
   }
@@ -767,7 +736,9 @@ export default class QueryBuilder {
     
     if (! isArray(column) ) column = [column]
     
-    this.orders.push({ column, direction })
+    var list = this.unions.length ? this.unionOrders : this.orders
+    
+    list.push({ column, direction })
     
     return this
   }
@@ -780,7 +751,10 @@ export default class QueryBuilder {
    * @return this query
    */
   orderByRaw(expr, bindings = []) {
-    this.orders.push(this._wrappedRaw(...arguments))
+    var list = this.unions.length ? this.unionOrders : this.orders
+    
+    list.push(this._wrappedRaw(...arguments))
+    
     return this
   }
   

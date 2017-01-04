@@ -72,25 +72,11 @@ export default class {
    * @return string
    */
   compileSelect(qb) {
-    if (! isEmpty(qb.unions) ) return this.compileCompoundSelect(qb)
-    
     if ( isEmpty(qb.columns) && isEmpty(qb.tables) ) return ''
     
-    var distinct = qb.isDistinct ? 'distinct ' : ''
+    var sql = this.compileSelectComponents(qb)
     
-    return `select ${distinct}${this.compileSelectComponents(qb)}`
-  }
-  
-  /**
-   * Compile a compound select query with unions
-   * 
-   * @param {QueryBuilder} qb
-   * @return string
-   */
-  compileCompoundSelect(qb) {
-    var sql = this.compileRaw(qb.getUnionSavePoint())
-    
-    return `(${sql}) ${this.compileCompoundSelectComponents(qb)}`
+    return isEmpty(qb.unions) ? sql : `(${sql}) ${this.compileUnionComponents(qb)}`
   }
   
   /**
@@ -119,15 +105,12 @@ export default class {
    * @param {QueryBuilder} qb
    * @return string
    */
-  compileCompoundSelectComponents(qb) {
+  compileUnionComponents(qb) {
     var sql = [
       this.compileUnions(qb),
-      this.compileWheres(qb),
-      this.compileGroups(qb),
-      this.compileHavings(qb),
-      this.compileOrders(qb),
-      this.compileLimit(qb),
-      this.compileOffset(qb),
+      this.compileOrders(qb, true),
+      this.compileLimit(qb, true),
+      this.compileOffset(qb, true),
     ]
     
     return compact(sql).join(' ')
@@ -140,7 +123,10 @@ export default class {
    * @return string
    */
   compileColumns(qb) {
-    return this.columnize(isEmpty(qb.columns) ? '*' : qb.columns)
+    var columns = this.columnize(isEmpty(qb.columns) ? '*' : qb.columns)
+    var distinct = qb.isDistinct ? 'distinct ' : ''
+    
+    return 'select ' + distinct + columns
   }
   
   /**
@@ -215,11 +201,14 @@ export default class {
   /**
    * 
    * @param {QueryBuilder} qb
+   * @param {Boolean} union
    * @return string
    */
-  compileOrders(qb) {
-    if (! isEmpty(qb.orders) ) {
-      return 'order by ' + qb.orders.map(order => {
+  compileOrders(qb, union = false) {
+    var orders = union ? qb.unionOrders : qb.orders
+    
+    if (! isEmpty(orders) ) {
+      return 'order by ' + orders.map(order => {
         // escape raw expressions
         if ( order instanceof Raw ) return this.compileRaw(order)
         
@@ -231,22 +220,28 @@ export default class {
   /**
    * 
    * @param {QueryBuilder} qb
+   * @param {Boolean} union
    * @return string
    */
-  compileLimit(qb) {
-    if ( isNumber(qb.take) ) {
-      return 'limit ' + this.parameterize(qb.take)
+  compileLimit(qb, union = false) {
+    var limit = union ? qb.unionLimit : qb.take
+    
+    if ( isNumber(limit) ) {
+      return 'limit ' + this.parameterize(limit)
     }
   }
   
   /**
    * 
    * @param {QueryBuilder} qb
+   * @param {Boolean} union
    * @return string
    */
-  compileOffset(qb) {
-    if ( isNumber(qb.skip) ) {
-      return 'offset ' + this.parameterize(qb.skip)
+  compileOffset(qb, union = false) {
+    var offset = union ? qb.unionOffset : qb.skip
+    
+    if ( isNumber(offset) ) {
+      return 'offset ' + this.parameterize(offset)
     }
   }
   
