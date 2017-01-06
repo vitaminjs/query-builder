@@ -6,6 +6,7 @@ import {
 
 import Aggregate from '../aggregate'
 import Criteria from '../criteria'
+import Column from '../column'
 import Raw from '../raw'
 
 /**
@@ -138,7 +139,7 @@ export default class {
     if (! isEmpty(qb.tables) ) {
       return 'from ' + qb.tables.map(obj => {
         // escape raw expressions
-        if ( obj instanceof Raw ) return this.compileRaw(obj)
+        if ( obj instanceof Raw ) return this.escape(obj)
         
         return this.alias(this.escape(obj.table), obj.alias)
       }).join(', ')
@@ -152,8 +153,7 @@ export default class {
    */
   compileJoins(qb) {
     var joins = qb.joins.map(join => {
-      if ( join instanceof Raw )
-        return this.compileRaw(join)
+      if ( join instanceof Raw ) return this.escape(join)
       
       var expr = join.type +' join '+ this.escape(join.table)
       
@@ -210,7 +210,7 @@ export default class {
     if (! isEmpty(orders) ) {
       return 'order by ' + orders.map(order => {
         // escape raw expressions
-        if ( order instanceof Raw ) return this.compileRaw(order)
+        if ( order instanceof Raw ) return this.escape(order)
         
         return this.columnize(order.column) + ' ' + order.direction
       }).join(', ')
@@ -290,7 +290,7 @@ export default class {
     
     // compile raw expressions
     if ( column instanceof Raw )
-      return bool + this.compileRaw(column)
+      return bool + this.escape(column)
     
     // compile nested criteria
     if ( column instanceof Criteria ) {
@@ -384,10 +384,9 @@ export default class {
    * @return string
    */
   compileBasicCriterion(criterion) {
-    var method = criterion.isColumn ? 'escape' : 'parameterize'
     var operator = this.operator(criterion.operator)
+    var value = this.parameterize(criterion.value)
     var column = this.escape(criterion.column)
-    var value = this[method](criterion.value)
     var not = criterion.negate ? 'not ' : ''
     
     return `${not}${column} ${operator} ${value}`
@@ -416,9 +415,10 @@ export default class {
   compileAggregate(value) {
     var column = this.columnize(value.column)
     var distinct = value.isDistinct ? 'distinct ' : ''
-    var expression  = `${value.method}(${distinct}${column})`
     
-    return this.alias(expression, value.name)
+    // TODO ensure only valid aggregators
+    
+    return this.alias(`${value.method}(${distinct}${column})`, value.name)
   }
   
   /**
@@ -439,7 +439,10 @@ export default class {
   parameterize(value) {
     // escape raw expressions
     if ( value instanceof Raw )
-      return this.compileRaw(value)
+      return this.escape(value)
+    
+    if ( value instanceof Column )
+      return this.escape(value)
     
     if (! isArray(value) ) value = [value]
     
@@ -489,6 +492,9 @@ export default class {
     if ( value instanceof Raw )
       return this.compileRaw(value)
     
+    if ( value instanceof Column )
+      value = value.toString()
+    
     // escape aggregate columns
     if ( value instanceof Aggregate )
       return this.compileAggregate(value)
@@ -503,7 +509,7 @@ export default class {
       return this.alias(this.escape(one), two)
     }
     
-    return value.split('.').map(this.escapeIdentifier).join('.')
+    return value.split('.').map(str => this.escapeIdentifier(str)).join('.')
   }
   
   /**

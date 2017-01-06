@@ -3,6 +3,7 @@ import {
   each, isFunction, isString, isNull, isArray, isPlainObject, isUndefined
 } from 'lodash'
 
+import Column from './column'
 import Raw from './raw'
 
 /**
@@ -482,15 +483,16 @@ export default class {
     return this.orWhereRaw(expr, bindings)
   }
   
-  whereColumn(first, operator, second, prefix = 'and') {
-    if ( !isUndefined(operator) && isUndefined(second) ) {
-      second = operator
+  whereColumn(column, operator, value, prefix = 'and') {
+    if ( !isUndefined(operator) && isUndefined(value) ) {
+      value = operator
       operator = '='
     }
     
-    this.conditions.push({
-      column: first, operator, value: second, prefix, isColumn: true
-    })
+    if (! (value instanceof Column) )
+      value = new Column(value)
+    
+    this.conditions.push({ column, operator, value, prefix })
     
     return this
   }
