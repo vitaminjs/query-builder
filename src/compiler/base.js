@@ -1,7 +1,6 @@
 
 import {
-  compact, capitalize, flattenDeep, isEmpty, isFunction, isObject,
-  isArray, isString, isNumber, isUndefined, isBoolean
+  compact, isEmpty, isObject, isArray, isString, isNumber, isUndefined
 } from 'lodash'
 
 import Aggregate from '../aggregate'
@@ -31,71 +30,39 @@ export default class {
   }
   
   /**
-   * Compile the query builder
+   * Compile a `select` query
    * 
-   * @param {QueryBuilder} qb
-   * @param {String} method
+   * @param {Object} query
    * @return plain object
    */
-  compile(qb, method = 'select') {
-    var sql = ''
+  compileSelect(query) {
+    if ( isEmpty(query.columns) && isEmpty(query.tables) )
+      return { sql: '', bindings: [] }
     
-    // reset the query bindings
-    this.bindings = []
+    var sql = this.compileSelectComponents(query)
     
-    switch ( method.toLowerCase() ) {
-      case 'select':
-        sql = this.compileSelect(qb)
-        break
-      
-      case 'insert':
-        
-        break
-      
-      case 'update':
-        
-        break
-      
-      case 'delete':
-        
-        break
-      
-      default: throw new TypeError("Unknown compilation method")
-    }
+    if (! isEmpty(query.unions) )
+      sql = `(${sql}) ${this.compileUnionComponents(query)}`
     
-    return { sql, bindings: flattenDeep(this.bindings) }
-  }
-  
-  /**
-   * Compile a basic select query
-   * 
-   * @param {QueryBuilder} qb
-   * @return string
-   */
-  compileSelect(qb) {
-    if ( isEmpty(qb.columns) && isEmpty(qb.tables) ) return ''
-    
-    var sql = this.compileSelectComponents(qb)
-    
-    return isEmpty(qb.unions) ? sql : `(${sql}) ${this.compileUnionComponents(qb)}`
+    return { sql, bindings: this.bindings }
   }
   
   /**
    * 
-   * @param {QueryBuilder} qb
+   * @param {Object} query
    * @return string
    */
-  compileSelectComponents(qb) {
+  compileSelectComponents(query) {
     var sql = [
-      this.compileColumns(qb),
-      this.compileTables(qb),
-      this.compileJoins(qb),
-      this.compileWheres(qb),
-      this.compileGroups(qb),
-      this.compileHavings(qb),
-      this.compileOrders(qb),
-      this.compileLimit(qb),
-      this.compileOffset(qb),
+      this.compileColumns(query.columns, query.distinct, query),
+      this.compileTables(query.tables, query),
+      this.compileJoins(query.joins, query),
+      this.compileWheres(query.wheres, query),
+      this.compileGroups(query.groups, query),
+      this.compileHavings(query.havings, query),
+      this.compileOrders(query.orders, query),
+      this.compileLimit(query.limit, query),
+      this.compileOffset(query.offset, query),
     ]
     
     return compact(sql).join(' ')
@@ -103,15 +70,15 @@ export default class {
   
   /**
    * 
-   * @param {QueryBuilder} qb
+   * @param {Object} query
    * @return string
    */
-  compileUnionComponents(qb) {
+  compileUnionComponents(query) {
     var sql = [
-      this.compileUnions(qb),
-      this.compileOrders(qb, true),
-      this.compileLimit(qb, true),
-      this.compileOffset(qb, true),
+      this.compileUnions(query.unions, query),
+      this.compileOrders(query.unionOrders, query),
+      this.compileLimit(query.unionLimit, query),
+      this.compileOffset(query.unionOffset, query),
     ]
     
     return compact(sql).join(' ')
@@ -120,39 +87,41 @@ export default class {
   /**
    * Compile the query columns part
    * 
-   * @param {QueryBuilder} qb
+   * @param {Array} columns
+   * @param {Boolean} isDistinct
+   * @param {Object} query
    * @return string
    */
-  compileColumns(qb) {
-    var columns = this.columnize(isEmpty(qb.columns) ? '*' : qb.columns)
-    var distinct = qb.isDistinct ? 'distinct ' : ''
+  compileColumns(columns, isDistinct, query) {
+    var distinct = isDistinct ? 'distinct ' : ''
     
-    return 'select ' + distinct + columns
+    if ( isEmpty(columns) ) columns = ['*']
+    
+    return 'select ' + distinct + this.columnize(columns)
   }
   
   /**
    * 
-   * @param {QueryBuilder} qb
+   * @param {Array} tables
+   * @param {Object} query
    * @return string
    */
-  compileTables(qb) {
-    if (! isEmpty(qb.tables) ) {
-      return 'from ' + qb.tables.map(obj => {
-        // escape raw expressions
-        if ( obj instanceof Raw ) return this.escape(obj)
-        
-        return this.alias(this.escape(obj.table), obj.alias)
-      }).join(', ')
-    }
+  compileTables(tables, query) {
+    if ( isEmpty(tables) ) return
+    
+    return 'from ' + tables.map(table => this.escape(table)).join(', ')
   }
   
   /**
    * 
-   * @param {QueryBuilder} qb
+   * @param {Array} joins
+   * @param {Object} query
    * @return string
    */
-  compileJoins(qb) {
-    var joins = qb.joins.map(join => {
+  compileJoins(joins, query) {
+    if ( isEmpty(joins) ) return
+    
+    var sql = joins.map(join => {
       if ( join instanceof Raw ) return this.escape(join)
       
       var expr = join.type +' join '+ this.escape(join.table)
@@ -163,102 +132,103 @@ export default class {
       return expr
     })
     
-    return compact(joins).join(' ')
+    return compact(sql).join(' ')
   }
   
   /**
    * 
-   * @param {QueryBuilder} qb
+   * @param {Array} wheres
+   * @param {Object} query
    * @return string
    */
-  compileWheres(qb) {
-    if (! isEmpty(qb.wheres) ) {
-      return 'where ' + this.compileConditions(qb.wheres)
-    }
-  }
-  
-  /**
-   * 
-   * @param {QueryBuilder} qb
-   * @return string
-   */
-  compileGroups(qb) {
-    if (! isEmpty(qb.groups) ) 
-      return 'group by ' + this.columnize(qb.groups)
-  }
-  
-  /**
-   * 
-   * @param {QueryBuilder} qb
-   * @return string
-   */
-  compileHavings(qb) {
-    if (! isEmpty(qb.havings) ) {
-      return 'having ' + this.compileConditions(qb.havings)
-    }
-  }
-  
-  /**
-   * 
-   * @param {QueryBuilder} qb
-   * @param {Boolean} union
-   * @return string
-   */
-  compileOrders(qb, union = false) {
-    var orders = union ? qb.unionOrders : qb.orders
+  compileWheres(wheres, query) {
+    if ( isEmpty(wheres) ) return
     
-    if (! isEmpty(orders) ) {
-      return 'order by ' + orders.map(order => {
-        // escape raw expressions
-        if ( order instanceof Raw ) return this.escape(order)
-        
-        return this.columnize(order.column) + ' ' + order.direction
-      }).join(', ')
-    }
+    return 'where ' + this.compileConditions(wheres)
   }
   
   /**
    * 
-   * @param {QueryBuilder} qb
-   * @param {Boolean} union
+   * @param {Array} groups
+   * @param {Object} query
    * @return string
    */
-  compileLimit(qb, union = false) {
-    var limit = union ? qb.unionLimit : qb.take
+  compileGroups(groups, query) {
+    if ( isEmpty(groups) ) return
     
-    if ( isNumber(limit) ) {
-      return 'limit ' + this.parameterize(limit)
-    }
+    return 'group by ' + this.columnize(groups)
   }
   
   /**
    * 
-   * @param {QueryBuilder} qb
-   * @param {Boolean} union
+   * @param {Array} havings
+   * @param {Object} query
    * @return string
    */
-  compileOffset(qb, union = false) {
-    var offset = union ? qb.unionOffset : qb.skip
+  compileHavings(havings, query) {
+    if ( isEmpty(havings) ) return
     
-    if ( isNumber(offset) ) {
-      return 'offset ' + this.parameterize(offset)
-    }
+    return 'having ' + this.compileConditions(havings)
   }
   
   /**
    * 
-   * @param {QueryBuilder} qb
+   * @param {Array} orders
+   * @param {Object} query
    * @return string
    */
-  compileUnions(qb) {
-    var unions = qb.unions.map(obj => {
-      var all = (obj.all ? 'all ' : '')
-      var sql = this.compileRaw(obj.query)
+  compileOrders(orders, query) {
+    if ( isEmpty(orders) ) return
+    
+    return 'order by ' + orders.map(order => {
+      // escape raw expressions
+      if ( order instanceof Raw ) return this.escape(order)
       
-      return isEmpty(sql) ? '' : `union ${all}${sql}`
+      return this.escape(order.column) + ' ' + order.direction
+    }).join(', ')
+  }
+  
+  /**
+   * 
+   * @param {Number} limit
+   * @param {Object} query
+   * @return string
+   */
+  compileLimit(limit, query) {
+    if (! isNumber(limit) ) return
+    
+    return 'limit ' + this.parameterize(limit)
+  }
+  
+  /**
+   * 
+   * @param {Number} offset
+   * @param {Object} query
+   * @return string
+   */
+  compileOffset(offset, query) {
+    if (! isNumber(offset) ) return
+    
+    return 'offset ' + this.parameterize(offset)
+  }
+  
+  /**
+   * 
+   * @param {Array} unions
+   * @param {Object} query
+   * @return string
+   */
+  compileUnions(unions, query) {
+    if ( isEmpty(unions) ) return
+    
+    var sql = unions.map(obj => {
+      var all = (obj.all ? 'all ' : '')
+      var query = this.escape(obj.query)
+      
+      return `union ${all}${query}`
     })
     
-    return compact(unions).join(' ')
+    return compact(sql).join(' ')
   }
   
   /**
@@ -393,32 +363,16 @@ export default class {
   }
   
   /**
+   * Compile a raw expression
    * 
    * @param {Raw} value
-   * @return string
+   * @return plain object
    */
   compileRaw(value) {
-    var bindings = value.bindings
+    var expr = value.expression.replace('?', this.parameter)
+    var sql = this.alias(value.before + expr + value.after, value.name)
     
-    if (! isArray(bindings) ) bindings = [bindings]
-    
-    bindings.forEach(v => this.addBinding(v))
-    
-    return this.alias(value.before + value.expression + value.after, value.name)
-  }
-  
-  /**
-   * 
-   * @param {Aggregate} value
-   * @return string
-   */
-  compileAggregate(value) {
-    var column = this.columnize(value.column)
-    var distinct = value.isDistinct ? 'distinct ' : ''
-    
-    // TODO ensure only valid aggregators
-    
-    return this.alias(`${value.method}(${distinct}${column})`, value.name)
+    return { sql, bindings: value.bindings }
   }
   
   /**
@@ -490,14 +444,14 @@ export default class {
     
     // escape raw expressions
     if ( value instanceof Raw )
-      return this.compileRaw(value)
+      return this.escapeRaw(value)
     
     if ( value instanceof Column )
       value = value.toString()
     
     // escape aggregate columns
     if ( value instanceof Aggregate )
-      return this.compileAggregate(value)
+      return this.escapeAggregate(value)
     
     if (! isString(value) ) 
       throw new TypeError("Invalid value to escape")
@@ -510,6 +464,35 @@ export default class {
     }
     
     return value.split('.').map(str => this.escapeIdentifier(str)).join('.')
+  }
+  
+  /**
+   * Escape raw expression
+   * 
+   * @param {Raw} value
+   * @return string
+   */
+  escapeRaw(value) {
+    var query = this.compileRaw(value)
+    
+    // add raw bindings to the query bindings
+    query.bindings.forEach(v => this.addBinding(v))
+    
+    return query.sql
+  }
+  
+  /**
+   * 
+   * @param {Aggregate} value
+   * @return string
+   */
+  escapeAggregate(value) {
+    var column = this.columnize(value.column)
+    var distinct = value.isDistinct ? 'distinct ' : ''
+    
+    // TODO ensure only valid aggregators
+    
+    return this.alias(`${value.method}(${distinct}${column})`, value.name)
   }
   
   /**

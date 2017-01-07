@@ -3,7 +3,7 @@ import Raw from './raw'
 import Criteria from './criteria'
 import Aggregate from './aggregate'
 import { createCompiler } from './compiler/factory'
-import { isArray, isFunction, isEmpty, isString, isObject, toArray } from 'lodash'
+import { isArray, isFunction, isString, toArray } from 'lodash'
 
 /**
  * @class QueryBuilder
@@ -16,44 +16,77 @@ export default class QueryBuilder {
    * @constructor
    */
   constructor(dialect) {
-    this.take = null
-    this.skip = null
-    this.joins = []
-    this.wheres = []
-    this.groups = []
-    this.orders = []
-    this.tables = []
-    this.unions = []
-    this.columns = []
-    this.havings = []
-    this.isDistinct = false
+    this.query = {
+      joins: [],
+      groups: [],
+      orders: [],
+      tables: [],
+      wheres: [],
+      unions: [],
+      columns: [],
+      havings: [],
+      limit: null,
+      offset: null,
+      distinct: false,
+      unionOrders: [],
+      unionLimit: null,
+      unionOffset: null,
+    }
     
+    this.name = null
     this.type = 'select'
     this.dialect = dialect
-    
-    this.unionOrders = []
-    this.unionLimit = null
-    this.unionOffset = null
-    
-    // alias name for the current query
-    this._alias = null
   }
   
   /**
+   * 
+   * @type boolean
+   */
+  hasUnions() {
+    return this.query.unions.length > 0
+  }
+  
+  /**
+   * Compile to SQL
+   * 
    * @return plain object
    */
   compile() {
-    return createCompiler(this.dialect).compile(this, this.type)
+    var compiler = createCompiler(this.dialect)
+    
+    switch ( this.type ) {
+      case 'select':
+        return compiler.compileSelect(this.query)
+      
+      case 'insert':
+      
+      case 'update':
+      
+      case 'delete':
+    }
+    
+    throw new TypeError("Unknown compilation method")
   }
   
+  /**
+   * @type {String}
+   */
   toString() {
     return this.compile().sql
   }
   
+  /**
+   * 
+   * @return QueryBuilder instance
+   */
   newQuery() {
     return new QueryBuilder(this.dialect)
   }
   
+  /**
+   * 
+   * @return Criteria instance
+   */
   newCriteria() {
     return new Criteria(this)
   }
@@ -62,12 +95,12 @@ export default class QueryBuilder {
    * Add columns to the query
    * 
    * @param {Any} columns
-   * @return this query
+   * @return this query builder
    */
   select(columns) {
     if (! isArray(columns) ) columns = toArray(arguments)
     
-    if (! isEmpty(columns) ) this.columns.push(...columns)
+    columns.forEach(col => this.query.columns.push(col))
     
     return this
   }
@@ -79,8 +112,7 @@ export default class QueryBuilder {
    * @return this query builder
    */
   selectDistinct(columns) {
-    this.isDistinct = true
-    return this.select(...arguments)
+    return this.select(...arguments).distinct()
   }
   
   /**
@@ -90,12 +122,17 @@ export default class QueryBuilder {
    * @return this query
    */
   setColumns(columns) {
-    this.columns = []
+    this.query.columns = []
     return this.select(...arguments)
   }
   
-  distinct(bool = true) {
-    this.isDistinct = bool
+  /**
+   * 
+   * @param {Boolean} flag
+   * @return this query builder
+   */
+  distinct(flag = true) {
+    this.query.distinct = flag
     return this
   }
   
@@ -106,12 +143,12 @@ export default class QueryBuilder {
    * @return this query builder
    */
   from(table, alias = null) {
-    if ( isString(table) ) table = { table, alias }
-    else {
+    if ( isString(table) )
+      table += isString(alias) ? ' as ' + alias : ''
+    else
       table = this._wrappedQuery(table).as(alias)
-    }
     
-    this.tables.push(table)
+    this.query.tables.push(table)
     
     return this
   }
@@ -122,8 +159,8 @@ export default class QueryBuilder {
    * @param {String} alias
    * @return this query builder
    */
-  setTables(table, alias = null) {
-    this.tables = []
+  setFrom(table, alias = null) {
+    this.query.tables = []
     return this.from(table, alias)
   }
   
@@ -237,7 +274,7 @@ export default class QueryBuilder {
       throw new TypeError("Invalid union query")
     
     // add the union query to the list
-    this.unions.push({ query, all })
+    this.query.unions.push({ query, all })
     
     return this
   }
@@ -253,17 +290,17 @@ export default class QueryBuilder {
   
   /**
    * 
-   * @param {Array} queries
+   * @param {Any} query
+   * @param {Boolean} all
    * @return this query builder
    */
-  setUnions(queries) {
-    this.unions = []
+  setUnion(query, all = false) {
+    this.query.unions = []
+    this.query.unionOrders = []
+    this.query.unionLimit = null
+    this.query.unionOffset = null
     
-    if (! isArray(queries) ) queries = [queries]
-    
-    queries.forEach(q => this.union(q))
-    
-    return this
+    return this.union(query, all)
   }
   
   /**
@@ -274,7 +311,7 @@ export default class QueryBuilder {
    */
   limit(value) {
     if ( (value = parseInt(value, 10)) > 0 )
-      this[this.unions.length ? 'unionLimit' : 'take'] = value
+      this.query[this.hasUnions() ? 'unionLimit' : 'limit'] = value
     
     return this
   }
@@ -287,9 +324,23 @@ export default class QueryBuilder {
    */
   offset(value) {
     if ( (value = parseInt(value, 10)) >= 0 )
-      this[this.unions.length ? 'unionOffset' : 'skip'] = value
+      this.query[this.hasUnions() ? 'unionOffset' : 'offset'] = value
     
     return this
+  }
+  
+  /**
+   * 
+   * @param {String} table
+   * @param {String} first
+   * @param {String} operator
+   * @param {String} second
+   * @param {String} type
+   * @return this query builder
+   */
+  setJoin(table, first, operator, second, type = 'inner') {
+    this.query.joins = []
+    return this.join(table, first, operator, second, type)
   }
   
   /**
@@ -313,7 +364,7 @@ export default class QueryBuilder {
         criteria.where(first, operator, second)
     }
     
-    this.joins.push({ table, criteria, type })
+    this.query.joins.push({ table, criteria, type })
     
     return this
   }
@@ -325,7 +376,7 @@ export default class QueryBuilder {
    * @return this query builder
    */
   joinRaw(expr, bindings = []) {
-    this.joins.push(this._wrappedRaw(expr, bindings))
+    this.query.joins.push(this._wrappedRaw(expr, bindings))
     return this
   }
   
@@ -391,9 +442,15 @@ export default class QueryBuilder {
   
   /**
    * 
+   * @param {Any} column
+   * @param {String} operator
+   * @param {Any} value
+   * @param {String} prefix
+   * @param {Boolean} negate
+   * @return this query builder
    */
   where(column, operator, value, prefix = 'and', negate = false) {
-    this.wheres.push(this.newCriteria().where(...arguments))
+    this.query.wheres.push(this.newCriteria().where(...arguments))
     return this
   }
   
@@ -418,7 +475,7 @@ export default class QueryBuilder {
   }
   
   whereBetween(column, value, prefix = 'and', negate = true) {
-    this.wheres.push(this.newCriteria().whereBetween(...arguments))
+    this.query.wheres.push(this.newCriteria().whereBetween(...arguments))
     return this
   }
   
@@ -443,7 +500,7 @@ export default class QueryBuilder {
   }
   
   whereLike(column, value, prefix = 'and', negate = false) {
-    this.wheres.push(this.newCriteria().whereLike(...arguments))
+    this.query.wheres.push(this.newCriteria().whereLike(...arguments))
     return this
   }
   
@@ -540,7 +597,7 @@ export default class QueryBuilder {
   }
   
   whereIn(column, value, prefix = 'and', negate = false) {
-    this.wheres.push(this.newCriteria().whereIn(...arguments))
+    this.query.wheres.push(this.newCriteria().whereIn(...arguments))
     return this
   }
   
@@ -565,7 +622,7 @@ export default class QueryBuilder {
   }
   
   whereNull(column, prefix = 'and', negate = false) {
-    this.wheres.push(this.newCriteria().whereNull(...arguments))
+    this.query.wheres.push(this.newCriteria().whereNull(...arguments))
     return this
   }
   
@@ -590,7 +647,7 @@ export default class QueryBuilder {
   }
   
   whereRaw(expr, bindings = [], prefix = 'and') {
-    this.wheres.push(this.newCriteria().whereRaw(...arguments))
+    this.query.wheres.push(this.newCriteria().whereRaw(...arguments))
     return this
   }
   
@@ -603,7 +660,7 @@ export default class QueryBuilder {
   }
   
   whereExists(value, prefix = 'and', negate = false) {
-    this.wheres.push(this.newCriteria().whereExists(...arguments))
+    this.query.wheres.push(this.newCriteria().whereExists(...arguments))
     return this
   }
   
@@ -628,7 +685,7 @@ export default class QueryBuilder {
   }
   
   whereColumn(first, operator, second, prefix = 'and') {
-    this.wheres.push(this.newCriteria().whereColumn(...arguments))
+    this.query.wheres.push(this.newCriteria().whereColumn(...arguments))
     return this
   }
   
@@ -641,7 +698,7 @@ export default class QueryBuilder {
   }
   
   whereSub(column, operator, value, prefix = 'and') {
-    this.wheres.push(this.newCriteria().whereSub(...arguments))
+    this.query.wheres.push(this.newCriteria().whereSub(...arguments))
     return this
   }
   
@@ -654,7 +711,7 @@ export default class QueryBuilder {
   }
   
   whereScalar(scalar, operator, value, prefix = 'and') {
-    this.wheres.push(this.newCriteria().whereScalar(...arguments))
+    this.query.wheres.push(this.newCriteria().whereScalar(...arguments))
     return this
   }
   
@@ -668,16 +725,25 @@ export default class QueryBuilder {
   
   /**
    * 
-   * 
    * @param {Array} columns
    * @return this query
    */
   groupBy(columns) {
     if (! isArray(columns) ) columns = toArray(arguments)
     
-    if (! isEmpty(columns) ) this.groups.push(...columns)
+    columns.forEach(col => this.query.groups.push(col))
     
     return this
+  }
+  
+  /**
+   * 
+   * @param {Array} columns
+   * @return this query builder
+   */
+  setGroups(columns) {
+    this.query.groups = []
+    return this.groupBy(...arguments)
   }
   
   /**
@@ -690,8 +756,19 @@ export default class QueryBuilder {
     return this.groupBy(this._wrappedRaw(expr))
   }
   
+  /**
+   * 
+   */
+  setHavings(column, operator, value, prefix = 'and', negate = false) {
+    this.query.havings = []
+    return this.having(column, operator, value, prefix, negate)
+  }
+  
+  /**
+   * 
+   */
   having(column, operator, value, prefix = 'and', negate = false) {
-    this.havings.push(this.newCriteria().where(...arguments))
+    this.query.havings.push(this.newCriteria().where(...arguments))
     return this
   }
   
@@ -711,7 +788,7 @@ export default class QueryBuilder {
    * @return this query
    */
   havingRaw(expr, bindings = [], prefix = 'and') {
-    this.havings.push(this.newCriteria().whereRaw(...arguments))
+    this.query.havings.push(this.newCriteria().whereRaw(...arguments))
     return this
   }
   
@@ -728,17 +805,25 @@ export default class QueryBuilder {
   /**
    * 
    * 
-   * @param {String} column
+   * @param {Array} columns
    * @return this query
    */
-  orderBy(column, direction = 'asc') {
-    if ( direction.toLowerCase() !== 'asc' ) direction = 'desc'
+  orderBy(columns) {
+    if (! isArray(columns) ) columns = toArray(arguments)
     
-    if (! isArray(column) ) column = [column]
+    var orders = this.query[this.hasUnions() ? 'unionOrders' : 'orders']
     
-    var list = this.unions.length ? this.unionOrders : this.orders
-    
-    list.push({ column, direction })
+    columns.forEach(column => {
+      var direction = 'asc'
+      
+      // accept a desc direction using a minus prefix
+      if ( isString(column) && column.indexOf('-') === 0 ) {
+        column = column.substr(1)
+        direction = 'desc'
+      }
+      
+      orders.push({ column, direction })
+    })
     
     return this
   }
@@ -751,9 +836,9 @@ export default class QueryBuilder {
    * @return this query
    */
   orderByRaw(expr, bindings = []) {
-    var list = this.unions.length ? this.unionOrders : this.orders
+    var orders = this.query[this.hasUnions() ? 'unionOrders' : 'orders']
     
-    list.push(this._wrappedRaw(...arguments))
+    orders.push(this._wrappedRaw(expr, bindings))
     
     return this
   }
@@ -780,7 +865,7 @@ export default class QueryBuilder {
     var obj = this.compile()
     var raw = new Raw(obj.sql, obj.bindings)
     
-    if ( this._alias != null ) raw.wrap().as(this._alias)
+    if ( this.name != null ) raw.wrap().as(this.name)
       
     return raw
   }
@@ -791,7 +876,7 @@ export default class QueryBuilder {
    * @return 
    */
   as(name) {
-    this._alias = name
+    this.name = name
     return this
   }
   

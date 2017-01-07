@@ -1,4 +1,6 @@
 
+import { isArray } from 'lodash'
+
 /**
  * @class Raw
  */
@@ -11,6 +13,8 @@ export default class {
    * @constructor
    */
   constructor(expression, bindings = []) {
+    if (! isArray(bindings) ) bindings = [bindings]
+    
     this.expression = expression
     this.bindings = bindings
     this.name = null
