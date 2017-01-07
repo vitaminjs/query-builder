@@ -487,12 +487,14 @@ export default class {
    * @return string
    */
   escapeAggregate(value) {
+    var name = value.name
+    var method = value.method
     var column = this.columnize(value.column)
     var distinct = value.isDistinct ? 'distinct ' : ''
     
     // TODO ensure only valid aggregators
     
-    return this.alias(`${value.method}(${distinct}${column})`, value.name)
+    return this.alias(`${method}(${distinct}${column})`, name)
   }
   
   /**
@@ -502,7 +504,7 @@ export default class {
    * @return  string
    */
   escapeIdentifier(value) {
-    return (value === '*') ? value : `"${value.trim().replace('"', '""')}"`
+    return (value === '*') ? value : `"${value.trim()}"`
   }
   
   /**

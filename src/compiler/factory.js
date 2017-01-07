@@ -13,10 +13,8 @@ import PostgreCompiler from './postgre'
  * @param {String} dialect
  * @return query compiler
  */
-function createCompiler(dialect = 'base') {
+function createCompiler(dialect) {
   dialect = dialect.toLowerCase()
-  
-  if ( dialect === 'base' ) return new BaseCompiler
   
   if ( dialect === 'mysql' ) return new MysqlCompiler
   

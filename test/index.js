@@ -1,7 +1,7 @@
 
 var Query = require('../lib/builder').default
 
-var qb = () => new Query('base')
+var qb = () => new Query('mysql')
 
 var log = q => { q = q.compile(); console.log(q.sql, q.bindings.length ? q.bindings : '') }
 
