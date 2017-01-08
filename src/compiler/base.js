@@ -3,8 +3,7 @@ import {
   compact, isEmpty, isObject, isArray, isString, isNumber, isUndefined
 } from 'lodash'
 
-import { Raw, Column, Aggregate } from '../expression'
-import Criteria from '../criteria'
+import { Raw, Column, Criteria, Aggregate } from '../expression'
 
 /**
  * @class BaseCompiler

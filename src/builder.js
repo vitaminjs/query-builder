@@ -1,7 +1,6 @@
 
-import Criteria from './criteria'
 import { createCompiler } from './compiler'
-import { Raw, Column, Aggregate } from './expression'
+import { Raw, Column, Criteria, Aggregate } from './expression'
 import { isArray, isFunction, isString, toArray, remove } from 'lodash'
 
 /**

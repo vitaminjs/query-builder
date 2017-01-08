@@ -3,7 +3,8 @@ import {
   each, isFunction, isString, isNull, isArray, isPlainObject, isUndefined
 } from 'lodash'
 
-import { Raw, Column } from './expression'
+import Column from './column'
+import Raw from './raw'
 
 /**
  * @class Criteria
@@ -59,6 +60,9 @@ export default class {
     
     // support for .where('column', [...])
     if ( isArray(value) && operator === '=' ) operator = 'in'
+    
+    // create a Column instance if the column is a string
+    column = this.toColumn(column)
     
     this.conditions.push({ column, operator, value, prefix, negate })
     
@@ -402,6 +406,8 @@ export default class {
   whereNull(column, prefix = 'and', negate = false) {
     var operator = negate ? 'is not' : 'is'
     
+    column = this.toColumn(column)
+    
     this.conditions.push({ column, operator, value: null, prefix })
     
     return this
@@ -488,8 +494,8 @@ export default class {
       operator = '='
     }
     
-    if (! (value instanceof Column) )
-      value = new Column(value)
+    value = this.toColumn(value)
+    column = this.toColumn(column)
     
     this.conditions.push({ column, operator, value, prefix })
     
@@ -513,6 +519,7 @@ export default class {
     
     if ( value instanceof this.builder.constructor ) {
       value = value.toRaw().wrap()
+      column = this.toColumn(column)
       
       this.conditions.push({ column, operator, value, prefix, negate })
       
@@ -590,6 +597,17 @@ export default class {
   
   orNotExists(value) {
     return this.orWhereNotExists(value)
+  }
+  
+  /**
+   * wrap the column name in a Column instance
+   * 
+   * @param {String} value
+   * @return Column instance
+   * @private
+   */
+  toColumn(value) {
+    return isString(value) ? new Column(value) : value
   }
   
 }
