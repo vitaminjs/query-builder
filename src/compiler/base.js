@@ -1,6 +1,6 @@
 
 import {
-  compact, isEmpty, isObject, isArray, isString, isNumber, isUndefined
+  compact, isEmpty, isObject, isArray, isNumber, isUndefined
 } from 'lodash'
 
 import { Raw, Column, Criteria, Aggregate } from '../expression'
@@ -366,7 +366,7 @@ export default class {
    * @return plain object
    */
   compileRaw(value) {
-    var expr = value.expression.replace('?', this.parameter)
+    var expr = value.expression.replace(/\?/g, this.parameter)
     var sql = this.alias(value.before + expr + value.after, value.name)
     
     return { sql, bindings: value.bindings }
@@ -390,10 +390,10 @@ export default class {
   parameterize(value) {
     // escape raw expressions
     if ( value instanceof Raw )
-      return this.escape(value)
+      return this.escapeRaw(value)
     
     if ( value instanceof Column )
-      return this.escape(value)
+      return this.escapeColumn(value)
     
     if (! isArray(value) ) value = [value]
     
@@ -444,14 +444,13 @@ export default class {
       return this.escapeRaw(value)
     
     if ( value instanceof Column )
-      value = value.toString()
+      return this.escapeColumn(value)
     
     // escape aggregate columns
     if ( value instanceof Aggregate )
       return this.escapeAggregate(value)
     
-    if (! isString(value) ) 
-      throw new TypeError("Invalid value to escape")
+    // throw new TypeError("Invalid value to escape")
     
     if ( (asIndex = value.toLowerCase().indexOf(' as ')) > 0 ) {
       let one = value.slice(0, asIndex)
@@ -461,6 +460,21 @@ export default class {
     }
     
     return value.split('.').map(str => this.escapeIdentifier(str)).join('.')
+  }
+  
+  /**
+   * 
+   * @param {Column} value
+   * @return string
+   */
+  escapeColumn(value) {
+    var table = value.table
+    var column = this.escapeIdentifier(value.name)
+    
+    if (! isEmpty(table) )
+      table = this.escapeIdentifier(table) + '.'
+    
+    return this.alias(table + column, value.alias)
   }
   
   /**
