@@ -16,6 +16,7 @@ log(qb().from('photos').from(q => q.from('videos'), 'v'))
 log(qb().select('column').from('table', 't'))
 log(qb().select('column as c').from('table'))
 log(qb().select('title', 'author', 'year').from('books'))
+log(qb().select('foo', 'bar').from('table').unselect('bar'))
 
 log(qb().select('table.*').from('table', 't'))
 log(qb().select('table.column').from('schema.table'))

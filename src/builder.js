@@ -1,3 +1,4 @@
+
 import Criteria from './criteria'
 import { createCompiler } from './compiler'
 import { Raw, Column, Aggregate } from './expression'
@@ -99,6 +100,27 @@ export default class QueryBuilder {
     if (! isArray(columns) ) columns = toArray(arguments)
     
     columns.forEach(col => this.query.columns.push(col))
+    
+    return this
+  }
+  
+  /**
+   * 
+   * @param {Array} columns
+   * @return this query builder
+   */
+  unselect(columns) {
+    if (! isArray(columns) ) columns = [columns]
+    
+    remove(this.query.columns, value => {
+      if ( value instanceof Column ) value = value.toString()
+      
+      if ( value instanceof Aggregate ) value = value.column
+      
+      if ( value instanceof Raw ) value = value.name
+      
+      return columns.indexOf(value) > -1
+    })
     
     return this
   }
