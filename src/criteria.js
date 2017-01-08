@@ -3,8 +3,7 @@ import {
   each, isFunction, isString, isNull, isArray, isPlainObject, isUndefined
 } from 'lodash'
 
-import Column from './column'
-import Raw from './raw'
+import { Raw, Column } from './expression'
 
 /**
  * @class Criteria

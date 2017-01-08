@@ -1,9 +1,7 @@
-
-import Raw from './raw'
 import Criteria from './criteria'
-import Aggregate from './aggregate'
-import { createCompiler } from './compiler/factory'
-import { isArray, isFunction, isString, toArray } from 'lodash'
+import { createCompiler } from './compiler'
+import { Raw, Column, Aggregate } from './expression'
+import { isArray, isFunction, isString, toArray, remove } from 'lodash'
 
 /**
  * @class QueryBuilder

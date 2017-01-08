@@ -1,6 +1,4 @@
 
-import { isString } from 'lodash'
-import BaseCompiler from './base'
 import MysqlCompiler from './mysql'
 import MssqlCompiler from './mssql'
 import OracleCompiler from './oracle'
@@ -13,7 +11,7 @@ import PostgreCompiler from './postgre'
  * @param {String} dialect
  * @return query compiler
  */
-function createCompiler(dialect) {
+export function createCompiler(dialect) {
   dialect = dialect.toLowerCase()
   
   if ( dialect === 'mysql' ) return new MysqlCompiler
@@ -28,5 +26,3 @@ function createCompiler(dialect) {
   
   throw new TypeError("Unknown database dialect")
 }
-
-export { createCompiler }
