@@ -1,10 +1,11 @@
 
-import { isString } from 'lodash' 
+import { isString } from 'lodash'
+import Expression from './base'
 
 /**
  * @class Aggregate
  */
-export default class {
+export default class Aggregate extends Expression {
   
   /**
    * 
@@ -25,10 +26,7 @@ export default class {
     this.isDistinct = isDistinct
   }
   
-  compile(compiler = null) {
-    // FIXME where to get the dialect
-    if (! compiler ) compiler = createCompiler(dialect)
-    
+  compile(compiler) {
     var columns = compiler.columnize(this.columns)
     var distinct = this.isDistinct ? 'distinct ' : ''
     
