@@ -27,6 +27,11 @@ export default class Column extends Expression {
     this.alias = as
   }
   
+  /**
+   * 
+   * @param {Compiler} compiler
+   * @return string
+   */
   compile(compiler) {
     var table = this.table
     var column = compiler.escapeIdentifier(this.name)
@@ -35,6 +40,20 @@ export default class Column extends Expression {
       table = compiler.escapeIdentifier(this.table) + '.'
     
     return compiler.alias(table + column, this.alias)
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @return boolean
+   */
+  isEqual(expr) {
+    return super.isEqual() || (
+      expr instanceof Column &&
+      expr.name === this.name &&
+      expr.table === this.table &&
+      expr.alias === this.alias
+    )
   }
   
 }

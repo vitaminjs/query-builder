@@ -42,4 +42,13 @@ export default class Table extends Expression {
     return compiler.alias(schema + table, this.alias)
   }
   
+  /**
+   * 
+   * @param {Any} expr
+   * @return boolean
+   */
+  isEqual(expr) {
+    
+  }
+  
 }

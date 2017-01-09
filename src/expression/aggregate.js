@@ -1,5 +1,5 @@
 
-import { isString } from 'lodash'
+import { isString, isEqual } from 'lodash'
 import Expression from './base'
 
 /**
@@ -28,11 +28,31 @@ export default class Aggregate extends Expression {
     this.isDistinct = isDistinct
   }
   
+  /**
+   * 
+   * @param {Compiler} compiler
+   * @return string
+   */
   compile(compiler) {
     var columns = compiler.columnize(this.columns)
     var distinct = this.isDistinct ? 'distinct ' : ''
     
     return compiler.alias(`${this.method}(${distinct}${columns})`, this.name)
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @return boolean
+   */
+  isEqual(expr) {
+    return super.isEqual() || (
+      expr instanceof Aggregate &&
+      expr.name === this.name &&
+      expr.method === this.method &&
+      expr.isDistinct === this.isDistinct &&
+      isEqual(expr.columns, this.columns)
+    )
   }
   
 }

@@ -1,5 +1,5 @@
 
-import { isArray } from 'lodash'
+import { isArray, isEqual } from 'lodash'
 import Expression from './base'
 
 /**
@@ -18,8 +18,8 @@ export default class Raw extends Expression {
     
     if (! isArray(bindings) ) bindings = [bindings]
     
-    this.expression = expression
     this.bindings = bindings
+    this.sql = expression
     this.name = null
     this.before = ''
     this.after = ''
@@ -49,14 +49,32 @@ export default class Raw extends Expression {
     return this
   }
   
+  /**
+   * 
+   * @param {String|Compiler} compiler
+   * @return string
+   */
   compile(compiler) {
-    var expr = this.expression.replace(/\?/g, compiler.parameter)
+    var expr = this.sql.replace(/\?/g, compiler.parameter)
     var sql = compiler.alias(this.before + expr + this.after, this.name)
     
     // add query bindings
     this.bindings.forEach(value => compiler.addBinding(value))
     
     return sql
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @return boolean
+   */
+  isEqual(value) {
+    return super.isEqual() || (
+      value instanceof Raw &&
+      value.sql === this.sql &&
+      isEqual(value.bindings, this.bindings)
+    )
   }
   
 }
