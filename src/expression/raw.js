@@ -1,10 +1,11 @@
 
 import { isArray } from 'lodash'
+import Expression from './base'
 
 /**
  * @class Raw
  */
-export default class {
+export default class Raw extends Expresion {
   
   /**
    * 
@@ -46,15 +47,7 @@ export default class {
     return this
   }
   
-  setDialect(dialect) {
-    this.dialect = dialect
-    return this
-  }
-  
-  compile(compiler = null) {
-    // FIXME where to get the dialect name
-    if (! compiler ) compiler = createCompiler(this.dialect)
-    
+  compile(compiler) {
     var expr = this.expression.replace(/\?/g, compiler.parameter)
     var sql = compiler.alias(this.before + expr + this.after, this.name)
     
