@@ -5,7 +5,7 @@ import Expression from './base'
 /**
  * @class Raw
  */
-export default class Raw extends Expresion {
+export default class Raw extends Expression {
   
   /**
    * 
@@ -14,6 +14,8 @@ export default class Raw extends Expresion {
    * @constructor
    */
   constructor(expression, bindings = []) {
+    super()
+    
     if (! isArray(bindings) ) bindings = [bindings]
     
     this.expression = expression
@@ -51,6 +53,7 @@ export default class Raw extends Expresion {
     var expr = this.expression.replace(/\?/g, compiler.parameter)
     var sql = compiler.alias(this.before + expr + this.after, this.name)
     
+    // add query bindings
     this.bindings.forEach(value => compiler.addBinding(value))
     
     return sql

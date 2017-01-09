@@ -1,6 +1,6 @@
 
 import { compact, isEmpty, isObject, isArray, isNumber, isUndefined } from 'lodash'
-import Expression from '../expression/base'
+import Expression, { Criteria } from '../expression'
 
 /**
  * @class BaseCompiler
@@ -251,7 +251,7 @@ export default class {
     var bool = criterion.prefix + ' '
     
     // compile raw expressions
-    if ( column instanceof Raw )
+    if ( column instanceof Expression )
       return bool + this.escape(column)
     
     // compile nested criteria
@@ -371,11 +371,8 @@ export default class {
    */
   parameterize(value) {
     // escape raw expressions
-    if ( value instanceof Raw )
-      return this.escapeRaw(value)
-    
-    if ( value instanceof Column )
-      return this.escapeColumn(value)
+    if ( value instanceof Expression )
+      return this.escape(value)
     
     if (! isArray(value) ) value = [value]
     

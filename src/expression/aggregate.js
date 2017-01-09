@@ -16,6 +16,8 @@ export default class Aggregate extends Expression {
    * @constructor
    */
   constructor(method, columns, as = null, isDistinct = false) {
+    super()
+    
     if ( isString(columns) ) columns = columns.split(/\s*,\s*/)
     
     // TODO ensure aggregation method is valid

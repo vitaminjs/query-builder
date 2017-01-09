@@ -14,6 +14,8 @@ export default class Table extends Expression {
    * @constructor
    */
   constructor(name, alias = '', schema = '') {
+    super()
+    
     if ( !alias && name.toLowerCase().indexOf(' as ') > 0 )
       [name, alias] = name.split(' as ').map(str => str.trim())
     
@@ -31,8 +33,11 @@ export default class Table extends Expression {
    * @return string
    */
   compile(compiler) {
-    var schema = isEmpty(this.schema) ? '' : compiler.escapeIdentifier(this.schema)
+    var schema = this.schema
     var table = compiler.escapeIdentifier(this.name)
+    
+    if ( schema )
+      schema = compiler.escapeIdentifier(this.schema) + '.'
     
     return compiler.alias(schema + table, this.alias)
   }

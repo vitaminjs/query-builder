@@ -14,8 +14,10 @@ export default class Column extends Expression {
    * @constructor
    */
   constructor(name, table = '', as = '') {
-    if ( !alias && name.toLowerCase().indexOf(' as ') > 0 )
-      [name, alias] = name.split(' as ').map(str => str.trim())
+    super()
+    
+    if ( !as && name.toLowerCase().indexOf(' as ') > 0 )
+      [name, as] = name.split(' as ').map(str => str.trim())
     
     if ( !table && name.indexOf('.') > 0 )
       [table, name] = name.split('.').map(str => str.trim())
@@ -26,8 +28,11 @@ export default class Column extends Expression {
   }
   
   compile(compiler) {
+    var table = this.table
     var column = compiler.escapeIdentifier(this.name)
-    var table = isEmpty(this.table) ? '' : compiler.escapeIdentifier(this.table)
+    
+    if ( table )
+      table = compiler.escapeIdentifier(this.table) + '.'
     
     return compiler.alias(table + column, this.alias)
   }
