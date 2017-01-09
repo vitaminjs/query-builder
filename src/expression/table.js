@@ -1,25 +1,25 @@
 
 /**
- * @class Column
+ * @class Table
  */
 export default class {
   
   /**
    * 
    * @param {String} name
-   * @param {String} table
    * @param {String} alias
+   * @param {String} schema
    * @constructor
    */
-  constructor(name, table = '', alias = '') {
+  constructor(name, alias = '', schema = '') {
     if ( !alias && name.toLowerCase().indexOf(' as ') > 0 )
       [name, alias] = name.split(' as ').map(str => str.trim())
     
-    if ( !table && name.indexOf('.') > 0 )
-      [table, name] = name.split('.').map(str => str.trim())
+    if ( !schema && name.indexOf('.') > 0 )
+      [schema, name] = name.split('.').map(str => str.trim())
     
     this._alias = alias
-    this._table = table
+    this._schema = schema
     this._name = name
   }
   
@@ -27,8 +27,8 @@ export default class {
    * 
    * @type {String}
    */
-  get table() {
-    return this._table
+  get schema() {
+    return this._schema
   }
   
   /**

@@ -1,6 +1,6 @@
 
 import { createCompiler } from './compiler'
-import { Raw, Column, Criteria, Aggregate } from './expression'
+import { Raw, Table, Column, Criteria, Aggregate } from './expression'
 import { isArray, isFunction, isString, toArray, remove } from 'lodash'
 
 /**
@@ -38,9 +38,9 @@ export default class QueryBuilder {
   
   /**
    * 
-   * @type boolean
+   * @type {Boolean}
    */
-  hasUnions() {
+  get hasUnions() {
     return this.query.unions.length > 0
   }
   
@@ -98,7 +98,11 @@ export default class QueryBuilder {
   select(columns) {
     if (! isArray(columns) ) columns = toArray(arguments)
     
-    columns.forEach(col => this.query.columns.push(col))
+    columns.forEach(col => {
+      if ( isString(col) ) col = new Column(col)
+      
+      this.query.columns.push(col)
+    })
     
     return this
   }
@@ -161,11 +165,25 @@ export default class QueryBuilder {
    * @param {String} alias
    * @return this query builder
    */
-  from(table, alias = null) {
+  from(table, alias = '') {
     if ( isString(table) )
-      table += isString(alias) ? ' as ' + alias : ''
+      table = new Table(table, alias)
     else
-      table = this._wrappedQuery(table).as(alias)
+      return this.fromRaw(this._wrappedQuery(table).as(alias))
+    
+    this.query.tables.push(table)
+    
+    return this
+  }
+  
+  /**
+   * 
+   * @param {String|Raw} expr
+   * @param {Array} bindings
+   * @return this query builder
+   */
+  fromRaw(expr, bindings = []) {
+    var table = this._wrappedRaw(expr, bindings)
     
     this.query.tables.push(table)
     
@@ -178,7 +196,7 @@ export default class QueryBuilder {
    * @param {String} alias
    * @return this query builder
    */
-  setFrom(table, alias = null) {
+  setFrom(table, alias = '') {
     this.query.tables = []
     return this.from(table, alias)
   }
@@ -330,7 +348,7 @@ export default class QueryBuilder {
    */
   limit(value) {
     if ( (value = parseInt(value, 10)) > 0 )
-      this.query[this.hasUnions() ? 'unionLimit' : 'limit'] = value
+      this.query[this.hasUnions ? 'unionLimit' : 'limit'] = value
     
     return this
   }
@@ -343,7 +361,7 @@ export default class QueryBuilder {
    */
   offset(value) {
     if ( (value = parseInt(value, 10)) >= 0 )
-      this.query[this.hasUnions() ? 'unionOffset' : 'offset'] = value
+      this.query[this.hasUnions ? 'unionOffset' : 'offset'] = value
     
     return this
   }
@@ -373,6 +391,9 @@ export default class QueryBuilder {
    */
   join(table, first, operator, second, type = 'inner') {
     var criteria = null
+    
+    if ( isString(table) )
+      table = new Table(table)
     
     if ( first != null ) {
       criteria = this.newCriteria()
@@ -750,7 +771,11 @@ export default class QueryBuilder {
   groupBy(columns) {
     if (! isArray(columns) ) columns = toArray(arguments)
     
-    columns.forEach(col => this.query.groups.push(col))
+    columns.forEach(col => {
+      if ( isString(col) ) col = new Column(col)
+      
+      this.query.groups.push(col)
+    })
     
     return this
   }
@@ -830,15 +855,19 @@ export default class QueryBuilder {
   orderBy(columns) {
     if (! isArray(columns) ) columns = toArray(arguments)
     
-    var orders = this.query[this.hasUnions() ? 'unionOrders' : 'orders']
+    var orders = this.query[this.hasUnions ? 'unionOrders' : 'orders']
     
     columns.forEach(column => {
       var direction = 'asc'
       
       // accept a desc direction using a minus prefix
-      if ( isString(column) && column.indexOf('-') === 0 ) {
-        column = column.substr(1)
-        direction = 'desc'
+      if ( isString(column) ) {
+        if ( column.indexOf('-') === 0 ) {
+          column = column.substr(1)
+          direction = 'desc'
+        }
+        
+        column = new Column(column)
       }
       
       orders.push({ column, direction })
@@ -855,7 +884,7 @@ export default class QueryBuilder {
    * @return this query
    */
   orderByRaw(expr, bindings = []) {
-    var orders = this.query[this.hasUnions() ? 'unionOrders' : 'orders']
+    var orders = this.query[this.hasUnions ? 'unionOrders' : 'orders']
     
     orders.push(this._wrappedRaw(expr, bindings))
     
@@ -872,7 +901,9 @@ export default class QueryBuilder {
    * @return this query
    */
   selectAggregate(method, column, name = null, isDistinct = false) {
-    return this.select(new Aggregate(...arguments))
+    if ( isString(column) ) column = new Column(column)
+    
+    return this.select(new Aggregate(method, column, name, isDistinct))
   }
   
   /**

@@ -3,7 +3,7 @@ import {
   compact, isEmpty, isObject, isArray, isNumber, isUndefined
 } from 'lodash'
 
-import { Raw, Column, Criteria, Aggregate } from '../expression'
+import { Raw, Table, Column, Criteria, Aggregate } from '../expression'
 
 /**
  * @class BaseCompiler
@@ -437,12 +437,18 @@ export default class {
    * @return string
    */
   escape(value) {
-    var asIndex
+    if ( value === '*' )
+      return value
     
     // escape raw expressions
     if ( value instanceof Raw )
       return this.escapeRaw(value)
     
+    // escape table expression
+    if ( value instanceof Table )
+      return this.escapeTable(value)
+    
+    // escape column expression
     if ( value instanceof Column )
       return this.escapeColumn(value)
     
@@ -450,16 +456,22 @@ export default class {
     if ( value instanceof Aggregate )
       return this.escapeAggregate(value)
     
-    // throw new TypeError("Invalid value to escape")
+    throw new TypeError("Invalid value to escape")
+  }
+  
+  /**
+   * 
+   * @param {Table} value
+   * @return string
+   */
+  escapeTable(value) {
+    var schema = value.schema
+    var column = this.escapeIdentifier(value.name)
     
-    if ( (asIndex = value.toLowerCase().indexOf(' as ')) > 0 ) {
-      let one = value.slice(0, asIndex)
-      let two = value.slice(asIndex + 4)
-      
-      return this.alias(this.escape(one), two)
-    }
+    if (! isEmpty(schema) )
+      schema = this.escapeIdentifier(schema) + '.'
     
-    return value.split('.').map(str => this.escapeIdentifier(str)).join('.')
+    return this.alias(schema + column, value.alias)
   }
   
   /**
