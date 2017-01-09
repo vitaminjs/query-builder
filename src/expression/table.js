@@ -18,41 +18,21 @@ export default class {
     if ( !schema && name.indexOf('.') > 0 )
       [schema, name] = name.split('.').map(str => str.trim())
     
-    this._alias = alias
-    this._schema = schema
-    this._name = name
+    this.alias = alias
+    this.schema = schema
+    this.name = name
   }
   
   /**
    * 
-   * @type {String}
+   * @param {Compiler} compiler
+   * @return string
    */
-  get schema() {
-    return this._schema
-  }
-  
-  /**
-   * 
-   * @type {String}
-   */
-  get name() {
-    return this._name
-  }
-  
-  /**
-   * 
-   * @type {String}
-   */
-  get alias() {
-    return this._alias
-  }
-  
-  /**
-   * 
-   * @type {String}
-   */
-  toString() {
-    return this.alias || this.name
+  compile(compiler) {
+    var schema = isEmpty(this.schema) ? '' : compiler.escapeIdentifier(this.schema)
+    var table = compiler.escapeIdentifier(this.name)
+    
+    return compiler.alias(schema + table, this.alias)
   }
   
 }
