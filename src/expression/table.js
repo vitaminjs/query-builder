@@ -1,8 +1,10 @@
 
+import Expression from './base'
+
 /**
  * @class Table
  */
-export default class {
+export default class Table extends Expression {
   
   /**
    * 
