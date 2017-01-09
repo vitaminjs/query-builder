@@ -46,4 +46,21 @@ export default class {
     return this
   }
   
+  setDialect(dialect) {
+    this.dialect = dialect
+    return this
+  }
+  
+  compile(compiler = null) {
+    // FIXME where to get the dialect name
+    if (! compiler ) compiler = createCompiler(this.dialect)
+    
+    var expr = this.expression.replace(/\?/g, compiler.parameter)
+    var sql = compiler.alias(this.before + expr + this.after, this.name)
+    
+    this.bindings.forEach(value => compiler.addBinding(value))
+    
+    return sql
+  }
+  
 }
