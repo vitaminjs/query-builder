@@ -1,8 +1,10 @@
 
+import Expression from './base'
+
 /**
  * @class Column
  */
-export default class {
+export default class Column extends Expression {
   
   /**
    * 
@@ -21,14 +23,6 @@ export default class {
     this.table = table
     this.name = name
     this.alias = as
-  }
-  
-  /**
-   * 
-   * @type {String}
-   */
-  toString() {
-    return this.alias || this.name
   }
   
   compile(compiler) {
