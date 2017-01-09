@@ -1,9 +1,6 @@
 
-import {
-  compact, isEmpty, isObject, isArray, isNumber, isUndefined
-} from 'lodash'
-
-import { Raw, Table, Column, Criteria, Aggregate } from '../expression'
+import { compact, isEmpty, isObject, isArray, isNumber, isUndefined } from 'lodash'
+import Expression from '../expression/base'
 
 /**
  * @class BaseCompiler
@@ -36,7 +33,7 @@ export default class {
     if ( isEmpty(query.columns) && isEmpty(query.tables) )
       return { sql: '', bindings: [] }
     
-    var sql = this.compileSelectComponents(query)
+    var sql = 'select ' + this.compileSelectComponents(query)
     
     if (! isEmpty(query.unions) )
       sql = `(${sql}) ${this.compileUnionComponents(query)}`
@@ -90,11 +87,9 @@ export default class {
    * @return string
    */
   compileColumns(columns, isDistinct, query) {
-    var distinct = isDistinct ? 'distinct ' : ''
-    
     if ( isEmpty(columns) ) columns = ['*']
     
-    return 'select ' + distinct + this.columnize(columns)
+    return (isDistinct ? 'distinct ' : '') + this.columnize(columns)
   }
   
   /**
@@ -119,7 +114,7 @@ export default class {
     if ( isEmpty(joins) ) return
     
     var sql = joins.map(join => {
-      if ( join instanceof Raw ) return this.escape(join)
+      if ( join instanceof Expression ) return this.escape(join)
       
       var expr = join.type +' join '+ this.escape(join.table)
       
@@ -179,7 +174,7 @@ export default class {
     
     return 'order by ' + orders.map(order => {
       // escape raw expressions
-      if ( order instanceof Raw ) return this.escape(order)
+      if ( order instanceof Expression ) return this.escape(order)
       
       return this.escape(order.column) + ' ' + order.direction
     }).join(', ')
@@ -360,19 +355,6 @@ export default class {
   }
   
   /**
-   * Compile a raw expression
-   * 
-   * @param {Raw} value
-   * @return plain object
-   */
-  compileRaw(value) {
-    var expr = value.expression.replace(/\?/g, this.parameter)
-    var sql = this.alias(value.before + expr + value.after, value.name)
-    
-    return { sql, bindings: value.bindings }
-  }
-  
-  /**
    * Check and return a valid operator
    * 
    * @param {String} value
@@ -440,84 +422,11 @@ export default class {
     if ( value === '*' )
       return value
     
-    // escape raw expressions
-    if ( value instanceof Raw )
-      return this.escapeRaw(value)
-    
-    // escape table expression
-    if ( value instanceof Table )
-      return this.escapeTable(value)
-    
-    // escape column expression
-    if ( value instanceof Column )
-      return this.escapeColumn(value)
-    
-    // escape aggregate columns
-    if ( value instanceof Aggregate )
-      return this.escapeAggregate(value)
+    // escape expressions
+    if ( value instanceof Expression )
+      return value.compile(this)
     
     throw new TypeError("Invalid value to escape")
-  }
-  
-  /**
-   * 
-   * @param {Table} value
-   * @return string
-   */
-  escapeTable(value) {
-    var schema = value.schema
-    var column = this.escapeIdentifier(value.name)
-    
-    if (! isEmpty(schema) )
-      schema = this.escapeIdentifier(schema) + '.'
-    
-    return this.alias(schema + column, value.alias)
-  }
-  
-  /**
-   * 
-   * @param {Column} value
-   * @return string
-   */
-  escapeColumn(value) {
-    var table = value.table
-    var column = this.escapeIdentifier(value.name)
-    
-    if (! isEmpty(table) )
-      table = this.escapeIdentifier(table) + '.'
-    
-    return this.alias(table + column, value.alias)
-  }
-  
-  /**
-   * Escape raw expression
-   * 
-   * @param {Raw} value
-   * @return string
-   */
-  escapeRaw(value) {
-    var query = this.compileRaw(value)
-    
-    // add raw bindings to the query bindings
-    query.bindings.forEach(v => this.addBinding(v))
-    
-    return query.sql
-  }
-  
-  /**
-   * 
-   * @param {Aggregate} value
-   * @return string
-   */
-  escapeAggregate(value) {
-    var name = value.name
-    var method = value.method
-    var column = this.columnize(value.column)
-    var distinct = value.isDistinct ? 'distinct ' : ''
-    
-    // TODO ensure only valid aggregators
-    
-    return this.alias(`${method}(${distinct}${column})`, name)
   }
   
   /**
