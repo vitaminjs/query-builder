@@ -162,18 +162,30 @@ export default class {
   whereLike(column, value, prefix = 'and', negate = false) {
     var operator = negate ? 'not like' : 'like'
     
+    // escape percentages and underscores
+    value = value.replace(/(_|%)/g, '\\$1')
+    
     return this.where(column, operator, value, prefix)
   }
   
   whereContains(column, value, prefix = 'and', negate = false) {
+    // escape percentages and underscores
+    value = value.replace(/(_|%)/g, '\\$1')
+    
     return this.whereLike(column, `%${value}%`, prefix, negate)
   }
   
   whereStartsWith(column, value, prefix = 'and', negate = false) {
+    // escape percentages and underscores
+    value = value.replace(/(_|%)/g, '\\$1')
+    
     return this.whereLike(column, `%${value}`, prefix, negate)
   }
   
   whereEndsWith(column, value, prefix = 'and', negate = false) {
+    // escape percentages and underscores
+    value = value.replace(/(_|%)/g, '\\$1')
+    
     return this.whereLike(column, `${value}%`, prefix, negate)
   }
   
