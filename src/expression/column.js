@@ -8,43 +8,19 @@ export default class {
    * 
    * @param {String} name
    * @param {String} table
-   * @param {String} alias
+   * @param {String} as
    * @constructor
    */
-  constructor(name, table = '', alias = '') {
+  constructor(name, table = '', as = '') {
     if ( !alias && name.toLowerCase().indexOf(' as ') > 0 )
       [name, alias] = name.split(' as ').map(str => str.trim())
     
     if ( !table && name.indexOf('.') > 0 )
       [table, name] = name.split('.').map(str => str.trim())
     
-    this._alias = alias
-    this._table = table
-    this._name = name
-  }
-  
-  /**
-   * 
-   * @type {String}
-   */
-  get table() {
-    return this._table
-  }
-  
-  /**
-   * 
-   * @type {String}
-   */
-  get name() {
-    return this._name
-  }
-  
-  /**
-   * 
-   * @type {String}
-   */
-  get alias() {
-    return this._alias
+    this.table = table
+    this.name = name
+    this.alias = as
   }
   
   /**
@@ -53,6 +29,13 @@ export default class {
    */
   toString() {
     return this.alias || this.name
+  }
+  
+  compile(compiler) {
+    var column = compiler.escapeIdentifier(this.name)
+    var table = isEmpty(this.table) ? '' : compiler.escapeIdentifier(this.table)
+    
+    return compiler.alias(table + column, this.alias)
   }
   
 }
