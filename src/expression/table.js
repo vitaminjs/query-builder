@@ -8,23 +8,24 @@ export default class Table extends Expression {
   
   /**
    * 
-   * @param {String} name
-   * @param {String} alias
-   * @param {String} schema
+   * @param {String} value
    * @constructor
    */
-  constructor(name, alias = '', schema = '') {
+  constructor(value) {
     super()
     
-    if ( !alias && name.toLowerCase().indexOf(' as ') > 0 )
-      [name, alias] = name.split(' as ').map(str => str.trim())
+    var as = ''
+    var schema = ''
     
-    if ( !schema && name.indexOf('.') > 0 )
-      [schema, name] = name.split('.').map(str => str.trim())
+    if ( !as && value.toLowerCase().indexOf(' as ') > 0 )
+      [value, as] = value.split(' as ').map(str => str.trim())
     
-    this.alias = alias
+    if ( !schema && value.indexOf('.') > 0 )
+      [schema, value] = value.split('.').map(str => str.trim())
+    
+    this.alias = as
     this.schema = schema
-    this.name = name
+    this.name = value
   }
   
   /**
