@@ -1,8 +1,7 @@
 
 import { Raw, Join, Aggregate, SubQuery, Order, Column, Table, Union } from '../expression'
-import { isString, isArray, isFunction, toArray } from 'lodash'
+import { isString, isArray, isFunction, toArray, remove } from 'lodash'
 import Compiler, { createCompiler } from './compiler'
-import Expressions from './expressions'
 import { Select } from './query'
 
 const SELECT_QUERY = 'select'
@@ -20,18 +19,18 @@ export default class Builder {
    * @constructor
    */
   constructor() {
-    this._type        = null
-    this._joins       = null
-    this._tables      = null
-    this._unions      = null
-    this._groups      = null
-    this._orders      = null
-    this._columns     = null
+    this.joins        = []
+    this.tables       = []
+    this.unions       = []
+    this.groups       = []
+    this.orders       = []
+    this.columns      = []
+    this.unionOrders  = []
+    this._type        = null
     this._limit       = null
     this._offset      = null
     this._unionLimit  = null
     this._unionOffset = null
-    this._unionOrders = null
     this._distinct    = false
   }
   
@@ -47,57 +46,8 @@ export default class Builder {
       throw new TypeError("Ambiguous query type")
   }
   
-  get columns() {
-    if ( this._columns == null )
-      this._columns = new Expressions()
-    
-    return this._columns
-  }
-  
-  get tables() {
-    if ( this._tables == null )
-      this._tables = new Expressions()
-    
-    return this._tables
-  }
-  
-  get unions() {
-    if ( this._unions == null )
-      this._unions = new Expressions()
-    
-    return this._unions
-  }
-  
-  get joins() {
-    if ( this._joins == null )
-      this._joins = new Expressions()
-    
-    return this._joins
-  }
-  
-  get groups() {
-    if ( this._groups == null )
-      this._groups = new Expressions()
-    
-    return this._groups
-  }
-  
-  get orders() {
-    if ( this._orders == null )
-      this._orders = new Expressions()
-    
-    return this._orders
-  }
-  
-  get unionOrders() {
-    if ( this._unionOrders == null )
-      this._unionOrders = new Expressions()
-    
-    return this._unionOrders
-  }
-  
   get hasUnions() {
-    return this._unions != null && this._unions.length > 0
+    return this.unions.length > 0
   }
   
   /**
@@ -139,7 +89,7 @@ export default class Builder {
     columns.forEach(value => {
       if ( isString(value) ) value = new Column(value)
       
-      this.columns.add(value)
+      this.columns.push(value)
     })
     
     return this
@@ -154,7 +104,7 @@ export default class Builder {
     if ( isArray(columns) ) columns = toArray(arguments)
     
     // remove the given columns
-    columns.forEach(col => this.columns.remove(col))
+    columns.forEach(col => remove(this.columns, c => c.isEqual(col))
     
     return this
   }
@@ -261,7 +211,7 @@ export default class Builder {
   from(value) {
     if ( isString(value) ) value = new Table(value)
     
-    this.tables.add(value)
+    this.tables.push(value)
     
     return this
   }
@@ -321,7 +271,7 @@ export default class Builder {
     columns.forEach(value => {
       if ( isString(value) ) value = new Column(value)
       
-      this.groups.add(value)
+      this.groups.push(value)
     })
     
     return this
@@ -349,7 +299,7 @@ export default class Builder {
     columns.forEach(col => {
       if ( isString(col) ) col = new Order(col)
       
-      orders.add(col)
+      orders.push(col)
     })
     
     return this
@@ -364,7 +314,7 @@ export default class Builder {
   orderByRaw(expr, bindings = []) {
     var orders = this[this.hasUnions ? 'unionOrders' : 'orders']
     
-    orders.add(this.ensureRaw(expr, bindings))
+    orders.push(this.ensureRaw(expr, bindings))
     
     return this
   }
@@ -378,7 +328,7 @@ export default class Builder {
   union(query, all = false) {
     var union = new Union(this.ensureSubQuery(query), all)
     
-    this.unions.add(union)
+    this.unions.push(union)
     
     return this
   }
@@ -408,7 +358,7 @@ export default class Builder {
       // TODO
     }
     
-    this.joins.add(new Join(table, type, criteria))
+    this.joins.push(new Join(table, type, criteria))
     
     return this
   }
