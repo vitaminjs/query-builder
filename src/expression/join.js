@@ -1,7 +1,6 @@
 
 import { isString } from 'lodash'
 import Expression from './base'
-import Table from './table'
 
 /**
  * @class JoinExpression
@@ -20,7 +19,7 @@ export default class Join extends Expression {
     
     if ( isString(table) ) table = new Table(table)
     
-    if (! (table instanceof Table) )
+    if (! (table instanceof Expression) )
       throw new TypeError("Invalid join table name")
     
     // TODO ensure the criteria
