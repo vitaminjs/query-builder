@@ -272,6 +272,10 @@ export default class Builder {
       if ( isString(value) ) value = new Column(value)
       
       this.groups.push(value)
+      
+      // select also the grouped columns
+      // TODO check duplicates before addition
+      this.columns.push(value)
     })
     
     return this
