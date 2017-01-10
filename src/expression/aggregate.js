@@ -15,10 +15,15 @@ export default class Aggregate extends Expression {
    * @param {Boolean} isDistinct
    * @constructor
    */
-  constructor(method, columns, as = null, isDistinct = false) {
+  constructor(method, columns, as = '', isDistinct = false) {
     super()
     
-    if ( isString(columns) ) columns = columns.split(/\s*,\s*/)
+    if ( isString(columns) ) {
+      if ( !as && columns.toLowerCase().indexOf(' as ') > 0 )
+        [columns, as] = columns.split(' as ').map(str => str.trim())
+      
+      columns = columns.split(/\s*,\s*/)
+    }
     
     // TODO ensure aggregation method is valid
     
