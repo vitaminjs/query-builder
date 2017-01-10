@@ -1,4 +1,5 @@
 
+import { isString } from 'lodash'
 import Column from './column'
 
 /**
@@ -8,10 +9,16 @@ export default class Order extends Column {
   
   /**
    * @param {String} column
-   * @param {String} direction
    * @constructor
    */
-  constructor(column, direction = 'asc') {
+  constructor(column) {
+    var direction = 'asc'
+    
+    if ( isString(column) && column.indexOf('-') === 0 ) {
+      column = column.substr(1)
+      direction = 'desc'
+    }
+    
     super(column)
     
     this.direction = direction
