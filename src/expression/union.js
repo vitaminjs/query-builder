@@ -30,7 +30,7 @@ export default class Union extends Expression {
   compile(compiler) {
     var all = this.all ? 'all ' : ''
     
-    return `union ${all}${this.query.compile(compiler)}`
+    return 'union ' + all + this.query.compile(compiler)
   }
   
   /**
@@ -39,10 +39,11 @@ export default class Union extends Expression {
    * @return boolean
    */
   isEqual(expr) {
-    return super.isEqual() &&
+    return super.isEqual() || (
       expr instanceof Union &&
-      expr.type === this.type &&
+      expr.all === this.all &&
       this.query.isEqual(expr.query)
+    )
   }
   
 }

@@ -1,5 +1,6 @@
 
 import Raw from './raw'
+import Join from './join'
 import Union from './union'
 import Table from './table'
 import Column from './column'
@@ -10,4 +11,4 @@ import Aggregate from './aggregate'
 
 export default Expression
 
-export { Raw, Table, Union, Column, Criteria, SubQuery, Aggregate }
+export { Raw, Join, Table, Union, Column, Criteria, SubQuery, Aggregate }
