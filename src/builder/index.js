@@ -1,5 +1,5 @@
 
-import { Raw, Join, Aggregate, SubQuery, Order, Column, Table, Union } from '../expression'
+import Expression, { Raw, Join, Aggregate, SubQuery, Order, Column, Table, Union } from '../expression'
 import { isString, isArray, isFunction, toArray, remove } from 'lodash'
 import Compiler, { createCompiler } from './compiler'
 import { Select } from './query'
@@ -88,6 +88,9 @@ export default class Builder {
     // add the columns
     columns.forEach(value => {
       if ( isString(value) ) value = new Column(value)
+      
+      if (! (value instanceof Expression) )
+        throw new TypeError("Invalid column expression")
       
       this.columns.push(value)
     })
@@ -211,6 +214,9 @@ export default class Builder {
   from(value) {
     if ( isString(value) ) value = new Table(value)
     
+    if (! (value instanceof Expression) )
+      throw new TypeError("Invalid table expression")
+    
     this.tables.push(value)
     
     return this
@@ -271,6 +277,9 @@ export default class Builder {
     columns.forEach(value => {
       if ( isString(value) ) value = new Column(value)
       
+      if (! (value instanceof Expression) )
+        throw new TypeError("Invalid group expression")
+      
       this.groups.push(value)
       
       // select also the grouped columns
@@ -300,10 +309,13 @@ export default class Builder {
     
     if (! isArray(columns) ) columns = toArray(arguments)
     
-    columns.forEach(col => {
-      if ( isString(col) ) col = new Order(col)
+    columns.forEach(value => {
+      if ( isString(value) ) value = new Order(value)
       
-      orders.push(col)
+      if (! (value instanceof Expression) )
+        throw new TypeError("Invalid order expression")
+      
+      orders.push(value)
     })
     
     return this
@@ -316,11 +328,7 @@ export default class Builder {
    * @return this
    */
   orderByRaw(expr, bindings = []) {
-    var orders = this[this.hasUnions ? 'unionOrders' : 'orders']
-    
-    orders.push(this.ensureRaw(expr, bindings))
-    
-    return this
+    return this.orderBy(this.ensureRaw(expr, bindings))
   }
   
   /**
@@ -472,7 +480,7 @@ export default class Builder {
     
     // throws an error for invalid argument
     if (! (query instanceof SubQuery) )
-      throw new TypeError("Invalid sub query")
+      throw new TypeError("Invalid sub query expression")
     
     return query
   }
