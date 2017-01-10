@@ -11,12 +11,13 @@ export default class Aggregate extends Expression {
    * 
    * @param {String} method
    * @param {String|Array} columns
-   * @param {String} as
    * @param {Boolean} isDistinct
    * @constructor
    */
-  constructor(method, columns, as = '', isDistinct = false) {
+  constructor(method, columns, isDistinct = false) {
     super()
+    
+    var as = ''
     
     if ( isString(columns) ) {
       if ( !as && columns.toLowerCase().indexOf(' as ') > 0 )
