@@ -2,7 +2,7 @@
 import Expression from './base'
 
 /**
- * @class Column
+ * @class ColumnExpression
  */
 export default class Column extends Expression {
   

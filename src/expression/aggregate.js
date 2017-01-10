@@ -3,7 +3,7 @@ import { isString, isEqual } from 'lodash'
 import Expression from './base'
 
 /**
- * @class Aggregate
+ * @class AggregateExpression
  */
 export default class Aggregate extends Expression {
   

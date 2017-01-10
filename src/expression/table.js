@@ -2,7 +2,7 @@
 import Expression from './base'
 
 /**
- * @class Table
+ * @class TableExpression
  */
 export default class Table extends Expression {
   
@@ -48,7 +48,12 @@ export default class Table extends Expression {
    * @return boolean
    */
   isEqual(expr) {
-    
+    return super.isEqual() || (
+      expr instanceof Table &&
+      expr.name === this.name &&
+      expr.alias === this.alias &&
+      expr.schema === this.schema
+    )
   }
   
 }

@@ -3,7 +3,7 @@ import { isArray, isEqual } from 'lodash'
 import Expression from './base'
 
 /**
- * @class Raw
+ * @class RawExpression
  */
 export default class Raw extends Expression {
   
