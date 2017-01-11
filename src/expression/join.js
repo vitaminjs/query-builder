@@ -1,6 +1,7 @@
 
 import { isString } from 'lodash'
 import Expression from './base'
+import Table from './table'
 
 /**
  * @class JoinExpression
