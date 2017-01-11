@@ -1,6 +1,6 @@
 
+import { isString, isArray, isBoolean, isFunction, isEmpty, isPlainObject, toArray, each, remove } from 'lodash'
 import Expression, { Raw, Join, Aggregate, SubQuery, Order, Column, Table, Union } from '../expression'
-import { isString, isArray, isFunction, toArray, remove } from 'lodash'
 import Compiler, { createCompiler } from './compiler'
 import { Criteria } from './criterion'
 import { Select } from './query'
@@ -381,10 +381,12 @@ export default class Builder {
       
       // usually, a join clause compare between 2 columns
       if ( isString(second) )
-        second = new Column(second)
+        builder.whereColumn(first, operator, second)
+      else
+        builder.where(first, operator, second)
       
       // set the join conditions
-      criteria = builder.where(first, operator, second).conditions
+      criteria = builder.conditions
     }
     
     this.joins.push(new Join(table, type, criteria))
@@ -487,9 +489,393 @@ export default class Builder {
    * @return this
    */
   where(expr, operator, value, bool = 'and', not = false) {
-    // TODO
+    if ( value != null && operator == null ) {
+      value = operator
+      operator = '='
+    }
+    
+    // supports `.where(Boolean)`
+    if ( isBoolean(expr) ) {
+      let bool = expr
+      
+      expr = new Raw('1 = ' + bool ? 1 : 0)
+    }
+    
+    // supports `.where(new Raw(...))`
+    if ( expr instanceof Raw )
+      return this.whereRaw(expr, [], bool)
+    
+    // supports `.where({a: 1, b: 3})`
+    if ( isPlainObject(expr) ) {
+      let obj = expr
+      
+      expr = qb => each(obj, (val, key) => qb.where(key, '=', val))
+    }
+    
+    // supports `.where(qb => { ... })`
+    if ( isFunction(expr) ) {
+      let fn = expr
+      
+      fn(expr = this.newBuilder())
+    }
+    
+    // supports nested builders
+    if ( expr instanceof Builder )
+      expr = expr.conditions
+    
+    // format the operator
+    operator = String(operator).toLowerCase().trim()
+    
+    // supports between operator
+    if ( operator.indexOf('between') > -1 )
+      return this.whereBetween(expr, value, bool, not)
+    
+    // escape percentages and underscores for like comparaison
+    if ( operator.indexOf('like') > -1 )
+      value = value.replace(/(_|%)/g, '\\$1')
+    
+    // supports `.where('column', null)`
+    if ( value === null )
+      return this.whereNull(expr, bool, not)
+    
+    // supports `.where('column', [...])`
+    if ( isArray(value) && operator === '=' )
+      return this.whereIn(expr, value, bool, not)
+    
+    // supports sub queries
+    if (
+      isFunction(value) ||
+      value instanceof Select ||
+      value instanceof Builder ||
+      value instanceof SubQuery
+    ) return this.whereSub(expr, operator, value, bool)
+    
+    // usual basic condition
+    this.conditions.where(this.ensureColumn(expr), operator, value, bool, not)
     
     return this
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @param {Boolean} not
+   * @return this
+   */
+  orWhere(expr, operator, value) {
+    return this.where(expr, operator, value, 'or')
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @param {String} bool
+   * @return this
+   */
+  whereNot(expr, operator, value, bool = 'and') {
+    var not = true
+    
+    if ( value != null && operator == null ) {
+      value = operator
+      operator = '='
+    }
+    
+    // format the operator
+    operator = String(operator).toLowerCase().trim()
+    
+    // supports `.whereNot('column', 'between', [...])`
+    if ( operator === 'between' )
+      return this.whereBetween(expr, operator, value, bool, not)
+    
+    // supports `.whereNot('column', 'in', [...])`
+    if ( operator === 'in' )
+      return this.whereIn(expr, operator, value, bool, not)
+    
+    // supports `.whereNot('column', 'like', 'patern')`
+    if ( operator === 'like' ) {
+      operator = 'not like'
+      not = false
+    }
+    
+    return this.where(expr, operator, value, bool, not)
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @return this
+   */
+  orWhereNot(expr, operator, value) {
+    return this.whereNot(expr, operator, value, 'or')
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {Array} values
+   * @param {String} bool
+   * @param {Boolean} not
+   * @return this
+   */
+  whereBetween(expr, values, bool = 'and', not = false) {
+    if (! (isArray(values) && values.length === 2) )
+      throw new TypeError("Invalid between condition")
+    
+    this.conditions.whereBetween(this.ensureColumn(expr), values, bool, not)
+    
+    return this
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {Array} values
+   * @return this
+   */
+  orWhereBetween(expr, values) {
+    return this.whereBetween(expr, values, 'or')
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {Array} values
+   * @param {String} bool
+   * @return this
+   */
+  whereNotBetween(expr, values, bool = 'and') {
+    return this.whereBetween(expr, values, bool, true)
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {Array} values
+   * @return this
+   */
+  orWhereNotBetween(expr, values) {
+    return this.whereNotBetween(expr, values, 'or')
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {Any} values
+   * @param {String} bool
+   * @param {Boolean} not
+   * @return this
+   */
+  whereIn(expr, values, bool = 'and', not = false) {
+    // instead of an empty array of values, a boolean expression is used
+    if ( isArray(values) && isEmpty(values) ) return this.where(not)
+    
+    // accepts sub queries
+    if (! isArray(values) ) values = this.ensureSubQuery(values)
+    
+    this.conditions.whereIn(this.ensureColumn(expr), values, bool, not)
+    
+    return this
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {Any} values
+   * @return this
+   */
+  orWhereIn(expr, values) {
+    return this.whereIn(expr, values, 'or')
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {Any} values
+   * @param {String} bool
+   * @return this
+   */
+  whereNotIn(expr, values, bool = 'and') {
+    return this.whereIn(expr, values, bool, true)
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {Any} values
+   * @return this
+   */
+  orWhereNotIn(expr, values) {
+    return this.whereNotIn(expr, values, 'or')
+  }
+  
+  /**
+   * 
+   * @param {String|Expression} expr
+   * @param {String} operator
+   * @param {Any} query
+   * @param {String} bool
+   * @return this
+   */
+  whereSub(expr, operator, query, bool = 'and') {
+    if ( isString(expr) )
+      expr = new Column(expr)
+    
+    if (! (expr instanceof Expression) )    
+      throw new TypeError("Invalid expression")
+    
+    this.conditions.whereSub(expr, operator, this.ensureSubQuery(query), bool)
+    
+    return this
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {String} operator
+   * @param {Any} query
+   * @return this
+   */
+  orWhereSub(expr, operator, query) {
+    return this.whereSub(expr, operator, query, 'or')
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {String} bool
+   * @param {Boolean} not
+   * @return this
+   */
+  whereNull(expr, bool = 'and', not = false) {
+    this.conditions.whereNull(this.ensureColumn(expr), bool, not)
+    return this
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @return this
+   */
+  orWhereNull(expr) {
+    return this.whereNull(expr, 'or')
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {String} bool
+   * @return this
+   */
+  whereNotNull(expr, bool = 'and') {
+    return this.whereNull(expr, bool)
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @return this
+   */
+  orWhereNotNull(expr) {
+    return this.whereNotNull(expr, 'or')
+  }
+  
+  /**
+   * 
+   * @param {String|Raw} expr
+   * @param {Array} bindings
+   * @param {String} bool
+   * @return this
+   */
+  whereRaw(expr, bindings = [], bool = 'and') {
+    this.conditions.whereRaw(this.ensureRaw(expr, bindings), bool)
+    return this
+  }
+  
+  /**
+   * 
+   * @param {String|Raw} expr
+   * @param {Array} bindings
+   * @param {String} bool
+   * @return this
+   */
+  orWhereRaw(expr, bindings = []) {
+    return this.whereRaw(expr, bindings, 'or')
+  }
+  
+  /**
+   * 
+   * @param {SubQuery} query
+   * @param {String} bool
+   * @param {Boolean} not
+   * @return this
+   */
+  whereExists(query, bool = 'and', not = false) {
+    query = this.ensureSubQuery(query)
+    
+    return this.conditions.whereExists(query, bool, not)
+  }
+  
+  /**
+   * 
+   * @param {SubQuery} query
+   * @return this
+   */
+  orWhereExists(query) {
+    return this.whereExists(query, 'or')
+  }
+  
+  /**
+   * 
+   * @param {SubQuery} query
+   * @param {String} bool
+   * @return this
+   */
+  whereNotExists(query, bool = 'and') {
+    return this.whereExists(query, bool, true)
+  }
+  
+  /**
+   * 
+   * @param {SubQuery} query
+   * @return this
+   */
+  orWhereNotExists(query) {
+    return this.whereNotExists(query, 'or')
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {String} operator
+   * @param {String|Column} value
+   * @param {String} bool
+   * @param {Boolean} not
+   * @return this
+   */
+  whereColumn(expr, operator, value, bool = 'and', not = false) {
+    if ( value != null && operator == null ) {
+      value = operator
+      operator = '='
+    }
+    
+    return this.where(expr, operator, this.ensureColumn(value), bool, not)
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {String} operator
+   * @param {String|Column} value
+   * @return this
+   */
+  orWhereColumn(first, operator, second) {
+    return this.whereColumn(first, operator, second)
   }
   
   /**
@@ -554,6 +940,22 @@ export default class Builder {
       throw new TypeError("Invalid raw expression")
     
     return expr
+  }
+  
+  /**
+   * 
+   * @param {String|Column} column
+   * @return column expression
+   * @throws {TypeError}
+   * @private
+   */
+  ensureColumn(column) {
+    if ( isString(column) )
+      column = new Column(column)
+    
+    if ( column instanceof Column ) return column
+    
+    throw new TypeError("Invalid column expression")
   }
   
   /**

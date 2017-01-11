@@ -1,4 +1,5 @@
 
+import { IsNull, Basic, IsIn, Raw, Sub, Between, Exists } from './index'
 import Criterion from './base'
 
 /**
@@ -16,7 +17,7 @@ export default class Criteria extends Criterion {
     super(bool)
     
     this.components = []
-    this.negate = negate
+    this.not = negate ? 'not ' : ''
   }
   
   /**
@@ -35,21 +36,99 @@ export default class Criteria extends Criterion {
   
   /**
    * 
+   * @param {String|Column} expr
+   * @param {Array} values
+   * @param {String} bool
+   * @param {Boolean} not
+   * @return this
+   */
+  whereBetween(expr, values, bool = 'and', not = false) {
+    return this.add(new Between(expr, values, bool, not))
+  }
+  
+  /**
+   * 
+   * @param {SubQuery} query
+   * @param {String} bool
+   * @param {Boolean} not
+   * @return this
+   */
+  whereExists(query, bool = 'and', not = false) {
+    return this.add(new Exists(query, bool, not))
+  }
+  
+  /**
+   * 
+   * @param {RawExpression} expr
+   * @param {String} bool
+   * @return this
+   */
+  whereRaw(expr, bool = 'and') {
+    return this.add(new Raw(expr, bool))
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {String} bool
+   * @param {Boolean} not
+   * @return this
+   */
+  whereNull(expr, bool = 'and', not = false) {
+    return this.add(new IsNull(expr, bool, not))
+  }
+  
+  /**
+   * @param {String|Column} expr
+   * @param {Array|SubQuery} values
+   * @param {String} bool
+   * @param {Boolean} not
+   * @return this
+   */
+  whereIn(expr, values, bool = 'and', not = false) {
+    return this.add(new IsIn(expr, values, bool, not))
+  }
+  
+  /**
+   * 
+   * @param {String|Column} expr
+   * @param {String} operator
+   * @param {Any} query
+   * @param {String} bool
+   * @return this
+   */
+  whereSub(expr, operator, query, bool = 'and') {
+    return this.add(new Sub(expr, operator, query, bool))
+  }
+  
+  /**
+   * @param {String|Column} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @param {String} bool
+   * @param {Boolean} not
+   * @return this
+   */
+  where(expr, operator, value, bool = 'and', not = false) {
+    return this.add(new Basic(expr, operator, value, bool, not))
+  }
+  
+  /**
+   * 
    * @param {Compiler} compiler
    * @return string
    */
   compile(compiler) {
     // compile the conditions
-    var conditions = this.components.map(value => {
+    var conditions = this.components.map(child => {
       // compile a sub criteria
-      if ( value instanceof Criteria ) {
-        let not = value.negate ? 'not ' : ''
-        let conditions = value.compile(compiler)
+      if ( child instanceof Criteria ) {
+        let conditions = child.compile(compiler)
         
-        return `${value.bool} ${not}(${conditions})`
+        return `${child.bool} ${child.not}(${conditions})`
       }
       
-      return value.compile(compiler)
+      return child.compile(compiler)
     })
     
     // remove the leading boolean and return the rest

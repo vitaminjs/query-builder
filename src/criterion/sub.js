@@ -1,5 +1,5 @@
 
-import { Column, SubQuery as SQ } from '../expression'
+import Expression, { Column, SubQuery as SQ } from '../expression'
 import { isString } from 'lodash'
 import Criterion from './base'
 
@@ -21,7 +21,7 @@ export default class SubQuery extends Criterion {
     
     if ( isString(column) ) column = new Column(column)
     
-    if (! (column instanceof Column && query instanceof SQ) )
+    if (! (column instanceof Expression && query instanceof SQ) )
       throw new TypeError("Invalid sub query condition")
     
     this.column = column
