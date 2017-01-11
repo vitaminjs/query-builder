@@ -2,7 +2,7 @@
 import { isString, isArray, isBoolean, isFunction, isEmpty, isPlainObject, toArray, each, remove } from 'lodash'
 import Expression, { Raw, Join, Aggregate, SubQuery, Order, Column, Table, Union } from '../expression'
 import Compiler, { createCompiler } from './compiler'
-import { Criteria } from './criterion'
+import { Criteria } from '../criterion/index'
 import { Select } from './query'
 
 const SELECT_QUERY = 'select'
@@ -727,7 +727,7 @@ export default class Builder {
       expr = new Column(expr)
     
     if (! (expr instanceof Expression) )    
-      throw new TypeError("Invalid expression")
+      throw new TypeError("Invalid sub query expression")
     
     this.conditions.whereSub(expr, operator, this.ensureSubQuery(query), bool)
     
@@ -880,6 +880,36 @@ export default class Builder {
   
   /**
    * 
+   * 
+   */
+  having() {
+    // TODO
+  }
+  
+  /**
+   * 
+   * @param {String|Raw} expr
+   * @param {Array} bindings
+   * @param {String} bool
+   * @return this
+   */
+  havingRaw(expr, bindings = [], bool = 'and') {
+    this.havingConditions.where(this.ensureRaw(expr, bindings), bool)
+    return this
+  }
+  
+  /**
+   * 
+   * @param {String|Raw} expr
+   * @param {Array} bindings
+   * @return this
+   */
+  orHavingRaw(expr, bindings = []) {
+    return this.havingRaw(expr, bindings, 'or')
+  }
+  
+  /**
+   * 
    * @return Builder instance
    */
   newBuilder() {
@@ -890,8 +920,8 @@ export default class Builder {
    * 
    * @return Criteria instance
    */
-  newCriteria() {
-    return new Criteria
+  newCriteria(bool = 'and', not = false) {
+    return new Criteria(bool, not).setBuilder(this)
   }
   
   /**

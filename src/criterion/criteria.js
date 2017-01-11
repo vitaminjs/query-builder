@@ -16,8 +16,19 @@ export default class Criteria extends Criterion {
   constructor(bool = 'and', negate = false) {
     super(bool)
     
+    this.builder = null
     this.components = []
     this.not = negate ? 'not ' : ''
+  }
+  
+  /**
+   * 
+   * @param {Builder} value
+   * @return this
+   */
+  setBuilder(value) {
+    this.builder = value
+    return this
   }
   
   /**
