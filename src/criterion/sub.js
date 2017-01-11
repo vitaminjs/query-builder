@@ -1,33 +1,31 @@
 
-import { Column } from '../expression'
+import { Column, SubQuery as SQ } from '../expression'
 import { isString } from 'lodash'
 import Criterion from './base'
 
 /**
- * @class BasicCriterion
+ * @class SubQueryCriterion
  */
-export default class Basic extends Criterion {
+export default class SubQuery extends Criterion {
   
   /**
    * 
-   * @param {String|Expression} column
+   * @param {String|Column} column
    * @param {String} operator
-   * @param {Any} value
+   * @param {SubQuery} query
    * @param {String} bool
-   * @param {Boolean} negate
    * @constructor
    */
-  constructor(column, operator, value, bool = 'and', negate = false) {
+  constructor(column, operator, query, bool = 'and') {
     super(bool)
     
     if ( isString(column) ) column = new Column(column)
     
-    if (! (column instanceof Column) )
-      throw new TypeError("Invalid basic condition")
+    if (! (column instanceof Column && query instanceof SQ) )
+      throw new TypeError("Invalid sub query condition")
     
-    this.not = negate ? 'not ' : ''
     this.column = column
-    this.value = value
+    this.query = query
     this.op = operator
   }
   
@@ -40,9 +38,9 @@ export default class Basic extends Criterion {
     var bool = super.compile(compiler)
     var operator = compiler.operator(this.op)
     var column = this.column.compile(compiler)
-    var value = compiler.parametrize(this.value)
+    var query = compiler.parametrize(this.query)
     
-    return bool + this.not + column + ` ${operator} ` + value
+    return bool + column + ` ${operator} (${query})`
   }
   
 }

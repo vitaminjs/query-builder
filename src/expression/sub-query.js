@@ -15,7 +15,7 @@ export default class SubQuery extends Expression {
     super()
     
     if (! (query instanceof Select) )
-      throw new TypeError("Invalid sub query")
+      throw new TypeError("Invalid sub query expression")
     
     this.query = query
     this.name = as
