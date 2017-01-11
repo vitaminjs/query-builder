@@ -39,9 +39,9 @@ export default class IsIn extends Criterion {
     var bool = super.compile(compiler)
     var operator = compiler.operator(this.op)
     var column = this.column.compile(compiler)
-    var values = compiler.parameterize(values)
+    var values = compiler.parameterize(this.values)
     
-    return bool + column + operator + `(${values})`
+    return bool + column + operator + ` (${values})`
   }
   
 }

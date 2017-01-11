@@ -1,22 +1,23 @@
 
-import BasicCriterion from './basic'
+import Basic from './basic'
 
 /**
  * @class BetweenCriterion
  */
-export default class Between extends BasicCriterion {
+export default class Between extends Basic {
   
   /**
    * 
-   * @param {String|Expression} column
-   * @param {String} operator
+   * @param {String|Expression} expr
    * @param {Any} values
    * @param {String} bool
    * @param {Boolean} negate
    * @constructor
    */
-  constructor(column, operator, values, bool = 'and', negate = false) {
-    super(column, operator, values[0], bool, negate)
+  constructor(expr, values, bool = 'and', negate = false) {
+    var operator = (negate ? 'not ' : '') + 'between'
+    
+    super(expr, operator, values[0], bool, false)
     
     this.value2 = values[1]
   }

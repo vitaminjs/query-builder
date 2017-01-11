@@ -40,7 +40,7 @@ export default class SubQuery extends Criterion {
     var column = this.column.compile(compiler)
     var query = compiler.parametrize(this.query)
     
-    return bool + column + ` ${operator} (${query})`
+    return bool + column + operator + ` (${query})`
   }
   
 }
