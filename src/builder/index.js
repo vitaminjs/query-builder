@@ -2,6 +2,7 @@
 import Expression, { Raw, Join, Aggregate, SubQuery, Order, Column, Table, Union } from '../expression'
 import { isString, isArray, isFunction, toArray, remove } from 'lodash'
 import Compiler, { createCompiler } from './compiler'
+import { Criteria } from './criterion'
 import { Select } from './query'
 
 const SELECT_QUERY = 'select'
@@ -32,6 +33,9 @@ export default class Builder {
     this._unionLimit  = null
     this._unionOffset = null
     this._distinct    = false
+    
+    this.conditions       = this.newCriteria()
+    this.havingConditions = this.newCriteria()
   }
   
   get type() {
@@ -107,7 +111,7 @@ export default class Builder {
     if ( isArray(columns) ) columns = toArray(arguments)
     
     // remove the given columns
-    columns.forEach(col => remove(this.columns, c => c.isEqual(col))
+    columns.forEach(col => remove(this.columns, c => c.isEqual(col)))
     
     return this
   }
@@ -366,8 +370,21 @@ export default class Builder {
   join(table, first, operator, second, type = 'inner') {
     var criteria = null
     
+    // add the join criteria object
     if ( first != null ) {
-      // TODO
+      let builder = this.newBuilder()
+      
+      if ( operator && !second ) {
+        second = operator
+        operator = '='
+      }
+      
+      // usually, a join clause compare between 2 columns
+      if ( isString(second) )
+        second = new Column(second)
+      
+      // set the join conditions
+      criteria = builder.where(first, operator, second).conditions
     }
     
     this.joins.push(new Join(table, type, criteria))
@@ -384,6 +401,19 @@ export default class Builder {
   joinRaw(expr, bindings = []) {
     this.joins.push(this.ensureRaw(expr, bindings))
     return this
+  }
+  
+  /**
+   * 
+   * @param {Any} query
+   * @param {String} first
+   * @param {String} operator
+   * @param {String} second
+   * @param {String} type
+   * @return this
+   */
+  joinSub(query, first, operator, second, type = 'inner') {
+    return this.join(this.ensureSubQuery(query), first, operator, second, type)
   }
   
   /**
@@ -449,10 +479,33 @@ export default class Builder {
   
   /**
    * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @param {String} bool
+   * @param {Boolean} not
+   * @return this
+   */
+  where(expr, operator, value, bool = 'and', not = false) {
+    // TODO
+    
+    return this
+  }
+  
+  /**
+   * 
    * @return Builder instance
    */
   newBuilder() {
     return new Builder
+  }
+  
+  /**
+   * 
+   * @return Criteria instance
+   */
+  newCriteria() {
+    return new Criteria
   }
   
   /**

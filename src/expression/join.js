@@ -38,7 +38,7 @@ export default class Join extends Expression {
   compile(compiler) {
     var sql = this.type +' join '+ this.table.compile(compiler)
     
-    if ( this.criteria )
+    if ( this.criteria != null )
       sql += ' on ' + this.criteria.compile(compiler)
     
     return sql
