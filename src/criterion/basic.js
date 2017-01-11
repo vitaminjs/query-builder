@@ -1,32 +1,31 @@
 
+import Expression, { Column } from '../expression'
 import { isString } from 'lodash'
-import Expression from '../base'
-import Column from '../column'
+import Criterion from './base'
 
 /**
- * @class CriterionExpression
+ * @class BasicCriterion
  */
-export default class Criterion extends Expression {
+export default class Basic extends Criterion {
   
   /**
    * 
    * @param {String|Expression} column
    * @param {String} operator
    * @param {Any} value
-   * @param {String} prefix
+   * @param {String} bool
    * @param {Boolean} negate
    * @constructor
    */
-  constructor(column, operator, value, prefix = 'and', negate = false) {
-    super()
+  constructor(column, operator, value, bool = 'and', negate = false) {
+    super(bool)
     
     if ( isString(column) ) column = new Column(column)
     
-    if (! (column instanceof Expression ) )
-      throw new TypeError("Invalid column expression")
+    if (! (column instanceof Expression) )
+      throw new TypeError("Invalid condition expression")
     
-    this.prefix = prefix
-    this.negate = negate
+    this.not = negate ? 'not ' : ''
     this.column = column
     this.value = value
     this.op = operator
@@ -38,13 +37,12 @@ export default class Criterion extends Expression {
    * @return string
    */
   compile(compiler) {
-    var bool = this.prefix + ' '
-    var not = this.negate ? 'not ' : ''
+    var bool = super.compile(compiler)
     var operator = compiler.operator(this.op)
     var column = this.column.compile(compiler)
     var value = compiler.parametrize(this.value)
     
-    return bool + not + column + ` ${operator} ` + value
+    return bool + this.not + column + ` ${operator} ` + value
   }
   
 }
