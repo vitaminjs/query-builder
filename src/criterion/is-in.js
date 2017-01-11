@@ -1,30 +1,32 @@
 
-import { Column } from '../expression'
-import { isString } from 'lodash'
+import { Column, SubQuery } from '../expression'
+import { isString, isArray } from 'lodash'
 import Criterion from './base'
 
 /**
- * @class IsNullCriterion
+ * @class IsInCriterion
  */
-export default class IsNull extends Criterion {
+export default class IsIn extends Criterion {
   
   /**
    * 
    * @param {String|Expression} column
+   * @param {Array|SubQuery} values
    * @param {String} bool
    * @param {Boolean} negate
    * @constructor
    */
-  constructor(expr, bool = 'and', negate = false) {
+  constructor(expr, values, bool = 'and', negate = false) {
     super(bool)
     
     if ( isString(expr) )
       expr = new Column(expr)
     
-    if (! (expr instanceof Column) )
+    if (! (expr instanceof Column && (isArray(values) || values instanceof SubQuery)) )
       throw new TypeError("Invalid condition expression")
     
-    this.op = 'is' + negate ? ' not' : ''
+    this.op = (negate ? 'not ' : '') + 'in'
+    this.values = values
     this.column = expr
   }
   
@@ -37,8 +39,9 @@ export default class IsNull extends Criterion {
     var bool = super.compile(compiler)
     var operator = compiler.operator(this.op)
     var column = this.column.compile(compiler)
+    var values = compiler.parameterize(values)
     
-    return bool + column + operator + ' null'
+    return bool + column + operator + `(${values})`
   }
   
 }

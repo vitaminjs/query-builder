@@ -1,5 +1,6 @@
 
 import Raw from './raw'
+import IsIn from './is-in'
 import Basic from './basic'
 import Exists from './exists'
 import IsNull from './is-null'
@@ -10,4 +11,4 @@ import Criteria from './criteria'
 export default Criterion
 
 // export the different kind of criteria
-export { Raw, IsNull, Basic, Exists, Between, Criteria }
+export { Raw, IsIn, IsNull, Basic, Exists, Between, Criteria }
