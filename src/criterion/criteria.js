@@ -123,10 +123,6 @@ export default class Criteria extends Criterion {
     if ( operator.indexOf('between') > -1 )
       return this.between(expr, value, bool, not)
     
-    // escape percentages and underscores for like comparaison
-    if ( operator.indexOf('like') > -1 )
-      value = value.replace(/(_|%)/g, '\\$1')
-    
     // supports `.where('column', null)`
     if ( value === null )
       return this.isNull(expr, bool, not)
