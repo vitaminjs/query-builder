@@ -1,7 +1,8 @@
 
 import { each, isBoolean, isEmpty, isPlainObject, isArray, isFunction, isString } from 'lodash'
 import Criterion, { IsNull, Basic, IsIn, Raw, Between, Exists } from './index'
-import { Raw as RawExpr, Column } from '../expression/index'
+import { Raw as RawExpr, Column, SubQuery } from '../expression/index'
+import { Select } from '../query/index'
 
 /**
  * @class CriteriaExpression
@@ -131,9 +132,12 @@ export default class Criteria extends Criterion {
     if ( isArray(value) && operator === '=' )
       return this.in(expr, value, bool, not)
     
-    // supports `.where('expr', 'operator', qb => {...})`
-    if ( isFunction(value) )
-      return this.sub(expr, operator, value, bool)
+    // supports sub queries
+    if (
+      isFunction(value) ||
+      value instanceof Select ||
+      value instanceof SubQuery
+    ) return this.sub(expr, operator, value, bool)
     
     return this.add(new Basic(expr, operator, value, bool, not))
   }
