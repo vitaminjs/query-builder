@@ -1,5 +1,5 @@
 
-import { Column } from '../expression'
+import Expression, { Column } from '../expression/index'
 import { isString } from 'lodash'
 import Criterion from './base'
 
@@ -20,10 +20,11 @@ export default class Basic extends Criterion {
   constructor(column, operator, value, bool = 'and', negate = false) {
     super(bool)
     
-    if ( isString(column) ) column = new Column(column)
+    if ( isString(column) )
+      column = new Column(column)
     
-    if (! (column instanceof Column) )
-      throw new TypeError("Invalid basic condition")
+    if (! (column instanceof Expression) )
+      throw new TypeError("Invalid condition column")
     
     this.not = negate ? 'not ' : ''
     this.column = column

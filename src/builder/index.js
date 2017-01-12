@@ -212,6 +212,17 @@ export default class Builder {
   
   /**
    * 
+   * @param {String} method
+   * @param {String} columns
+   * @param {Boolean} distinct
+   * @return this query
+   */
+  selectAggregate(method, columns, distinct = false) {
+    return this.select(new Aggregate(method, columns, distinct))
+  }
+  
+  /**
+   * 
    * @param {Any} value
    * @return this
    */
@@ -372,7 +383,7 @@ export default class Builder {
     
     // add the join criteria object
     if ( first != null ) {
-      let builder = this.newBuilder()
+      criteria = this.newCriteria()
       
       if ( operator && !second ) {
         second = operator
@@ -381,12 +392,9 @@ export default class Builder {
       
       // usually, a join clause compare between 2 columns
       if ( isString(second) )
-        builder.whereColumn(first, operator, second)
+        criteria.on(first, operator, second)
       else
-        builder.where(first, operator, second)
-      
-      // set the join conditions
-      criteria = builder.conditions
+        criteria.where(first, operator, second)
     }
     
     this.joins.push(new Join(table, type, criteria))
@@ -489,70 +497,7 @@ export default class Builder {
    * @return this
    */
   where(expr, operator, value, bool = 'and', not = false) {
-    if ( value != null && operator == null ) {
-      value = operator
-      operator = '='
-    }
-    
-    // supports `.where(Boolean)`
-    if ( isBoolean(expr) ) {
-      let bool = expr
-      
-      expr = new Raw('1 = ' + bool ? 1 : 0)
-    }
-    
-    // supports `.where(new Raw(...))`
-    if ( expr instanceof Raw )
-      return this.whereRaw(expr, [], bool)
-    
-    // supports `.where({a: 1, b: 3})`
-    if ( isPlainObject(expr) ) {
-      let obj = expr
-      
-      expr = qb => each(obj, (val, key) => qb.where(key, '=', val))
-    }
-    
-    // supports `.where(qb => { ... })`
-    if ( isFunction(expr) ) {
-      let fn = expr
-      
-      fn(expr = this.newBuilder())
-    }
-    
-    // supports nested builders
-    if ( expr instanceof Builder )
-      expr = expr.conditions
-    
-    // format the operator
-    operator = String(operator).toLowerCase().trim()
-    
-    // supports between operator
-    if ( operator.indexOf('between') > -1 )
-      return this.whereBetween(expr, value, bool, not)
-    
-    // escape percentages and underscores for like comparaison
-    if ( operator.indexOf('like') > -1 )
-      value = value.replace(/(_|%)/g, '\\$1')
-    
-    // supports `.where('column', null)`
-    if ( value === null )
-      return this.whereNull(expr, bool, not)
-    
-    // supports `.where('column', [...])`
-    if ( isArray(value) && operator === '=' )
-      return this.whereIn(expr, value, bool, not)
-    
-    // supports sub queries
-    if (
-      isFunction(value) ||
-      value instanceof Select ||
-      value instanceof Builder ||
-      value instanceof SubQuery
-    ) return this.whereSub(expr, operator, value, bool)
-    
-    // usual basic condition
-    this.conditions.where(this.ensureColumn(expr), operator, value, bool, not)
-    
+    this.conditions.where(expr, operator, value, bool, not)
     return this
   }
   
@@ -577,31 +522,8 @@ export default class Builder {
    * @return this
    */
   whereNot(expr, operator, value, bool = 'and') {
-    var not = true
-    
-    if ( value != null && operator == null ) {
-      value = operator
-      operator = '='
-    }
-    
-    // format the operator
-    operator = String(operator).toLowerCase().trim()
-    
-    // supports `.whereNot('column', 'between', [...])`
-    if ( operator === 'between' )
-      return this.whereBetween(expr, operator, value, bool, not)
-    
-    // supports `.whereNot('column', 'in', [...])`
-    if ( operator === 'in' )
-      return this.whereIn(expr, operator, value, bool, not)
-    
-    // supports `.whereNot('column', 'like', 'patern')`
-    if ( operator === 'like' ) {
-      operator = 'not like'
-      not = false
-    }
-    
-    return this.where(expr, operator, value, bool, not)
+    this.conditions.not(expr, operator, value, bool)
+    return this
   }
   
   /**
@@ -624,11 +546,7 @@ export default class Builder {
    * @return this
    */
   whereBetween(expr, values, bool = 'and', not = false) {
-    if (! (isArray(values) && values.length === 2) )
-      throw new TypeError("Invalid between condition")
-    
-    this.conditions.whereBetween(this.ensureColumn(expr), values, bool, not)
-    
+    this.conditions.between(expr, values, bool, not)
     return this
   }
   
@@ -672,14 +590,7 @@ export default class Builder {
    * @return this
    */
   whereIn(expr, values, bool = 'and', not = false) {
-    // instead of an empty array of values, a boolean expression is used
-    if ( isArray(values) && isEmpty(values) ) return this.where(not)
-    
-    // accepts sub queries
-    if (! isArray(values) ) values = this.ensureSubQuery(values)
-    
-    this.conditions.whereIn(this.ensureColumn(expr), values, bool, not)
-    
+    this.conditions.in(expr, values, bool, not)
     return this
   }
   
@@ -723,14 +634,7 @@ export default class Builder {
    * @return this
    */
   whereSub(expr, operator, query, bool = 'and') {
-    if ( isString(expr) )
-      expr = new Column(expr)
-    
-    if (! (expr instanceof Expression) )    
-      throw new TypeError("Invalid sub query expression")
-    
-    this.conditions.whereSub(expr, operator, this.ensureSubQuery(query), bool)
-    
+    this.conditions.sub(expr, operator, query, bool)
     return this
   }
   
@@ -753,7 +657,7 @@ export default class Builder {
    * @return this
    */
   whereNull(expr, bool = 'and', not = false) {
-    this.conditions.whereNull(this.ensureColumn(expr), bool, not)
+    this.conditions.isNull(expr, bool, not)
     return this
   }
   
@@ -793,7 +697,7 @@ export default class Builder {
    * @return this
    */
   whereRaw(expr, bindings = [], bool = 'and') {
-    this.conditions.whereRaw(this.ensureRaw(expr, bindings), bool)
+    this.conditions.raw(expr, bindings, bool)
     return this
   }
   
@@ -816,9 +720,8 @@ export default class Builder {
    * @return this
    */
   whereExists(query, bool = 'and', not = false) {
-    query = this.ensureSubQuery(query)
-    
-    return this.conditions.whereExists(query, bool, not)
+    this.conditions.exists(query, bool, not)
+    return this
   }
   
   /**
@@ -858,13 +761,9 @@ export default class Builder {
    * @param {Boolean} not
    * @return this
    */
-  whereColumn(expr, operator, value, bool = 'and', not = false) {
-    if ( value != null && operator == null ) {
-      value = operator
-      operator = '='
-    }
-    
-    return this.where(expr, operator, this.ensureColumn(value), bool, not)
+  whereColumn(expr, operator, value, bool = 'and') {
+    this.conditions.on(expr, operator, value, bool)
+    return this
   }
   
   /**
@@ -875,15 +774,39 @@ export default class Builder {
    * @return this
    */
   orWhereColumn(first, operator, second) {
-    return this.whereColumn(first, operator, second)
+    return this.whereColumn(first, operator, second, 'or')
   }
   
   /**
    * 
-   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @param {String} bool
+   * @param {Boolean} not
+   * @return this
    */
-  having() {
-    // TODO
+  having(expr, operator, value, bool = 'and', not = false) {
+    this.havingConditions.where(expr, operator, value, bool, not)
+    return this
+  }
+  
+  /**
+   * @alias `having()`
+   */
+  andHaving() {
+    return this.having(...arguments)
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @return this
+   */
+  orHaving(expr, operator, value) {
+    return this.having(expr, operator, value, 'or')
   }
   
   /**
@@ -894,7 +817,7 @@ export default class Builder {
    * @return this
    */
   havingRaw(expr, bindings = [], bool = 'and') {
-    this.havingConditions.where(this.ensureRaw(expr, bindings), bool)
+    this.havingConditions.raw(expr, bindings, bool)
     return this
   }
   
@@ -909,6 +832,13 @@ export default class Builder {
   }
   
   /**
+   * @alias `havingRaw()`
+   */
+  andHavingRaw() {
+    return this.havingRaw(...arguments)
+  }
+  
+  /**
    * 
    * @return Builder instance
    */
@@ -918,6 +848,8 @@ export default class Builder {
   
   /**
    * 
+   * @param {String} bool
+   * @param {Boolean} not
    * @return Criteria instance
    */
   newCriteria(bool = 'and', not = false) {
@@ -929,7 +861,6 @@ export default class Builder {
    * @param {Query|Function} query
    * @return select query
    * @throws {TypeError}
-   * @private
    */
   ensureSubQuery(query) {
     // accept a function as a parameter
@@ -960,7 +891,6 @@ export default class Builder {
    * @param {Array} bindings
    * @retrun raw expression
    * @throws {TypeError}
-   * @private
    */
   ensureRaw(expr, bindings = []) {
     if ( isString(expr) )
@@ -970,34 +900,6 @@ export default class Builder {
       throw new TypeError("Invalid raw expression")
     
     return expr
-  }
-  
-  /**
-   * 
-   * @param {String|Column} column
-   * @return column expression
-   * @throws {TypeError}
-   * @private
-   */
-  ensureColumn(column) {
-    if ( isString(column) )
-      column = new Column(column)
-    
-    if ( column instanceof Column ) return column
-    
-    throw new TypeError("Invalid column expression")
-  }
-  
-  /**
-   * 
-   * @param {String} method
-   * @param {String} columns
-   * @param {Boolean} distinct
-   * @return this query
-   * @private
-   */
-  selectAggregate(method, columns, distinct = false) {
-    return this.select(new Aggregate(method, columns, distinct))
   }
   
 }

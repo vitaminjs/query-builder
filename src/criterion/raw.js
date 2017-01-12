@@ -17,7 +17,7 @@ export default class Raw extends Criterion {
     super(bool)
     
     if ( expr instanceof Expr )
-      throw new TypeError("Invalid raw condition")
+      throw new TypeError("Invalid `raw` condition")
     
     this.expr = expr
   }

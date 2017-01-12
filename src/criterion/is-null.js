@@ -22,7 +22,7 @@ export default class IsNull extends Criterion {
       expr = new Column(expr)
     
     if (! (expr instanceof Column) )
-      throw new TypeError("Invalid is null condition")
+      throw new TypeError("Invalid `is null` condition")
     
     this.op = 'is' + negate ? ' not' : ''
     this.column = expr

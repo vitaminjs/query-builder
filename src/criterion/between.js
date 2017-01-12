@@ -1,4 +1,5 @@
 
+import { isArray } from 'lodash'
 import Basic from './basic'
 
 /**
@@ -16,6 +17,9 @@ export default class Between extends Basic {
    */
   constructor(expr, values, bool = 'and', negate = false) {
     var operator = (negate ? 'not ' : '') + 'between'
+    
+    if (! (isArray(values) && values.length === 2) )
+      throw new TypeError("Invalid values for `between` condition")
     
     super(expr, operator, values[0], bool, false)
     
