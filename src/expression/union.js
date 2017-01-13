@@ -1,7 +1,5 @@
 
-import SubQuery from './sub-query'
-import { isString } from 'lodash'
-import Expression from './base'
+import Expression, { SubQuery } from '.'
 
 /**
  * @class UnionExpression
@@ -9,7 +7,8 @@ import Expression from './base'
 export default class Union extends Expression {
   
   /**
-   * @param {String} column
+   * @param {SubQuery} query
+   * @param {Boolean} all
    * @constructor
    */
   constructor(query, all = false) {
@@ -25,18 +24,16 @@ export default class Union extends Expression {
   /**
    * 
    * @param {Compiler} compiler
-   * @return string
+   * @returns {String}
    */
   compile(compiler) {
-    var all = this.all ? 'all ' : ''
-    
-    return 'union ' + all + this.query.compile(compiler)
+    return 'union ' + (this.all ? 'all ' : '') + this.query.compile(compiler)
   }
   
   /**
    * 
    * @param {Any} expr
-   * @return boolean
+   * @returns {Boolean}
    */
   isEqual(expr) {
     return super.isEqual() || (

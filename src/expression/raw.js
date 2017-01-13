@@ -31,7 +31,7 @@ export default class Raw extends Expression {
    * 
    * @param {String} before
    * @param {String} after
-   * @return this raw
+   * @returns {Raw}
    */
   wrap(before = '(', after = ')') {
     this.before = before
@@ -42,7 +42,7 @@ export default class Raw extends Expression {
   /**
    * 
    * @param {String} name
-   * @return this raw
+   * @returns {Raw}
    */
   as(name) {
     this.name = name
@@ -52,7 +52,7 @@ export default class Raw extends Expression {
   /**
    * 
    * @param {String|Compiler} compiler
-   * @return string
+   * @returns {String}
    */
   compile(compiler) {
     var expr = this.sql.replace(/\?/g, compiler.parameter)
@@ -67,7 +67,7 @@ export default class Raw extends Expression {
   /**
    * 
    * @param {Any} expr
-   * @return boolean
+   * @returns {Boolean}
    */
   isEqual(value) {
     return super.isEqual() || (

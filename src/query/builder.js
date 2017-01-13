@@ -1,9 +1,10 @@
 
-import { isString, isArray, isBoolean, isFunction, isEmpty, isPlainObject, toArray, each, remove } from 'lodash'
-import Expression, { Raw, Join, Aggregate, SubQuery, Order, Column, Table, Union } from '../expression'
-import Compiler, { createCompiler } from './compiler'
-import { Criteria } from '../criterion/index'
-import { Select } from './query'
+import Expression, { Join, Aggregate, Order, Column, Table, Union } from '../expression'
+import { isString, isArray, toArray, isFunction, remove } from 'lodash'
+import Compiler, { createCompiler } from '../compiler'
+import { Criteria } from '../criterion'
+import { createQuery } from '.'
+import { SQ } from '../helpers'
 
 const SELECT_QUERY = 'select'
 const INSERT_QUERY = 'insert'
@@ -27,6 +28,7 @@ export default class Builder {
     this.orders       = []
     this.columns      = []
     this.unionOrders  = []
+    
     this._type        = null
     this._limit       = null
     this._offset      = null
@@ -34,78 +36,126 @@ export default class Builder {
     this._unionOffset = null
     this._distinct    = false
     
-    this.conditions       = this.newCriteria()
-    this.havingConditions = this.newCriteria()
+    this.conditions       = new Criteria()
+    this.havingConditions = new Criteria()
   }
   
-  get type() {
+  /**
+   * 
+   * @returns {String}
+   */
+  getType() {
     return this._type
   }
   
-  set type(value) {
+  /**
+   * 
+   * @param {String} value
+   * @returns {Builder}
+   */
+  setType(value) {
     if ( this._type == null ) this._type = value
     
     // multiple types is not supported
     if ( this._type !== value )
       throw new TypeError("Ambiguous query type")
   }
-  
-  get hasUnions() {
-    return this.unions.length > 0
+
+  /**
+   * 
+   * @returns {Boolean}
+   */
+  isDistinct() {
+    return this._distinct
   }
   
   /**
    * 
-   * @return Query instance
+   * @returns {Query}
    */
   build() {
-    // TODO
+    return createQuery(this._type, this)
   }
   
   /**
    * 
    * @param {String|Compiler} dialect
    * @throws {TypeError}
-   * @return plain object
+   * @returns {Object}
    */
   compile(dialect) {
     if ( isString(dialect) )
       dialect = createCompiler(dialect)
     
-    if (! (dialect instanceof Compiler) )
-      throw new TypeError("Invalid query compiler")
+    if ( dialect instanceof Compiler ) {
+      var sql = this.build().compile(dialect)
+      var values = dialect.getBindings()
+
+      return { sql, values }
+    }
     
-    return dialect.compile(this.build())
+    throw new TypeError("Invalid query compiler")
   }
   
   /**
    * 
    * @param {Array} columns
-   * @return this
+   * @returns {Builder}
    */
   select(columns) {
     if ( isArray(columns) ) columns = toArray(arguments)
     
-    // set the type of the query to build
-    this.type = SELECT_QUERY
+    // set the type of the query
+    this.setType(SELECT_QUERY)
     
     // add the columns
     columns.forEach(value => {
-      if ( isString(value) ) value = new Column(value)
-      
-      if (! (value instanceof Expression) )
-        throw new TypeError("Invalid column expression")
-      
-      this.columns.push(value)
+      this.addColumn(value)
     })
     
     return this
+  }
+
+  /**
+   * 
+   * @param {Expression} value
+   * @returns {Builder}
+   */
+  addColumn(value) {
+    if ( isString(value) )
+      value = new Column(value)
+      
+    if ( value instanceof Expression ) {
+      // TODO check duplicates before addition
+      this.columns.push(value)
+      return this
+    }
+    
+    throw new TypeError("Invalid column expression")
+  }
+
+  /**
+   * 
+   * @param {Array} value
+   * @returns {Builder}
+   */
+  setColumns(value = []) {
+    this.columns = value
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Array}
+   */
+  getColumns() {
+    return this.columns.slice()
   }
   
   /**
    * 
    * @param {Array} columns
-   * @return this
+   * @returns {Builder}
    */
   unselect(columns) {
     if ( isArray(columns) ) columns = toArray(arguments)
@@ -119,7 +169,7 @@ export default class Builder {
   /**
    * 
    * @param {Boolean} flag
-   * @return this
+   * @returns {Builder}
    */
   distinct(flag = true) {
     this._distinct = flag
@@ -130,7 +180,7 @@ export default class Builder {
    * Add distinct columns to the query
    * 
    * @param {Array} columns
-   * @return this
+   * @returns {Builder}
    */
   selectDistinct(columns) {
     return this.select(...arguments).distinct()
@@ -138,27 +188,9 @@ export default class Builder {
   
   /**
    * 
-   * @param {Query|Function} query
-   * @param {String} column
-   */
-  selectSub(query, column = '') {
-    return this.select(this.ensureSubQuery(query).as(column))
-  }
-  
-  /**
-   * @param {String|Raw} expr
-   * @param {Array} Bindings
-   * @return this
-   */
-  selectRaw(expr, bindings = []) {
-    return this.select(this.ensureRaw(expr, bindings))
-  }
-  
-  /**
-   * 
    * @param {String} columns
    * @param {Boolean} distinct
-   * @return this
+   * @returns {Builder}
    */
   selectCount(columns = '*', distinct = false) {
     return this.selectAggregate('count', columns, distinct)
@@ -167,7 +199,7 @@ export default class Builder {
   /**
    * @param {String} column
    * @param {Boolean} distinct
-   * @return this
+   * @returns {Builder}
    */
   selectMin(column, distinct = false) {
     return this.selectAggregate('min', column, distinct)
@@ -176,7 +208,7 @@ export default class Builder {
   /**
    * @param {String} column
    * @param {Boolean} distinct
-   * @return this
+   * @returns {Builder}
    */
   selectMax(column, distinct = false) {
    return this.selectAggregate('max', column, distinct)
@@ -185,7 +217,7 @@ export default class Builder {
   /**
    * @param {String} column
    * @param {Boolean} distinct
-   * @return this
+   * @returns {Builder}
    */
   selectSum(column, distinct = false) {
     return this.selectAggregate('sum', column, distinct)
@@ -194,20 +226,10 @@ export default class Builder {
   /**
    * @param {String} column
    * @param {Boolean} distinct
-   * @return this
+   * @returns {Builder}
    */
   selectAvg(column, distinct = false) {
     return this.selectAggregate('avg', column, distinct)
-  }
-  
-  /**
-   * @param {String} column
-   * @param {Boolean} distinct
-   * @return this
-   * @alias `selectAvg`
-   */
-  selectAverage(column, distinct = false) {
-    return this.selectAvg(...arguments)
   }
   
   /**
@@ -215,7 +237,7 @@ export default class Builder {
    * @param {String} method
    * @param {String} columns
    * @param {Boolean} distinct
-   * @return this query
+   * @returns {Builder}
    */
   selectAggregate(method, columns, distinct = false) {
     return this.select(new Aggregate(method, columns, distinct))
@@ -224,10 +246,11 @@ export default class Builder {
   /**
    * 
    * @param {Any} value
-   * @return this
+   * @returns {Builder}
    */
   from(value) {
-    if ( isString(value) ) value = new Table(value)
+    if ( isString(value) )
+      value = new Table(value)
     
     if (! (value instanceof Expression) )
       throw new TypeError("Invalid table expression")
@@ -236,124 +259,246 @@ export default class Builder {
     
     return this
   }
-  
+
   /**
    * 
-   * @param {String|Raw} expr
-   * @param {Array} bindings
-   * @return this
+   * @param {Array} value
+   * @returns {Builder}
    */
-  fromRaw(expr, bindings = []) {
-    return this.from(this.ensureRaw(expr, bindings))
+  setTables(value = []) {
+    this.tables = value
+    return this
   }
-  
+
   /**
    * 
-   * @param {Query|Function} query
-   * @param {String} table
-   * @return this
+   * @returns {Array}
    */
-  fromSub(query, table = '') {
-    return this.from(this.ensureSubQuery(query).as(table))
+  getTables() {
+    return this.tables.slice()
   }
   
   /**
    * 
    * @param {Integer} value
-   * @return this
+   * @returns {Builder}
    */
   limit(value) {
     if ( (value = parseInt(value, 10)) > 0 )
-      this[this.hasUnions ? '_unionLimit' : '_limit'] = value
+      this._limit = value
     
+    return this
+  }
+
+  /**
+   * 
+   * @param {Integer} value
+   * @returns {Builder}
+   */
+  unionLimit(value) {
+    if ( (value = parseInt(value, 10)) > 0 )
+      this._unionLimit = value
+    
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Number|null}
+   */
+  getLimit() {
+    return this._limit
+  }
+
+  /**
+   * 
+   * @returns {Builder}
+   */
+  resetLimit() {
+    this._limit = null
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Number|null}
+   */
+  getUnionLimit() {
+    return this._unionLimit
+  }
+
+  /**
+   * 
+   * @returns {Builder}
+   */
+  resetUnionLimit() {
+    this._unionLimit = null
     return this
   }
   
   /**
    * 
    * @param {Integer} value
-   * @return this
+   * @returns {Builder}
    */
   offset(value) {
     if ( (value = parseInt(value, 10)) > 0 )
-      this[this.hasUnions ? '_unionLimit' : '_limit'] = value
+      this._offset = value
     
+    return this
+  }
+
+  /**
+   * 
+   * @param {Integer} value
+   * @returns {Builder}
+   */
+  unionOffset(value) {
+    if ( (value = parseInt(value, 10)) > 0 )
+      this._unionLimit = value
+    
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Number|null}
+   */
+  getOffset() {
+    return this._offset
+  }
+
+  /**
+   * 
+   * @returns {Number|null}
+   */
+  getUnionOffset() {
+    return this._unionOffset
+  }
+
+  /**
+   * 
+   * @returns {Builder}
+   */
+  resetOffset() {
+    this._offset = null
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Builder}
+   */
+  resetUnionOffset() {
+    this._unionOffset = null
     return this
   }
   
   /**
    * 
    * @param {Array} columns
-   * @return this
+   * @returns {Builder}
    */
   groupBy(columns) {
     if (! isArray(columns) ) columns = toArray(arguments)
+
+    // set the type of the query
+    this.setType(SELECT_QUERY)
     
     columns.forEach(value => {
-      if ( isString(value) ) value = new Column(value)
-      
-      if (! (value instanceof Expression) )
-        throw new TypeError("Invalid group expression")
+      // select the group by column by convention
+      this.addColumn(value)
       
       this.groups.push(value)
-      
-      // select also the grouped columns
-      // TODO check duplicates before addition
-      this.columns.push(value)
     })
     
     return this
   }
-  
+
   /**
    * 
-   * @param {String|Raw} expr
-   * @param {Array} bindings
-   * @return this
+   * @returns {Array}
    */
-  groupByRaw(expr, bindings = []) {
-    this.groupBy(this.ensureRaw(expr, bindings))
+  getGroups() {
+    return this.groups.slice()
+  }
+
+  /**
+   * 
+   * @param {Array} value
+   * @returns {Builder}
+   */
+  setGroups(value) {
+    this.groups = value
+    return this
   }
   
   /**
    * 
    * @param {Array} columns
+   * @returns {Builder}
    */
   orderBy(columns) {
-    var orders = this[this.hasUnions ? 'unionOrders' : 'orders']
-    
     if (! isArray(columns) ) columns = toArray(arguments)
     
     columns.forEach(value => {
-      if ( isString(value) ) value = new Order(value)
+      if ( isString(value) )
+        value = new Order(value)
       
       if (! (value instanceof Expression) )
         throw new TypeError("Invalid order expression")
       
-      orders.push(value)
+      this.orders.push(value)
     })
     
     return this
   }
-  
+
   /**
    * 
-   * @param {String|Raw} expr
-   * @param {Array} bindings
-   * @return this
+   * @param {Array} columns
+   * @returns {Builder}
    */
-  orderByRaw(expr, bindings = []) {
-    return this.orderBy(this.ensureRaw(expr, bindings))
+  unionOrderBy(columns) {
+    if (! isArray(columns) ) columns = toArray(arguments)
+    
+    columns.forEach(value => {
+      if ( isString(value) )
+        value = new Order(value)
+      
+      if (! (value instanceof Expression) )
+        throw new TypeError("Invalid union order by expression")
+      
+      this.unionOrders.push(value)
+    })
+    
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Array}
+   */
+  getOrders() {
+    return this.orders.slice()
+  }
+
+  /**
+   * 
+   * @returns {Array}
+   */
+  getUnionOrders() {
+    return this.unionOrders.slice()
   }
   
   /**
    * 
    * @param {Any} query
-   * @param {Boolan} all
-   * @return this
+   * @param {Boolean} all
+   * @returns {Builder}
    */
   union(query, all = false) {
-    var union = new Union(this.ensureSubQuery(query), all)
+    var union = new Union(SQ(query), all)
     
     this.unions.push(union)
     
@@ -363,10 +508,27 @@ export default class Builder {
   /**
    * 
    * @param {Any} query
-   * @return this
+   * @returns {Builder}
    */
   unionAll(query) {
     return this.union(query, true)
+  }
+
+  /**
+   * @param {Array} value
+   * @returns {Builder}
+   */
+  setUnions(value = []) {
+    this.unions = value
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Array}
+   */
+  getUnions() {
+    return this.unions.slice()
   }
   
   /**
@@ -376,16 +538,16 @@ export default class Builder {
    * @param {String} operator
    * @param {String} second
    * @param {String} type
-   * @return this
+   * @returns {Builder}
    */
   join(table, first, operator, second, type = 'inner') {
     var criteria = null
     
     // add the join criteria object
     if ( first != null ) {
-      criteria = this.newCriteria()
+      criteria =  new Criteria()
       
-      if ( operator && !second ) {
+      if ( second != null && operator == null ) {
         second = operator
         operator = '='
       }
@@ -404,36 +566,12 @@ export default class Builder {
   
   /**
    * 
-   * @param {String|Raw} expr
-   * @param {Array} bindings
-   * @return this
-   */
-  joinRaw(expr, bindings = []) {
-    this.joins.push(this.ensureRaw(expr, bindings))
-    return this
-  }
-  
-  /**
-   * 
-   * @param {Any} query
-   * @param {String} first
-   * @param {String} operator
-   * @param {String} second
-   * @param {String} type
-   * @return this
-   */
-  joinSub(query, first, operator, second, type = 'inner') {
-    return this.join(this.ensureSubQuery(query), first, operator, second, type)
-  }
-  
-  /**
-   * 
    * @param {String} table
    * @param {String} first
    * @param {String} operator
    * @param {String} second
-   * @return this
-   * @alias `join()`
+   * @param {String} type
+   * @returns {Builder}
    */
   innerJoin(table, first, operator, second) {
     return this.join(table, first, operator, second)
@@ -445,7 +583,7 @@ export default class Builder {
    * @param {String} first
    * @param {String} operator
    * @param {String} second
-   * @return this
+   * @returns {Builder}
    */
   crossJoin(table, first, operator, second) {
     return this.join(table, first, operator, second, 'cross')
@@ -457,7 +595,7 @@ export default class Builder {
    * @param {String} first
    * @param {String} operator
    * @param {String} second
-   * @return this
+   * @returns {Builder}
    */
   rightJoin(table, first, operator, second) {
     return this.join(table, first, operator, second, 'right')
@@ -469,7 +607,7 @@ export default class Builder {
    * @param {String} first
    * @param {String} operator
    * @param {String} second
-   * @return this
+   * @returns {Builder}
    */
   leftJoin(table, first, operator, second) {
     return this.join(table, first, operator, second, 'left')
@@ -481,10 +619,27 @@ export default class Builder {
    * @param {String} first
    * @param {String} operator
    * @param {String} second
-   * @return this
+   * @returns {Builder}
    */
   outerJoin(table, first, operator, second) {
     return this.join(table, first, operator, second, 'outer')
+  }
+
+  /**
+   * @param {Array} value
+   * @returns {Builder}
+   */
+  setJoins(value = []) {
+    this.joins = value
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Array}
+   */
+  getJoins() {
+    return this.joins.slice()
   }
   
   /**
@@ -494,7 +649,7 @@ export default class Builder {
    * @param {Any} value
    * @param {String} bool
    * @param {Boolean} not
-   * @return this
+   * @returns {Builder}
    */
   where(expr, operator, value, bool = 'and', not = false) {
     this.conditions.where(expr, operator, value, bool, not)
@@ -507,7 +662,7 @@ export default class Builder {
    * @param {String} operator
    * @param {Any} value
    * @param {Boolean} not
-   * @return this
+   * @returns {Builder}
    */
   orWhere(expr, operator, value) {
     return this.where(expr, operator, value, 'or')
@@ -519,7 +674,7 @@ export default class Builder {
    * @param {String} operator
    * @param {Any} value
    * @param {String} bool
-   * @return this
+   * @returns {Builder}
    */
   whereNot(expr, operator, value, bool = 'and') {
     this.conditions.not(expr, operator, value, bool)
@@ -531,7 +686,7 @@ export default class Builder {
    * @param {Any} expr
    * @param {String} operator
    * @param {Any} value
-   * @return this
+   * @returns {Builder}
    */
   orWhereNot(expr, operator, value) {
     return this.whereNot(expr, operator, value, 'or')
@@ -543,7 +698,7 @@ export default class Builder {
    * @param {Array} values
    * @param {String} bool
    * @param {Boolean} not
-   * @return this
+   * @returns {Builder}
    */
   whereBetween(expr, values, bool = 'and', not = false) {
     this.conditions.between(expr, values, bool, not)
@@ -554,7 +709,7 @@ export default class Builder {
    * 
    * @param {String|Column} expr
    * @param {Array} values
-   * @return this
+   * @returns {Builder}
    */
   orWhereBetween(expr, values) {
     return this.whereBetween(expr, values, 'or')
@@ -565,7 +720,7 @@ export default class Builder {
    * @param {String|Column} expr
    * @param {Array} values
    * @param {String} bool
-   * @return this
+   * @returns {Builder}
    */
   whereNotBetween(expr, values, bool = 'and') {
     return this.whereBetween(expr, values, bool, true)
@@ -575,7 +730,7 @@ export default class Builder {
    * 
    * @param {String|Column} expr
    * @param {Array} values
-   * @return this
+   * @returns {Builder}
    */
   orWhereNotBetween(expr, values) {
     return this.whereNotBetween(expr, values, 'or')
@@ -587,7 +742,7 @@ export default class Builder {
    * @param {Any} values
    * @param {String} bool
    * @param {Boolean} not
-   * @return this
+   * @returns {Builder}
    */
   whereIn(expr, values, bool = 'and', not = false) {
     this.conditions.in(expr, values, bool, not)
@@ -598,7 +753,7 @@ export default class Builder {
    * 
    * @param {String|Column} expr
    * @param {Any} values
-   * @return this
+   * @returns {Builder}
    */
   orWhereIn(expr, values) {
     return this.whereIn(expr, values, 'or')
@@ -609,7 +764,7 @@ export default class Builder {
    * @param {String|Column} expr
    * @param {Any} values
    * @param {String} bool
-   * @return this
+   * @returns {Builder}
    */
   whereNotIn(expr, values, bool = 'and') {
     return this.whereIn(expr, values, bool, true)
@@ -619,7 +774,7 @@ export default class Builder {
    * 
    * @param {String|Column} expr
    * @param {Any} values
-   * @return this
+   * @returns {Builder}
    */
   orWhereNotIn(expr, values) {
     return this.whereNotIn(expr, values, 'or')
@@ -627,34 +782,10 @@ export default class Builder {
   
   /**
    * 
-   * @param {String|Expression} expr
-   * @param {String} operator
-   * @param {Any} query
-   * @param {String} bool
-   * @return this
-   */
-  whereSub(expr, operator, query, bool = 'and') {
-    this.conditions.sub(expr, operator, query, bool)
-    return this
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
-   * @param {String} operator
-   * @param {Any} query
-   * @return this
-   */
-  orWhereSub(expr, operator, query) {
-    return this.whereSub(expr, operator, query, 'or')
-  }
-  
-  /**
-   * 
    * @param {String|Column} expr
    * @param {String} bool
    * @param {Boolean} not
-   * @return this
+   * @returns {Builder}
    */
   whereNull(expr, bool = 'and', not = false) {
     this.conditions.isNull(expr, bool, not)
@@ -664,7 +795,7 @@ export default class Builder {
   /**
    * 
    * @param {String|Column} expr
-   * @return this
+   * @returns {Builder}
    */
   orWhereNull(expr) {
     return this.whereNull(expr, 'or')
@@ -674,16 +805,16 @@ export default class Builder {
    * 
    * @param {String|Column} expr
    * @param {String} bool
-   * @return this
+   * @returns {Builder}
    */
   whereNotNull(expr, bool = 'and') {
-    return this.whereNull(expr, bool)
+    return this.whereNull(expr, bool, true)
   }
   
   /**
    * 
    * @param {String|Column} expr
-   * @return this
+   * @returns {Builder}
    */
   orWhereNotNull(expr) {
     return this.whereNotNull(expr, 'or')
@@ -691,33 +822,10 @@ export default class Builder {
   
   /**
    * 
-   * @param {String|Raw} expr
-   * @param {Array} bindings
-   * @param {String} bool
-   * @return this
-   */
-  whereRaw(expr, bindings = [], bool = 'and') {
-    this.conditions.raw(expr, bindings, bool)
-    return this
-  }
-  
-  /**
-   * 
-   * @param {String|Raw} expr
-   * @param {Array} bindings
-   * @param {String} bool
-   * @return this
-   */
-  orWhereRaw(expr, bindings = []) {
-    return this.whereRaw(expr, bindings, 'or')
-  }
-  
-  /**
-   * 
    * @param {SubQuery} query
    * @param {String} bool
    * @param {Boolean} not
-   * @return this
+   * @returns {Builder}
    */
   whereExists(query, bool = 'and', not = false) {
     this.conditions.exists(query, bool, not)
@@ -727,7 +835,7 @@ export default class Builder {
   /**
    * 
    * @param {SubQuery} query
-   * @return this
+   * @returns {Builder}
    */
   orWhereExists(query) {
     return this.whereExists(query, 'or')
@@ -737,7 +845,7 @@ export default class Builder {
    * 
    * @param {SubQuery} query
    * @param {String} bool
-   * @return this
+   * @returns {Builder}
    */
   whereNotExists(query, bool = 'and') {
     return this.whereExists(query, bool, true)
@@ -746,7 +854,7 @@ export default class Builder {
   /**
    * 
    * @param {SubQuery} query
-   * @return this
+   * @returns {Builder}
    */
   orWhereNotExists(query) {
     return this.whereNotExists(query, 'or')
@@ -759,7 +867,7 @@ export default class Builder {
    * @param {String|Column} value
    * @param {String} bool
    * @param {Boolean} not
-   * @return this
+   * @returns {Builder}
    */
   whereColumn(expr, operator, value, bool = 'and') {
     this.conditions.on(expr, operator, value, bool)
@@ -771,10 +879,37 @@ export default class Builder {
    * @param {String|Column} expr
    * @param {String} operator
    * @param {String|Column} value
-   * @return this
+   * @returns {Builder}
    */
   orWhereColumn(first, operator, second) {
     return this.whereColumn(first, operator, second, 'or')
+  }
+
+  /**
+   * 
+   * @param {Criteria} value
+   * @returns {Builder}
+   */
+  setConditions(value) {
+    this.conditions = value
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Builder}
+   */
+  resetConditions() {
+    this.conditions = new Criteria()
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Criteria}
+   */
+  getConditions() {
+    return this.conditions
   }
   
   /**
@@ -784,7 +919,7 @@ export default class Builder {
    * @param {Any} value
    * @param {String} bool
    * @param {Boolean} not
-   * @return this
+   * @returns {Builder}
    */
   having(expr, operator, value, bool = 'and', not = false) {
     this.havingConditions.where(expr, operator, value, bool, not)
@@ -792,114 +927,41 @@ export default class Builder {
   }
   
   /**
-   * @alias `having()`
-   */
-  andHaving() {
-    return this.having(...arguments)
-  }
-  
-  /**
    * 
    * @param {Any} expr
    * @param {String} operator
    * @param {Any} value
-   * @return this
+   * @returns {Builder}
    */
   orHaving(expr, operator, value) {
     return this.having(expr, operator, value, 'or')
   }
-  
+
   /**
    * 
-   * @param {String|Raw} expr
-   * @param {Array} bindings
-   * @param {String} bool
-   * @return this
+   * @param {Criteria} value
+   * @returns {Builder}
    */
-  havingRaw(expr, bindings = [], bool = 'and') {
-    this.havingConditions.raw(expr, bindings, bool)
+  setHavingConditions(value) {
+    this.havingConditions = value
     return this
   }
-  
+
+   /**
+   * 
+   * @returns {Builder}
+   */
+  resetHavingConditions() {
+    this.havingConditions = new Criteria()
+    return this
+  }
+
   /**
    * 
-   * @param {String|Raw} expr
-   * @param {Array} bindings
-   * @return this
+   * @returns {Criteria}
    */
-  orHavingRaw(expr, bindings = []) {
-    return this.havingRaw(expr, bindings, 'or')
-  }
-  
-  /**
-   * @alias `havingRaw()`
-   */
-  andHavingRaw() {
-    return this.havingRaw(...arguments)
-  }
-  
-  /**
-   * 
-   * @return Builder instance
-   */
-  newBuilder() {
-    return new Builder
-  }
-  
-  /**
-   * 
-   * @param {String} bool
-   * @param {Boolean} not
-   * @return Criteria instance
-   */
-  newCriteria(bool = 'and', not = false) {
-    return new Criteria(bool, not).setBuilder(this)
-  }
-  
-  /**
-   * 
-   * @param {Query|Function} query
-   * @return select query
-   * @throws {TypeError}
-   */
-  ensureSubQuery(query) {
-    // accept a function as a parameter
-    if ( isFunction(query) ) {
-      let fn = query
-      
-      fn(query = this.newBuilder())
-    }
-    
-    // accept a builder instance
-    if ( query instanceof Builder )
-      query = query.build()
-    
-    // accept a select query instance
-    if ( query instanceof Select )
-      query = new SubQuery(query)
-    
-    // throws an error for invalid argument
-    if (! (query instanceof SubQuery) )
-      throw new TypeError("Invalid sub query expression")
-    
-    return query
-  }
-  
-  /**
-   * 
-   * @param {String|Raw} expr
-   * @param {Array} bindings
-   * @retrun raw expression
-   * @throws {TypeError}
-   */
-  ensureRaw(expr, bindings = []) {
-    if ( isString(expr) )
-      expr = new Raw(expr, bindings)
-    
-    if (! (expr instanceof Raw) )
-      throw new TypeError("Invalid raw expression")
-    
-    return expr
+  getHavingConditions() {
+    return this.havingConditions
   }
   
 }

@@ -1,32 +1,33 @@
 
-import Base from './base'
+import Builder from './builder'
 import Select from './select'
 import Insert from './insert'
 import Update from './update'
 import Delete from './delete'
+import Query from './base'
 
 // export base query class
-export default Base
+export default Query
 
 // export query classes
-export { Select, Insert, Update, Delete }
+export { Select, Insert, Update, Delete, Builder }
 
 /**
  * Query factory by type
  * 
  * @param {String} type
- * @return query instance
+ * @returns {Query}
  * @throws {TypeError}
  */
-export function createQuery(type) {
+export function createQuery(type, builder) {
   
-  if ( type === 'select' ) return new Select
+  if ( type === 'select' ) return new Select(builder)
   
-  if ( type === 'insert' ) return new Insert
+  if ( type === 'insert' ) return new Insert(builder)
   
-  if ( type === 'update' ) return new Update
+  if ( type === 'update' ) return new Update(builder)
   
-  if ( type === 'delete' ) return new Delete
+  if ( type === 'delete' ) return new Delete(builder)
   
   throw new TypeError("Invalid query type")
   

@@ -33,7 +33,7 @@ export default class Join extends Expression {
   /**
    * 
    * @param {Compiler} compiler
-   * @return string
+   * @returns {String}
    */
   compile(compiler) {
     var sql = this.type +' join '+ this.table.compile(compiler)
@@ -47,7 +47,7 @@ export default class Join extends Expression {
   /**
    * 
    * @param {Any} expr
-   * @return boolean
+   * @returns {Boolean}
    */
   isEqual(expr) {
     return super.isEqual() || (

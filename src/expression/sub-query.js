@@ -9,6 +9,8 @@ export default class SubQuery extends Expression {
   
   /**
    * 
+   * @param {Select} query
+   * @param {String} as
    * @constructor
    */
   constructor(query, as = '') {
@@ -24,7 +26,7 @@ export default class SubQuery extends Expression {
   /**
    * 
    * @param {String} value
-   * @return this
+   * @returns {SubQuery}
    */
   as(value) {
     this.name = value
@@ -34,18 +36,16 @@ export default class SubQuery extends Expression {
   /**
    * 
    * @param {Compiler}
-   * @return string
+   * @returns {String}
    */
   compile(compiler) {
-    var sql = compiler.compileSelectQuery(this.query)
-    
-    return compiler.alias(`(${sql})`, this.name)
+    return compiler.alias(`(${this.query.compile(compiler)})`, this.name)
   }
   
   /**
    * 
    * @param {Any} expr
-   * @return boolean
+   * @returns {Boolean}
    */
   isEqual(expr) {
     // TODO enhance this method

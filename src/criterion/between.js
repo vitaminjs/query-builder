@@ -29,7 +29,7 @@ export default class Between extends Basic {
   /**
    * 
    * @param {Compiler} compiler
-   * @return string
+   * @returns {String}
    */
   compile(compiler) {
     return super.compile(compiler) +' and '+ compiler.parameterize(this.value2)

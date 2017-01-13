@@ -2,14 +2,24 @@
 /**
  * @class BaseQuery
  */
-export default class {
+export default class Query {
   
   /**
    * 
+   * @param {Builder} builder
    * @constructor
    */
-  constructor() {
-    
+  constructor(builder) {
+    this.builder = builder
+  }
+
+  /**
+   * 
+   * @param {Compiler} Compiler
+   * @returns {String}
+   */
+  compile(compiler) {
+    return ''
   }
   
 }

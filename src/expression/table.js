@@ -31,7 +31,7 @@ export default class Table extends Expression {
   /**
    * 
    * @param {Compiler} compiler
-   * @return string
+   * @returns {String}
    */
   compile(compiler) {
     var schema = this.schema
@@ -46,7 +46,7 @@ export default class Table extends Expression {
   /**
    * 
    * @param {Any} expr
-   * @return boolean
+   * @returns {Boolean}
    */
   isEqual(expr) {
     return super.isEqual() || (

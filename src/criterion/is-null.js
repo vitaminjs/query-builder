@@ -31,7 +31,7 @@ export default class IsNull extends Criterion {
   /**
    * 
    * @param {Compiler} compiler
-   * @return string
+   * @returns {String}
    */
   compile(compiler) {
     var bool = super.compile(compiler)

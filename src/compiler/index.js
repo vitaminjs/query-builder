@@ -6,11 +6,17 @@ import Oracle from './oracle'
 import Sqlite from './sqlite'
 import Postgre from './postgre'
 
+// export the base compiler as default 
+export default Base
+
+// export the database related compilers
+export { Mysql, Mssql, Oracle, Sqlite, Postgre }
+
 /**
  * Create a compiler for the given dialect
  * 
  * @param {String} dialect
- * @return query compiler
+ * @returns {Query}
  */
 export function createCompiler(dialect) {
   dialect = dialect.toLowerCase()
@@ -27,9 +33,3 @@ export function createCompiler(dialect) {
   
   throw new TypeError("Unknown database dialect")
 }
-
-// export the base compiler as default 
-export default Base
-
-// export the database related compilers
-export { Mysql, Mssql, Oracle, Sqlite, Postgre }

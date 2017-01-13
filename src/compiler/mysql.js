@@ -10,7 +10,7 @@ export default class extends Compiler {
    * Escape the table or column name
    * 
    * @param {String} value
-   * @return  string
+   * @returns {String}
    */
   escapeIdentifier(value) {
     return (value === '*') ? value : '`' + value.trim() + '`'

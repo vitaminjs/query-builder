@@ -8,6 +8,7 @@ import Criterion from './base'
 import Between from './between'
 import Criteria from './criteria'
 
+// export the base criterion as default
 export default Criterion
 
 // export the different kind of criteria

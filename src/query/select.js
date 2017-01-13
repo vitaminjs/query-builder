@@ -1,4 +1,5 @@
 
+import { isEmpty } from 'lodash'
 import Query from './base'
 
 /**
@@ -8,34 +9,43 @@ export default class extends Query {
   
   /**
    * 
+   * @param {Builder} builder
    * @constructor
    */
-  constructor() {
-    super()
+  constructor(builder) {
+    super(builder)
     
-    this._columns = null
-    this._tables = null
-    this._unions = null
-    this._joins = null
-    this._where = null
-    this._groups = null
-    this._having = null
-    this._orders = null
-    this._limit = null
-    this._offset = null
-    this._unionLimit = null
-    this._unionOffset = null
-    this._unionOrders = null
+    this.components = {
+      joins: this.builder.getJoins(),
+      limit: this.builder.getLimit(),
+      tables: this.builder.getTables(),
+      unions: this.builder.getUnions(),
+      orders: this.builder.getOrders(),
+      offset: this.builder.getOffset(),
+      groups: this.builder.getGroups(),
+      columns: this.builder.getColumns(),
+      distinct: this.builder.isDistinct(),
+      conditions: this.builder.getConditions(),
+      unionLimit: this.builder.getUnionLimit(),
+      unionOffset: this.builder.getUnionOffset(),
+      unionOrders: this.builder.getUnionOrders(),
+      havingConditions: this.builder.getHavingConditions(),
+    }
   }
-  
-  setColumns(value) {
-    this._columns = value
-    return this
+
+  /**
+   * 
+   * @param {Compiler} compiler
+   * @returns {String}
+   */
+  compile(compiler) {
+    if ( isEmpty(this.components.columns) && isEmpty(this.components.tables) ) return ''
+    
+    var sql = 'select ' + compiler.compileSelectComponents(this.components)
+    
+    if ( isEmpty(this.components.unions) ) return sql
+    
+    return `(${sql}) ` + compiler.compileUnionComponents(this.components)
   }
-  
-  setTables(value) {
-    this._tables = value
-    return this
-  }
-  
+
 }

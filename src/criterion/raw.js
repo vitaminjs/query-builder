@@ -25,7 +25,7 @@ export default class Raw extends Criterion {
   /**
    * 
    * @param {Compiler} compiler
-   * @return string
+   * @returns {String}
    */
   compile(compiler) {
     return super.compile(compiler) + this.expr.compile(compiler)

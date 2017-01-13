@@ -1,8 +1,8 @@
 
-import { each, isBoolean, isEmpty, isPlainObject, isArray, isFunction, isString } from 'lodash'
+import { each, isBoolean, isEmpty, isPlainObject, isArray, isFunction, isString, isObject } from 'lodash'
 import Criterion, { IsNull, Basic, IsIn, Raw, Between, Exists } from './index'
-import { Raw as RawExpr, Column, SubQuery } from '../expression/index'
-import { Select } from '../query/index'
+import Expression, { Raw as RawExpr, Column } from '../expression'
+import { SQ, RAW } from '../helpers'
 
 /**
  * @class CriteriaExpression
@@ -12,31 +12,28 @@ export default class Criteria extends Criterion {
   /**
    * 
    * @param {String} bool
-   * @param {Boolean} negate
+   * @param {Boolean} not
    * @constructor
    */
-  constructor(bool = 'and', negate = false) {
+  constructor(bool = 'and', not = false) {
     super(bool)
     
-    this.builder = null
     this.components = []
-    this.negate = negate ? 'not ' : ''
+    this.negate = not ? 'not ' : ''
   }
-  
+
   /**
    * 
-   * @param {Builder} value
-   * @return this
+   * @returns {Boolean}
    */
-  setBuilder(value) {
-    this.builder = value
-    return this
+  isEmpty() {
+    return this.components.length === 0
   }
   
   /**
    * 
    * @param {Criterion} value
-   * @return this
+   * @returns {Criteria}
    */
   add(value) {
     if (! (value instanceof Criterion) )
@@ -49,18 +46,8 @@ export default class Criteria extends Criterion {
   
   /**
    * 
-   * @param {String} bool
-   * @param {Boolean} not
-   * @return Criteria instance
-   */
-  newCriteria(bool = 'and', not = false) {
-    return new Criteria(bool, not)
-  }
-  
-  /**
-   * 
    * @param {Compiler} compiler
-   * @return string
+   * @returns {String}
    */
   compile(compiler) {
     // compile the conditions
@@ -85,7 +72,7 @@ export default class Criteria extends Criterion {
    * @param {Any} value
    * @param {String} bool
    * @param {Boolean} not
-   * @return this
+   * @returns {Criteria}
    */
   where(expr, operator, value, bool = 'and', not = false) {
     if ( value == null && operator != null ) {
@@ -95,11 +82,11 @@ export default class Criteria extends Criterion {
     
     // supports `.where(Boolean)`
     if ( isBoolean(expr) )
-      return this.raw('1 = ' + expr ? 1 : 0)
+      expr = RAW`1 = ${expr ? 1 : 0}`
     
     // supports `.where(new RawExpr(...))`
     if ( expr instanceof RawExpr )
-      return this.raw(expr, [], bool)
+      return this.add(new Raw(expr, bool))
     
     // supports `.where({a: 1, b: 3})`
     if ( isPlainObject(expr) ) {
@@ -112,10 +99,12 @@ export default class Criteria extends Criterion {
     if ( isFunction(expr) ) {
       let fn = expr
       
-      fn(expr = this.newCriteria(bool, not))
-      
-      return this.add(expr)
+      fn(expr = new Criteria(bool, not))
     }
+
+    // supports `.where(criterion)`
+    if ( expr instanceof Criterion )
+      return this.add(expr)
     
     // format the operator
     operator = String(operator).toLowerCase().trim()
@@ -133,17 +122,14 @@ export default class Criteria extends Criterion {
       return this.in(expr, value, bool, not)
     
     // supports sub queries
-    if (
-      isFunction(value) ||
-      value instanceof Select ||
-      value instanceof SubQuery
-    ) return this.sub(expr, operator, value, bool)
-    
+    if ( isFunction(value) || isObject(value) )
+      value = SQ(value)
+
     return this.add(new Basic(expr, operator, value, bool, not))
   }
   
   /**
-   * @alias `where()`
+   * @see where()
    */
   and() {
     return this.where(...arguments)
@@ -154,7 +140,7 @@ export default class Criteria extends Criterion {
    * @param {Any} expr
    * @param {String} operator
    * @param {Any} value
-   * @return this
+   * @returns {Criteria}
    */
   or(expr, operator, value) {
     return this.where(expr, operator, value, 'or')
@@ -166,7 +152,7 @@ export default class Criteria extends Criterion {
    * @param {String} operator
    * @param {Any} value
    * @param {String} bool
-   * @return this
+   * @returns {Criteria}
    */
   not(expr, operator, value, bool = 'and') {
     var not = true
@@ -197,19 +183,12 @@ export default class Criteria extends Criterion {
   }
   
   /**
-   * @alias `not()`
-   */
-  andNot() {
-    return this.not(...arguments)
-  }
-  
-  /**
    * 
    * @param {Any} expr
    * @param {String} operator
    * @param {Any} value
    * @param {String} bool
-   * @return this
+   * @returns {Criteria}
    */
   orNot(expr, operator, value) {
     return this.not(expr, operator, value, 'or')
@@ -217,88 +196,134 @@ export default class Criteria extends Criterion {
   
   /**
    * 
-   * @param {String|Raw} expr
-   * @param {Array} bindings
-   * @param {String} bool
-   * @return this
-   */
-  raw(expr, bindings = [], bool = 'and') {
-    return this.add(new Raw(this.builder.ensureRaw(expr, bindings), bool))
-  }
-  
-  /**
-   * 
-   * @param {String|Raw} expr
-   * @param {Array} bindings
-   * @return this
-   */
-  orRaw(expr, bindings = []) {
-    return this.raw(expr, bindings, 'or')
-  }
-  
-  /**
-   * @alias `raw()`
-   */
-  andRaw() {
-    return this.raw(...arguments)
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
+   * @param {String|Expression} expr
    * @param {Array} values
    * @param {String} bool
    * @param {Boolean} not
-   * @return this
+   * @returns {Criteria}
    */
   between(expr, values, bool = 'and', not = false) {
     return this.add(new Between(expr, values, bool, not))
   }
+
+  /**
+   * 
+   * @param {String|Expression} expr
+   * @param {Array} values
+   * @returns {Criteria}
+   */
+  orBetween(expr, values) {
+    return this.between(expr, values, 'or')
+  }
+
+  /**
+   * 
+   * @param {String|Expression} expr
+   * @param {Array} values
+   * @param {Boolean} bool
+   * @returns {Criteria}
+   */
+  notBetween(expr, values, bool = 'and') {
+    return this.between(expr, values, bool, true)
+  }
+
+  /**
+   * 
+   * @param {String|Expression} expr
+   * @param {Array} values
+   * @returns {Criteria}
+   */
+  orNotBetween(expr, values) {
+    return this.notBetween(expr, values, 'or')
+  }
   
   /**
    * 
-   * @param {String|Column} expr
+   * @param {String|Expression} expr
    * @param {String} bool
    * @param {Boolean} not
-   * @return this
+   * @returns {Criteria}
    */
   isNull(expr, bool = 'and', not = false) {
     return this.add(new IsNull(expr, bool, not))
   }
-  
+
   /**
    * 
-   * @param {String|Column} expr
-   * @param {String} operator
-   * @param {Any} query
-   * @param {String} bool
-   * @return this
+   * @param {String|Expression} expr
+   * @returns {Criteria}
    */
-  sub(expr, operator, query, bool = 'and') {
-    query = this.builder.ensureSubQuery(query)
-    
-    return this.add(new Basic(expr, operator, query, bool))
+  orIsNull(expr) {
+    return this.isNull(expr, 'or')
+  }
+
+  /**
+   * 
+   * @param {String|Expression} expr
+   * @param {String} bool
+   * @returns {Criteria}
+   */
+  isNotNull(expr, bool = 'and') {
+    return this.isNull(expr, bool, true)
+  }
+
+  /**
+   * 
+   * @param {String|Expression} expr
+   * @returns {Criteria}
+   */
+  orIsNotNull(expr) {
+    return this.isNotNull(expr, 'or')
   }
   
   /**
-   * @param {String|Column} expr
+   * @param {String|Expression} expr
    * @param {Array|SubQuery} values
    * @param {String} bool
    * @param {Boolean} not
-   * @return this
+   * @returns {Criteria}
    */
   in(expr, values, bool = 'and', not = false) {
     // instead of an empty array of values, a boolean expression is used
-    if ( isArray(values) && isEmpty(values) ) return this.where(not)
+    if ( isArray(values) && isEmpty(values) )
+      return this.where(not)
     
     // accepts sub queries
     if (! isArray(values) ) {
-      let operator = not ? 'not ' : '' + 'in'
+      let operator = (not ? 'not ' : '') + 'in'
       
-      return this.sub(expr, operator, values, bool)
+      return this.where(expr, operator, SQ(values), bool)
     }
     
     return this.add(new IsIn(expr, values, bool, not))
+  }
+
+  /**
+   * @param {String|Expression} expr
+   * @param {Array|SubQuery} values
+   * @returns {Criteria}
+   */
+  orIn(expr, values) {
+    return this.in(expr, values, 'or')
+  }
+
+  /**
+   * @param {String|Expression} expr
+   * @param {Array|SubQuery} values
+   * @param {String} bool
+   * @returns {Criteria}
+   */
+  notIn(expr, values, bool = 'and') {
+    return this.in(expr, values, bool, true)
+  }
+
+  /**
+   * @param {String|Expression} expr
+   * @param {Array|SubQuery} values
+   * @returns {Criteria}
+   */
+  orNotIn(expr, values) {
+    return this.notIn(expr, values, 'or')
   }
   
   /**
@@ -306,21 +331,47 @@ export default class Criteria extends Criterion {
    * @param {SubQuery} query
    * @param {String} bool
    * @param {Boolean} not
-   * @return this
+   * @returns {Criteria}
    */
   exists(query, bool = 'and', not = false) {
-    query = this.ensureSubQuery(query)
-    
-    return this.add(new Exists(query, bool, not))
+    return this.add(new Exists(SQ(query), bool, not))
+  }
+
+  /**
+   * 
+   * @param {SubQuery} query
+   * @returns {Criteria}
+   */
+  orExists(query) {
+    return this.exists(query, 'or')
+  }
+
+  /**
+   * 
+   * @param {SubQuery} query
+   * @param {String} bool
+   * @returns {Criteria}
+   */
+  notExists(query, bool = 'and') {
+    return this.exists(query, bool, true)
+  }
+
+  /**
+   * 
+   * @param {SubQuery} query
+   * @returns {Criteria}
+   */
+  orNotExists(query) {
+    return this.notExists(query, 'or')
   }
   
   /**
    * 
-   * @param {String|Column} expr
+   * @param {String|Expression} expr
    * @param {String} operator
-   * @param {String|Column} value
+   * @param {String|Expression} value
    * @param {String} bool
-   * @return this
+   * @returns {Criteria}
    */
   on(expr, operator, value, bool = 'and') {
     if ( value == null && operator != null ) {
@@ -328,30 +379,31 @@ export default class Criteria extends Criterion {
       operator = '='
     }
     
-    if ( isString(value) ) expr = new Column(value)
+    if ( isString(value) )
+      expr = new Column(value)
     
-    if ( value instanceof Column )
+    if ( value instanceof Expression )
       throw new TypeError("Invalid column expression")
     
     return this.add(new Basic(expr, operator, value, bool))
   }
   
   /**
-   * 
-   * @param {String|Column} expr
-   * @param {String} operator
-   * @param {String|Column} value
-   * @return this
-   */
-  orOn(expr, operator, value) {
-    return this.on(expr, operator, value, 'or')
-  }
-  
-  /**
-   * @alias `on()`
+   * @see `on()`
    */
   andOn() {
     return this.on(...arguments)
+  }
+  
+  /**
+   * 
+   * @param {String|Expression} expr
+   * @param {String} operator
+   * @param {String|Expression} value
+   * @returns {Criteria}
+   */
+  orOn(expr, operator, value) {
+    return this.on(expr, operator, value, 'or')
   }
   
 }

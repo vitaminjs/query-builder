@@ -27,7 +27,7 @@ export default class Order extends Column {
   /**
    * 
    * @param {Compiler} compiler
-   * @return string
+   * @returns {String}
    */
   compile(compiler) {
     return super.compile(compiler) +' '+ this.direction
@@ -36,7 +36,7 @@ export default class Order extends Column {
   /**
    * 
    * @param {Any} expr
-   * @return boolean
+   * @returns {Boolean}
    */
   isEqual(expr) {
     return super.isEqual() &&

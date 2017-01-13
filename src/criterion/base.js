@@ -16,7 +16,7 @@ export default class {
   /**
    * 
    * @param {Compiler} compiler
-   * @return string
+   * @returns {String}
    */
   compile(compiler) {
     return this.bool + ' '

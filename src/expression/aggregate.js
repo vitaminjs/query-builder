@@ -30,14 +30,14 @@ export default class Aggregate extends Expression {
     
     this.name       = as
     this.method     = method
-    this.columns     = columns
+    this.columns    = columns
     this.isDistinct = isDistinct
   }
   
   /**
    * 
    * @param {Compiler} compiler
-   * @return string
+   * @returns {String}
    */
   compile(compiler) {
     var columns = compiler.columnize(this.columns)
@@ -49,7 +49,7 @@ export default class Aggregate extends Expression {
   /**
    * 
    * @param {Any} expr
-   * @return boolean
+   * @returns {Boolean}
    */
   isEqual(expr) {
     return super.isEqual() || (

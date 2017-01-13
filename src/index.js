@@ -1,3 +1,5 @@
 
+import { Builder } from './query'
+
 // exports
-module.exports = require('./builder').default
+module.exports = Builder

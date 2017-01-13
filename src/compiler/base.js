@@ -1,11 +1,11 @@
 
 import { compact, isEmpty, isObject, isArray, isNumber, isUndefined } from 'lodash'
-import Expression, { Criteria } from '../expression'
+import Expression from '../expression'
 
 /**
  * @class BaseCompiler
  */
-export default class {
+export default class Compiler {
   
   /**
    * BaseCompiler constructor
@@ -18,42 +18,34 @@ export default class {
   
   /**
    * Default parameter placeholder
+   * 
+   * @type {String}
    */
   get parameter() {
     return '?'
   }
-  
+
   /**
-   * Compile a `select` query
    * 
-   * @param {Object} query
-   * @return plain object
+   * @returns {Array}
    */
-  compileSelect(query) {
-    if ( isEmpty(query.columns) && isEmpty(query.tables) )
-      return { sql: '', bindings: [] }
-    
-    var sql = 'select ' + this.compileSelectComponents(query)
-    
-    if (! isEmpty(query.unions) )
-      sql = `(${sql}) ${this.compileUnionComponents(query)}`
-    
-    return { sql, bindings: this.bindings }
+  getBindings() {
+    return this.bindings
   }
   
   /**
    * 
    * @param {Object} query
-   * @return string
+   * @returns {String}
    */
   compileSelectComponents(query) {
     var sql = [
-      this.compileColumns(query.columns, query.distinct, query),
+      this.compileColumns(query.columns, query),
       this.compileTables(query.tables, query),
       this.compileJoins(query.joins, query),
-      this.compileWheres(query.wheres, query),
+      this.compileConditions(query.conditions, query),
       this.compileGroups(query.groups, query),
-      this.compileHavings(query.havings, query),
+      this.compileHavingConditions(query.havingConditions, query),
       this.compileOrders(query.orders, query),
       this.compileLimit(query.limit, query),
       this.compileOffset(query.offset, query),
@@ -65,7 +57,7 @@ export default class {
   /**
    * 
    * @param {Object} query
-   * @return string
+   * @returns {String}
    */
   compileUnionComponents(query) {
     var sql = [
@@ -82,21 +74,20 @@ export default class {
    * Compile the query columns part
    * 
    * @param {Array} columns
-   * @param {Boolean} isDistinct
    * @param {Object} query
-   * @return string
+   * @returns {String}
    */
-  compileColumns(columns, isDistinct, query) {
-    if ( isEmpty(columns) ) columns = ['*']
-    
-    return (isDistinct ? 'distinct ' : '') + this.columnize(columns)
+  compileColumns(columns, query) {
+    var distinct = query.distinct ? 'distinct ' : ''
+
+    return distinct + this.columnize(isEmpty(columns) ? ['*'] : columns)
   }
   
   /**
    * 
    * @param {Array} tables
    * @param {Object} query
-   * @return string
+   * @returns {String}
    */
   compileTables(tables, query) {
     if ( isEmpty(tables) ) return
@@ -108,42 +99,31 @@ export default class {
    * 
    * @param {Array} joins
    * @param {Object} query
-   * @return string
+   * @returns {String}
    */
   compileJoins(joins, query) {
     if ( isEmpty(joins) ) return
-    
-    var sql = joins.map(join => {
-      if ( join instanceof Expression ) return this.escape(join)
-      
-      var expr = join.type +' join '+ this.escape(join.table)
-      
-      if ( join.criteria )
-        expr += ' on ' + this.compileCriteria(join.criteria).substr(4)
-      
-      return expr
-    })
-    
-    return compact(sql).join(' ')
+
+    return joins.map(join => this.escape(join)).join(' ')
   }
   
   /**
    * 
-   * @param {Array} wheres
+   * @param {Criteria} conditions
    * @param {Object} query
-   * @return string
+   * @returns {String}
    */
-  compileWheres(wheres, query) {
-    if ( isEmpty(wheres) ) return
+  compileConditions(conditions, query) {
+    if ( conditions.isEmpty() ) return
     
-    return 'where ' + this.compileConditions(wheres)
+    return 'where ' + conditions.compile(this)
   }
   
   /**
    * 
    * @param {Array} groups
    * @param {Object} query
-   * @return string
+   * @returns {String}
    */
   compileGroups(groups, query) {
     if ( isEmpty(groups) ) return
@@ -153,38 +133,33 @@ export default class {
   
   /**
    * 
-   * @param {Array} havings
+   * @param {Criteria} conditions
    * @param {Object} query
-   * @return string
+   * @returns {String}
    */
-  compileHavings(havings, query) {
-    if ( isEmpty(havings) ) return
+  compileHavingConditions(conditions, query) {
+    if ( conditions.isEmpty() ) return
     
-    return 'having ' + this.compileConditions(havings)
+    return 'having ' + conditions.compile(this)
   }
   
   /**
    * 
    * @param {Array} orders
    * @param {Object} query
-   * @return string
+   * @returns {String}
    */
   compileOrders(orders, query) {
     if ( isEmpty(orders) ) return
     
-    return 'order by ' + orders.map(order => {
-      // escape raw expressions
-      if ( order instanceof Expression ) return this.escape(order)
-      
-      return this.escape(order.column) + ' ' + order.direction
-    }).join(', ')
+    return 'order by ' + this.columnize(orders)
   }
   
   /**
    * 
    * @param {Number} limit
    * @param {Object} query
-   * @return string
+   * @returns {String}
    */
   compileLimit(limit, query) {
     if (! isNumber(limit) ) return
@@ -196,7 +171,7 @@ export default class {
    * 
    * @param {Number} offset
    * @param {Object} query
-   * @return string
+   * @returns {String}
    */
   compileOffset(offset, query) {
     if (! isNumber(offset) ) return
@@ -208,166 +183,29 @@ export default class {
    * 
    * @param {Array} unions
    * @param {Object} query
-   * @return string
+   * @returns {String}
    */
   compileUnions(unions, query) {
     if ( isEmpty(unions) ) return
-    
-    var sql = unions.map(obj => {
-      var all = (obj.all ? 'all ' : '')
-      var query = this.escape(obj.query)
-      
-      return `union ${all}${query}`
-    })
-    
-    return compact(sql).join(' ')
+
+    return unions.map(union => this.escape(union)).join(' ')
   }
   
   /**
-   * 
-   * @param {Array} conditions
-   * @return string
-   */
-  compileConditions(conditions = []) {
-    return conditions.map(cr => this.compileCriteria(cr)).join(' ').substr(3).trim()
-  }
-  
-  /**
-   * 
-   * @param {Criteria} criteria
-   * @return string
-   */
-  compileCriteria(criteria) {
-    return criteria.conditions.map(c => this.compileCriterion(c)).join(' ')
-  }
-  
-  /**
-   * 
-   * @param {Object} criterion
-   * @return string 
-   */
-  compileCriterion(criterion) {
-    var column = criterion.column
-    var bool = criterion.prefix + ' '
-    
-    // compile raw expressions
-    if ( column instanceof Expression )
-      return bool + this.escape(column)
-    
-    // compile nested criteria
-    if ( column instanceof Criteria ) {
-      let expr = this.compileCriteria(column)
-      let not = criterion.negate ? 'not ' : ''
-      
-      return bool + `${not}(${expr.substr(3).trim()})`
-    }
-    
-    switch ( criterion.operator ) {
-      case 'is':
-      case 'is not':
-        return bool + this.compileWhereNull(criterion)
-      
-      case 'in':
-      case 'not in':
-        return bool + this.compileWhereIn(criterion)
-      
-      case 'exists':
-      case 'not exists':
-        return bool + this.compileWhereExists(criterion)
-      
-      case 'between':
-      case 'not between':
-        return bool + this.compileWhereBetween(criterion)
-      
-      default:
-        return bool + this.compileBasicCriterion(criterion)
-    }
-  }
-  
-  /**
-   * 
-   * @param {Object} criterion
-   * @return string
-   */
-  compileWhereNull(criterion) {
-    var column = this.escape(criterion.column)
-    var operator = this.operator(criterion.operator)
-    
-    return `${column} ${operator} null`
-  }
-  
-  /**
-   * 
-   * @param {Object} criterion
-   * @return string
-   */
-  compileWhereIn(criterion) {
-    var operator = this.operator(criterion.operator)
-    
-    // return a boolean expression if the value is empty
-    if ( isEmpty(criterion.value) )
-      return '1 = ' + (operator === 'in' ? '0' : '1')
-    
-    var value = this.parameterize(criterion.value)
-    var column = this.escape(criterion.column)
-    
-    return `${column} ${operator} (${value})`
-  }
-  
-  /**
-   * 
-   * @param {Object} criterion
-   * @return string
-   */
-  compileWhereExists(criterion) {
-    var value = this.parameterize(criterion.value)
-    var operator = this.operator(criterion.operator)
-    
-    return `${operator} (${value})`
-  }
-  
-  /**
-   * 
-   * @param {Object} criterion
-   * @return string
-   */
-  compileWhereBetween(criterion) {
-    var column = this.escape(criterion.column)
-    var value1 = this.parameterize(criterion.value[0])
-    var value2 = this.parameterize(criterion.value[1])
-    var operator = this.operator(criterion.operator)
-    
-    return `${column} ${operator} ${value1} and ${value2}`
-  }
-  
-  /**
-   * 
-   * @param {Object} criterion
-   * @return string
-   */
-  compileBasicCriterion(criterion) {
-    var operator = this.operator(criterion.operator)
-    var value = this.parameterize(criterion.value)
-    var column = this.escape(criterion.column)
-    var not = criterion.negate ? 'not ' : ''
-    
-    return `${not}${column} ${operator} ${value}`
-  }
-  
-  /**
-   * Check and return a valid operator
+   * Validate the query operator
    * 
    * @param {String} value
-   * @return string
+   * @returns {String}
    */
   operator(value) {
+    // TODO
     return value || '='
   }
   
   /**
    * 
    * @param {Any} value
-   * @return string
+   * @returns {String}
    */
   parameterize(value) {
     // escape raw expressions
@@ -387,7 +225,7 @@ export default class {
    * Add query binding value
    * 
    * @param {Any} value
-   * @return this compiler
+   * @returns {Compiler}
    */
   addBinding(value) {
     if ( isUndefined(value) || isObject(value) )
@@ -401,7 +239,7 @@ export default class {
   /**
    * 
    * @param {Array} columns
-   * @return string
+   * @returns {String}
    */
   columnize(columns) {
     if (! isArray(columns) ) columns = [columns]
@@ -412,8 +250,8 @@ export default class {
   /**
    * Escape the given value
    * 
-   * @param {String|Aggregate|Raw} value
-   * @return string
+   * @param {String|Expression} value
+   * @returns {String}
    */
   escape(value) {
     if ( value === '*' )
@@ -422,15 +260,15 @@ export default class {
     // escape expressions
     if ( value instanceof Expression )
       return value.compile(this)
-    
-    throw new TypeError("Invalid value to escape")
+
+    throw new TypeError("Invalid expression to escape")
   }
   
   /**
    * Escape the table or column name
    * 
    * @param {String} value
-   * @return  string
+   * @returns {String}
    */
   escapeIdentifier(value) {
     return (value === '*') ? value : `"${value.trim()}"`
@@ -441,7 +279,7 @@ export default class {
    * 
    * @param {String} first
    * @param {String} second
-   * @return string
+   * @returns {String}
    */
   alias(first, second = null) {
     return first + (second ? ' as ' + this.escapeIdentifier(second) : '')

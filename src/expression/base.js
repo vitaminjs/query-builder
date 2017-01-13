@@ -7,7 +7,7 @@ export default class {
   /**
    * 
    * @param {Compiler}
-   * @return string
+   * @returns {String}
    */
   compile(compiler) {
     throw new Error("Not overridden method")
@@ -16,7 +16,7 @@ export default class {
   /**
    * 
    * @param {Any} expr
-   * @return boolean
+   * @returns {Boolean}
    */
   isEqual(expr) {
     return this === expr
