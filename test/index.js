@@ -1,5 +1,5 @@
 
-var Builder = require('../lib/query/builder')
+var Builder = require('../lib/index')
 var assert = require('assert')
 
 var qb = () => new Builder()
@@ -16,10 +16,17 @@ function compile(qb) {
 
   assert.equal(q.sql, "")
   assert.deepEqual(q.values, [])
-})()
+})();
+
+(function () {
+  // compile a simple select query
+  var q = compile(qb().from('table'))
+  
+  assert.equal(q.sql, 'select * from "table"')
+  assert.deepEqual(q.values, [])
+})();
 
 
-// log(qb().from('table'))
 // log(qb().from('table', 't'))
 // log(qb().distinct().from('table'))
 // log(qb().from('table', 't1').from('table2'))

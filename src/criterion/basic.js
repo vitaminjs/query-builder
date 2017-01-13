@@ -41,7 +41,7 @@ export default class Basic extends Criterion {
     var bool = super.compile(compiler)
     var operator = compiler.operator(this.op)
     var column = this.column.compile(compiler)
-    var value = compiler.parametrize(this.value)
+    var value = compiler.parameterize(this.value)
     
     return bool + this.not + column + ` ${operator} ` + value
   }
