@@ -1,5 +1,6 @@
 
-import Expression, { SubQuery } from '.'
+import SubQuery from './sub-query'
+import Expression from './base'
 
 /**
  * @class UnionExpression

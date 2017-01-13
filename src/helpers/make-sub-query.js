@@ -1,6 +1,8 @@
 
-import { Select, Builder } from '../query'
 import { SubQuery } from '../expression'
+import Builder from '../query/builder'
+import { isFunction } from 'lodash'
+import { Select } from '../query'
 
 /**
  * 
@@ -9,8 +11,6 @@ import { SubQuery } from '../expression'
  * @throws {TypeError}
  */
 export default function makeSubQuery(query) {
-  // var Builder = require('../query/builder')
-
   // accept a function as a parameter
   if ( isFunction(query) ) {
     let fn = query

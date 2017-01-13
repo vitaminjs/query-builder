@@ -6,10 +6,9 @@ import Exists from './exists'
 import IsNull from './is-null'
 import Criterion from './base'
 import Between from './between'
-import Criteria from './criteria'
 
 // export the base criterion as default
 export default Criterion
 
 // export the different kind of criteria
-export { Raw, Sub, IsIn, IsNull, Basic, Exists, Between, Criteria }
+export { Raw, IsIn, IsNull, Basic, Exists, Between }

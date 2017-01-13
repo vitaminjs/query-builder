@@ -2,8 +2,8 @@
 import Expression, { Join, Aggregate, Order, Column, Table, Union } from '../expression'
 import { isString, isArray, toArray, isFunction, remove } from 'lodash'
 import Compiler, { createCompiler } from '../compiler'
-import { Criteria } from '../criterion'
-import { createQuery } from '.'
+import Criteria from '../criterion/criteria'
+import { createQuery } from './index'
 import { SQ } from '../helpers'
 
 const SELECT_QUERY = 'select'
@@ -29,36 +29,15 @@ export default class Builder {
     this.columns      = []
     this.unionOrders  = []
     
-    this._type        = null
     this._limit       = null
     this._offset      = null
     this._unionLimit  = null
     this._unionOffset = null
     this._distinct    = false
+    this._type        = SELECT_QUERY
     
     this.conditions       = new Criteria()
     this.havingConditions = new Criteria()
-  }
-  
-  /**
-   * 
-   * @returns {String}
-   */
-  getType() {
-    return this._type
-  }
-  
-  /**
-   * 
-   * @param {String} value
-   * @returns {Builder}
-   */
-  setType(value) {
-    if ( this._type == null ) this._type = value
-    
-    // multiple types is not supported
-    if ( this._type !== value )
-      throw new TypeError("Ambiguous query type")
   }
 
   /**
@@ -103,10 +82,7 @@ export default class Builder {
    * @returns {Builder}
    */
   select(columns) {
-    if ( isArray(columns) ) columns = toArray(arguments)
-    
-    // set the type of the query
-    this.setType(SELECT_QUERY)
+    if (! isArray(columns) ) columns = toArray(arguments)
     
     // add the columns
     columns.forEach(value => {
@@ -158,7 +134,7 @@ export default class Builder {
    * @returns {Builder}
    */
   unselect(columns) {
-    if ( isArray(columns) ) columns = toArray(arguments)
+    if (! isArray(columns) ) columns = toArray(arguments)
     
     // remove the given columns
     columns.forEach(col => remove(this.columns, c => c.isEqual(col)))
@@ -401,9 +377,6 @@ export default class Builder {
    */
   groupBy(columns) {
     if (! isArray(columns) ) columns = toArray(arguments)
-
-    // set the type of the query
-    this.setType(SELECT_QUERY)
     
     columns.forEach(value => {
       // select the group by column by convention

@@ -1,16 +1,15 @@
 
-import Builder from './builder'
+import Query from './base'
 import Select from './select'
 import Insert from './insert'
 import Update from './update'
 import Delete from './delete'
-import Query from './base'
 
 // export base query class
 export default Query
 
 // export query classes
-export { Select, Insert, Update, Delete, Builder }
+export { Select, Insert, Update, Delete }
 
 /**
  * Query factory by type

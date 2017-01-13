@@ -1,6 +1,6 @@
 
-import Expression from './base'
 import { Select } from '../query'
+import Expression from './base'
 
 /**
  * @class SubQueryExpression

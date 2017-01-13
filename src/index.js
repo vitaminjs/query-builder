@@ -1,5 +1,5 @@
 
-import { Builder } from './query'
+import Builder from './query/builder'
 
 // exports
 module.exports = Builder
