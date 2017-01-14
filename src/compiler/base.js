@@ -40,7 +40,7 @@ export default class Compiler {
    */
   compileSelectComponents(query) {
     var sql = [
-      this.compileColumns(query.columns, query),
+      this.compileSelectColumns(query.columns, query),
       this.compileTables(query.tables, query),
       this.compileJoins(query.joins, query),
       this.compileConditions(query.conditions, query),
@@ -77,10 +77,10 @@ export default class Compiler {
    * @param {Object} query
    * @returns {String}
    */
-  compileColumns(columns, query) {
-    var distinct = query.distinct ? 'distinct ' : ''
+  compileSelectColumns(columns, query) {
+    var select = 'select ' + (query.distinct ? 'distinct ' : '')
 
-    return distinct + this.columnize(isEmpty(columns) ? ['*'] : columns)
+    return select + this.columnize(isEmpty(columns) ? ['*'] : columns)
   }
   
   /**

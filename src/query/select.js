@@ -41,7 +41,7 @@ export default class extends Query {
   compile(compiler) {
     if ( isEmpty(this.components.columns) && isEmpty(this.components.tables) ) return ''
     
-    var sql = 'select ' + compiler.compileSelectComponents(this.components)
+    var sql = compiler.compileSelectComponents(this.components)
     
     if ( isEmpty(this.components.unions) ) return sql
     
