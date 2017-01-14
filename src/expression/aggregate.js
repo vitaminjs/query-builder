@@ -1,37 +1,36 @@
 
-import { isString, isEqual } from 'lodash'
-import Expression from './base'
+import { isString } from 'lodash'
+import Column from './column'
+import Func from './function'
 
 /**
  * @class AggregateExpression
  */
-export default class Aggregate extends Expression {
+export default class Aggregate extends Func {
   
   /**
    * 
-   * @param {String} method
-   * @param {String|Array} columns
-   * @param {Boolean} isDistinct
+   * @param {String} name
+   * @param {String|Expression} expr
    * @constructor
    */
-  constructor(method, columns, isDistinct = false) {
-    super()
+  constructor(name, expr) {
+    if ( isString(expr) )
+      expr = new Column(expr)
     
-    var as = ''
+    super(name, expr)
     
-    if ( isString(columns) ) {
-      if ( !as && columns.toLowerCase().indexOf(' as ') > 0 )
-        [columns, as] = columns.split(' as ').map(str => str.trim())
-      
-      columns = columns.split(/\s*,\s*/)
-    }
-    
-    // TODO ensure aggregation method is valid
-    
-    this.name       = as
-    this.method     = method
-    this.columns    = columns
-    this.isDistinct = isDistinct
+    this.alias = ''
+  }
+  
+  /**
+   * 
+   * @param {String} name
+   * @returns {Count}
+   */
+  as(name) {
+    this.alias = name
+    return this
   }
   
   /**
@@ -40,10 +39,7 @@ export default class Aggregate extends Expression {
    * @returns {String}
    */
   compile(compiler) {
-    var columns = compiler.columnize(this.columns)
-    var distinct = this.isDistinct ? 'distinct ' : ''
-    
-    return compiler.alias(`${this.method}(${distinct}${columns})`, this.name)
+    return compiler.alias(super.compile(compiler), this.alias)
   }
   
   /**
@@ -52,13 +48,9 @@ export default class Aggregate extends Expression {
    * @returns {Boolean}
    */
   isEqual(expr) {
-    return super.isEqual() || (
+    return super.isEqual() &&
       expr instanceof Aggregate &&
-      expr.name === this.name &&
-      expr.method === this.method &&
-      expr.isDistinct === this.isDistinct &&
-      isEqual(expr.columns, this.columns)
-    )
+      expr.alias === this.alias
   }
   
 }

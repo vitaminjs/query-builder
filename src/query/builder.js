@@ -164,63 +164,6 @@ export default class Builder {
   
   /**
    * 
-   * @param {String} columns
-   * @param {Boolean} distinct
-   * @returns {Builder}
-   */
-  selectCount(columns = '*', distinct = false) {
-    return this.selectAggregate('count', columns, distinct)
-  }
-  
-  /**
-   * @param {String} column
-   * @param {Boolean} distinct
-   * @returns {Builder}
-   */
-  selectMin(column, distinct = false) {
-    return this.selectAggregate('min', column, distinct)
-  }
-  
-  /**
-   * @param {String} column
-   * @param {Boolean} distinct
-   * @returns {Builder}
-   */
-  selectMax(column, distinct = false) {
-   return this.selectAggregate('max', column, distinct)
-  }
-  
-  /**
-   * @param {String} column
-   * @param {Boolean} distinct
-   * @returns {Builder}
-   */
-  selectSum(column, distinct = false) {
-    return this.selectAggregate('sum', column, distinct)
-  }
-  
-  /**
-   * @param {String} column
-   * @param {Boolean} distinct
-   * @returns {Builder}
-   */
-  selectAvg(column, distinct = false) {
-    return this.selectAggregate('avg', column, distinct)
-  }
-  
-  /**
-   * 
-   * @param {String} method
-   * @param {String} columns
-   * @param {Boolean} distinct
-   * @returns {Builder}
-   */
-  selectAggregate(method, columns, distinct = false) {
-    return this.select(new Aggregate(method, columns, distinct))
-  }
-  
-  /**
-   * 
    * @param {Any} value
    * @returns {Builder}
    */

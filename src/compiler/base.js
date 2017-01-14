@@ -275,6 +275,17 @@ export default class Compiler {
   }
   
   /**
+   * Escape function name
+   * 
+   * @param {String} value
+   * @returns {String}
+   */
+  escapeFunction(value) {
+    // TODO
+    return value
+  }
+  
+  /**
    * Join two identifiers by `AS` clause
    * 
    * @param {String} first
