@@ -1,8 +1,9 @@
 
-import RAW from './make-raw'
-import SQ from './make-sub-query'
-
-export { RAW, SQ }
-
 // export aggregators
 export * from './aggregate'
+
+// export expressions
+export * from './expression'
+
+// export conditions
+export * from './condition'
