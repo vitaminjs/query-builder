@@ -12,7 +12,7 @@ import { Select } from '../query'
  * @return {Raw}
  */
 export function RAW(parts = [], ...args) {
-  if ( isString(parts) ) parts = parts.splice('?')
+  if ( isString(parts) ) parts = parts.split('?')
 
   // TODO check for undefined values
   

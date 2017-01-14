@@ -593,7 +593,7 @@ export default class Builder {
    * @returns {Builder}
    */
   whereNot(expr, operator, value, bool = 'and') {
-    this.conditions.not(expr, operator, value, bool)
+    this.conditions.whereNot(expr, operator, value, bool)
     return this
   }
   

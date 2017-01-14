@@ -103,7 +103,7 @@ export default class Criteria extends Criterion {
 
     // supports `.where(criterion)`
     if ( expr instanceof Criterion )
-      return this.add(expr.setPrefix(bool).negate(not))
+      return this.add(expr.setBoolean(bool).negate(not))
     
     // format the operator
     operator = String(operator).toLowerCase().trim()
@@ -153,7 +153,7 @@ export default class Criteria extends Criterion {
    * @param {String} bool
    * @returns {Criteria}
    */
-  not(expr, operator, value, bool = 'and') {
+  whereNot(expr, operator, value, bool = 'and') {
     var not = true
     
     if ( value == null && operator != null ) {
@@ -190,7 +190,7 @@ export default class Criteria extends Criterion {
    * @returns {Criteria}
    */
   orNot(expr, operator, value) {
-    return this.not(expr, operator, value, 'or')
+    return this.whereNot(expr, operator, value, 'or')
   }
   
   /**
