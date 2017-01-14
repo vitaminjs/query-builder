@@ -1,6 +1,4 @@
 
-import { isString } from 'lodash'
-import Column from './column'
 import Func from './function'
 
 /**
@@ -11,16 +9,14 @@ export default class Aggregate extends Func {
   /**
    * 
    * @param {String} name
-   * @param {String|Expression} expr
+   * @param {Expression} expr
    * @constructor
    */
   constructor(name, expr) {
-    if ( isString(expr) )
-      expr = new Column(expr)
-    
     super(name, expr)
     
     this.alias = ''
+    this.column = expr
   }
   
   /**
@@ -44,13 +40,14 @@ export default class Aggregate extends Func {
   
   /**
    * 
-   * @param {Any} expr
+   * @param {Expression} expr
    * @returns {Boolean}
    */
   isEqual(expr) {
-    return super.isEqual() &&
+    return super.isEqual() && 
       expr instanceof Aggregate &&
-      expr.alias === this.alias
+      expr.alias === this.alias &&
+      this.column.isEqual(expr.column)
   }
   
 }

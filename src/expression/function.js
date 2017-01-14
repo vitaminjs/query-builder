@@ -1,5 +1,4 @@
 
-import { isEqual } from 'lodash'
 import Expression from './base'
 
 /**
@@ -10,14 +9,14 @@ export default class Func extends Expression {
   /**
    * 
    * @param {String} name
-   * @param {Expression} expr
+   * @param {Array} args
    * @constructor
    */
-  constructor(name, expr = null) {
+  constructor(name, ...args) {
     super()
     
     this.name = name
-    this.expr = expr
+    this.args = args
   }
   
   /**
@@ -26,9 +25,7 @@ export default class Func extends Expression {
    * @returns {String}
    */
   compile(compiler) {
-    var expr = this.expr ? compiler.escape(this.expr) : ''
-    
-    return compiler.escapeFunction(this.name) + `(${expr})`
+    return compiler.compileFunction(this.name, this.args)
   }
   
   /**
@@ -37,11 +34,7 @@ export default class Func extends Expression {
    * @returns {Boolean}
    */
   isEqual(expr) {
-    return super.isEqual() || (
-      expr instanceof Func &&
-      expr.name === this.name && 
-      isEqual(this.expr, expr)
-    )
+    return super.isEqual() || ( expr instanceof Func && expr.name === this.name )
   }
   
 }

@@ -48,10 +48,8 @@ export default class Count extends Aggregate {
    * @returns {Boolean}
    */
   isEqual(expr) {
-    return expr instanceof Count &&
-      expr.alias === this.alias &&
-      expr.isDistinct === this.isDistinct &&
-      isEqual(expr.columns, this.columns)
+    // TODO compare also the columns
+    return expr instanceof Count && expr.alias === this.alias
   }
   
 }
