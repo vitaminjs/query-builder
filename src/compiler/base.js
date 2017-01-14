@@ -192,6 +192,17 @@ export default class Compiler {
   }
   
   /**
+   * Escape function name
+   * 
+   * @param {String} name
+   * @param {Array} args
+   * @returns {String}
+   */
+  compileFunction(name, args = []) {
+    return `${name}(${this.parameterize(args)})`
+  }
+  
+  /**
    * Validate the query operator
    * 
    * @param {String} value
@@ -208,17 +219,16 @@ export default class Compiler {
    * @returns {String}
    */
   parameterize(value) {
-    // escape raw expressions
-    if ( value instanceof Expression )
-      return this.escape(value)
-    
     if (! isArray(value) ) value = [value]
     
-    // empty arrays are not accepted
-    if ( isEmpty(value) )
-      throw new TypeError("Invalid parameter value")
+    if ( isEmpty(value) ) return ''
     
-    return value.map(v => this.addBinding(v).parameter).join(', ')
+    return value.map(val => {
+      // escape expressions
+      if ( val instanceof Expression ) return this.escape(val)
+
+      return this.addBinding(val).parameter
+    }).join(', ')
   }
   
   /**
@@ -272,17 +282,6 @@ export default class Compiler {
    */
   escapeIdentifier(value) {
     return (value === '*') ? value : `"${value.trim()}"`
-  }
-  
-  /**
-   * Escape function name
-   * 
-   * @param {String} value
-   * @returns {String}
-   */
-  escapeFunction(value) {
-    // TODO
-    return value
   }
   
   /**
