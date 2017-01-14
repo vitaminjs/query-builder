@@ -16,10 +16,9 @@ export default class Criteria extends Criterion {
    * @constructor
    */
   constructor(bool = 'and', not = false) {
-    super(bool)
+    super(bool, not)
     
     this.components = []
-    this.negate = not ? 'not ' : ''
   }
 
   /**
@@ -56,7 +55,7 @@ export default class Criteria extends Criterion {
       if ( child instanceof Criteria ) {
         let conditions = child.compile(compiler)
         
-        return `${child.bool} ${child.negate}(${conditions})`
+        return `${child.bool} ${child.not}(${conditions})`
       }
       
       return child.compile(compiler)
@@ -104,7 +103,7 @@ export default class Criteria extends Criterion {
 
     // supports `.where(criterion)`
     if ( expr instanceof Criterion )
-      return this.add(expr)
+      return this.add(expr.setPrefix(bool).negate(not))
     
     // format the operator
     operator = String(operator).toLowerCase().trim()

@@ -1,5 +1,5 @@
 
-import { Column } from '../expression/index'
+import Expression, { Column, SubQuery } from '../expression'
 import { isString, isArray } from 'lodash'
 import Criterion from './base'
 
@@ -11,22 +11,24 @@ export default class IsIn extends Criterion {
   /**
    * 
    * @param {String|Expression} column
-   * @param {Array} values
+   * @param {Array|SubQuery} values
    * @param {String} bool
-   * @param {Boolean} negate
+   * @param {Boolean} not
    * @constructor
    */
-  constructor(expr, values, bool = 'and', negate = false) {
-    super(bool)
+  constructor(expr, values, bool = 'and', not = false) {
+    super(bool, not)
     
     if ( isString(expr) ) expr = new Column(expr)
     
-    if (! (expr instanceof Column && isArray(values)) )
+    if (!
+      (expr instanceof Expression &&
+      (isArray(values) || values instanceof SubQuery))
+    )
       throw new TypeError("Invalid `in` condition")
     
-    this.op = (negate ? 'not ' : '') + 'in'
     this.values = values
-    this.column = expr
+    this.operand = expr
   }
   
   /**
@@ -35,12 +37,14 @@ export default class IsIn extends Criterion {
    * @returns {String}
    */
   compile(compiler) {
-    var bool = super.compile(compiler)
-    var operator = compiler.operator(this.op)
-    var column = this.column.compile(compiler)
+    var op = (this.not ? 'not ' : '') + 'in'
+    var operand = this.operand.compile(compiler)
     var values = compiler.parameterize(this.values)
+
+    // wrap the array values with parentheses
+    if ( isArray(this.values) ) values = `(${values})`
     
-    return bool + column + operator + ` (${values})`
+    return `${this.bool} ${operand} ${op} ${values}`
   }
   
 }

@@ -1,5 +1,5 @@
 
-import { Raw as Expr } from '../expression'
+import { Raw as Expression } from '../expression'
 import Criterion from './base'
 
 /**
@@ -14,9 +14,9 @@ export default class Raw extends Criterion {
    * @constructor
    */
   constructor(expr, bool = 'and') {
-    super(bool)
+    super(bool, false)
     
-    if ( expr instanceof Expr )
+    if ( expr instanceof Expression )
       throw new TypeError("Invalid `raw` condition")
     
     this.expr = expr
@@ -28,7 +28,7 @@ export default class Raw extends Criterion {
    * @returns {String}
    */
   compile(compiler) {
-    return super.compile(compiler) + this.expr.compile(compiler)
+    return this.bool +' '+ this.expr.compile(compiler)
   }
   
 }

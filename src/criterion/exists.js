@@ -11,17 +11,16 @@ export default class Exists extends Criterion {
    * 
    * @param {SubQuery} query
    * @param {String} bool
-   * @param {Boolean} negate
+   * @param {Boolean} not
    * @constructor
    */
-  constructor(query, bool = 'and', negate = false) {
-    super(bool)
+  constructor(query, bool = 'and', not = false) {
+    super(bool, not)
     
     if (! (query instanceof SubQuery) )
       throw new TypeError("Invalid exists condition")
     
     this.query = query
-    this.op = negate ? 'not ' : '' + 'exists'
   }
   
   /**
@@ -30,10 +29,9 @@ export default class Exists extends Criterion {
    * @returns {String}
    */
   compile(compiler) {
-    var bool = super.compile(compiler)
-    var operator = compiler.operator(this.op)
+    var op = (this.not ? 'not ' : '') + 'exists'
     
-    return bool + `${operator} (${this.query.compile(compiler)})`
+    return `${this.bool} ${op} (${this.query.compile(compiler)})`
   }
   
 }

@@ -14,20 +14,19 @@ export default class Basic extends Criterion {
    * @param {String} operator
    * @param {Any} value
    * @param {String} bool
-   * @param {Boolean} negate
+   * @param {Boolean} not
    * @constructor
    */
-  constructor(column, operator, value, bool = 'and', negate = false) {
-    super(bool)
+  constructor(expr, operator, value, bool = 'and', not = false) {
+    super(bool, not)
     
-    if ( isString(column) )
-      column = new Column(column)
+    if ( isString(expr) )
+      expr = new Column(expr)
     
-    if (! (column instanceof Expression) )
-      throw new TypeError("Invalid condition column")
+    if (! (expr instanceof Expression) )
+      throw new TypeError("Invalid condition operand")
     
-    this.not = negate ? 'not ' : ''
-    this.column = column
+    this.operand = expr
     this.value = value
     this.op = operator
   }
@@ -38,12 +37,12 @@ export default class Basic extends Criterion {
    * @returns {String}
    */
   compile(compiler) {
-    var bool = super.compile(compiler)
     var operator = compiler.operator(this.op)
-    var column = this.column.compile(compiler)
+    var operand = this.operand.compile(compiler)
     var value = compiler.parameterize(this.value)
-    
-    return bool + this.not + column + ` ${operator} ` + value
+    var prefix = this.bool + (this.not ? ' not' : '')
+
+    return `${prefix} ${operand} ${operator} ${value}`
   }
   
 }

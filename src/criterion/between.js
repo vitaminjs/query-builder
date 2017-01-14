@@ -12,18 +12,14 @@ export default class Between extends Basic {
    * @param {String|Expression} expr
    * @param {Any} values
    * @param {String} bool
-   * @param {Boolean} negate
+   * @param {Boolean} not
    * @constructor
    */
-  constructor(expr, values, bool = 'and', negate = false) {
-    var operator = (negate ? 'not ' : '') + 'between'
-    
+  constructor(expr, values, bool = 'and', not = false) {
     if (! (isArray(values) && values.length === 2) )
       throw new TypeError("Invalid values for `between` condition")
     
-    super(expr, operator, values[0], bool, false)
-    
-    this.value2 = values[1]
+    super(expr, 'between', values, bool, not)
   }
   
   /**
@@ -32,7 +28,12 @@ export default class Between extends Basic {
    * @returns {String}
    */
   compile(compiler) {
-    return super.compile(compiler) +' and '+ compiler.parameterize(this.value2)
+    var operand = this.operand.compile(compiler)
+    var op = (this.not ? 'not ' : '') + this.op
+    var value1 = compiler.parameterize(this.value[0])
+    var value2 = compiler.parameterize(this.value[1])
+
+    return `${this.bool} ${operand} ${op} ${value1} and ${value2}`
   }
   
 }
