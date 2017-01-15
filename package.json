@@ -6,7 +6,7 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "babel -q -L -D src -d lib --presets es2015",
-    "test": "npm run build && mocha"
+    "test": "npm run build && mocha --recursive"
   },
   "repository": {
     "type": "git",

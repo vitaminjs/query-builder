@@ -21,6 +21,8 @@ export { Mysql, Mssql, Oracle, Sqlite, Postgre }
 export function createCompiler(dialect) {
   dialect = dialect.toLowerCase()
   
+  if ( dialect === 'standard' ) return new Base
+  
   if ( dialect === 'mysql' ) return new Mysql
   
   if ( dialect === 'mssql' ) return new Mssql

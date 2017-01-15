@@ -10,7 +10,7 @@ import Expression, { Column, Count, Aggregate } from '../expression'
 export function COUNT(columns) {
   if (! isArray(columns) ) columns = toArray(arguments)
   
-  return new Count(columns.map(expr => ensureExpression))
+  return new Count(columns.map(ensureExpression))
 }
 
 /**
@@ -56,7 +56,7 @@ export function MAX(expr) {
  * @throws {TypeError}
  */
 function ensureExpression(expr) {
-  f ( isString(expr) )
+  if ( isString(expr) )
     expr = new Column(expr)
   
   if ( expr instanceof Expression )

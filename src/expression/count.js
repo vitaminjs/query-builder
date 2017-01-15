@@ -10,7 +10,6 @@ export default class Count extends Aggregate {
   /**
    * 
    * @param {Array} columns
-   * @param {Boolean} distinct
    * @constructor
    */
   constructor(columns = ['*']) {

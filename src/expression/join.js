@@ -21,7 +21,7 @@ export default class Join extends Expression {
     if ( isString(table) ) table = new Table(table)
     
     if (! (table instanceof Expression) )
-      throw new TypeError("Invalid join table name")
+      throw new TypeError("Invalid join expression")
     
     // TODO ensure the criteria
     

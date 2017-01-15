@@ -7,11 +7,11 @@ import { Select } from '../query'
 /**
  * A handler function for template strings
  * 
- * @param {Array} parts
+ * @param {String|Array} parts
  * @param {Array} args
  * @return {Raw}
  */
-export function RAW(parts = [], ...args) {
+export function RAW(parts, ...args) {
   if ( isString(parts) ) parts = parts.split('?')
 
   // TODO check for undefined values
@@ -26,6 +26,10 @@ export function RAW(parts = [], ...args) {
  * @throws {TypeError}
  */
 export function SQ(query) {
+  // accept a raw query string
+  if ( isString(query) )
+    return RAW(query).wrap()
+  
   // accept a function as a parameter
   if ( isFunction(query) ) {
     let fn = query
