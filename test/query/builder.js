@@ -49,12 +49,9 @@ describe("test the query builder:", () => {
       })
       
       it("accepts raw expression", () => {
-        var Expr = require('../../lib/expression').Raw
-        var builder = qb().select(RAW('1 + ? as operation', 5))
-        var q = compile(builder)
+        var q = compile(qb().select(RAW('1 + ? as operation', 5)))
         
         assert.equal(q.sql, 'select 1 + ? as operation')
-        assert.ok(builder.columns[0] instanceof Expr)
         assert.equal(q.values.length, 1)
         assert.deepEqual(q.values, [5])
       })

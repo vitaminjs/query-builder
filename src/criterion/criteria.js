@@ -103,7 +103,7 @@ export default class Criteria extends Criterion {
 
     // supports `.where(criterion)`
     if ( expr instanceof Criterion )
-      return this.add(expr.setBoolean(bool).negate(not))
+      return this.add(expr)
     
     // format the operator
     operator = String(operator).toLowerCase().trim()

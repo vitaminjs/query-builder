@@ -15,15 +15,17 @@ export default class extends Query {
   constructor(builder) {
     super(builder)
     
+    var qb = this.builder
+    
     this.components = {
-      joins: this.builder.getJoins(),
+      joins: qb.hasJoins() ? qb.getJoins().toArray() : [],
       limit: this.builder.getLimit(),
-      tables: this.builder.getTables(),
-      unions: this.builder.getUnions(),
+      tables: qb.hasTables() ? qb.getTables().toArray() : [],
+      unions: qb.hasUnions() ? qb.getUnions() : [],
       orders: this.builder.getOrders(),
       offset: this.builder.getOffset(),
       groups: this.builder.getGroups(),
-      columns: this.builder.getColumns(),
+      columns: qb.hasColumns() ? qb.getColumns().toArray() : [],
       distinct: this.builder.isDistinct(),
       conditions: this.builder.getConditions(),
       unionLimit: this.builder.getUnionLimit(),
@@ -39,11 +41,11 @@ export default class extends Query {
    * @returns {String}
    */
   compile(compiler) {
-    if ( isEmpty(this.components.columns) && isEmpty(this.components.tables) ) return ''
+    if (! (this.builder.hasColumns() || this.builder.hasTables()) ) return ''
     
     var sql = compiler.compileSelectComponents(this.components)
     
-    if ( isEmpty(this.components.unions) ) return sql
+    if (! this.builder.hasUnions() ) return sql
     
     return `(${sql}) ` + compiler.compileUnionComponents(this.components)
   }

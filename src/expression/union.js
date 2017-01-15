@@ -1,5 +1,4 @@
 
-import SubQuery from './sub-query'
 import Expression from './base'
 
 /**
@@ -15,8 +14,8 @@ export default class Union extends Expression {
   constructor(query, all = false) {
     super()
     
-    if (! (query instanceof SubQuery) )
-      throw new TypeError("Invalid union query")
+    if (! (query instanceof Expression) )
+      throw new TypeError("Invalid union expression")
     
     this.query = query
     this.all = all

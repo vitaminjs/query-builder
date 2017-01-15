@@ -1,9 +1,10 @@
 
-import Expression, { Join, Aggregate, Order, Column, Table, Union } from '../expression'
-import { isString, isArray, toArray, isFunction, remove } from 'lodash'
+import Expression, { Join, Aggregate, Order, Raw as RawExpr, Column } from '../expression'
 import Compiler, { createCompiler } from '../compiler'
+import { isString, isArray, toArray } from 'lodash'
+import { Columns, Tables, Unions, Joins } from './components'
 import Criteria from '../criterion/criteria'
-import { createQuery } from './index'
+import { createQuery } from '.'
 import { SQ } from '../helpers'
 
 const SELECT_QUERY = 'select'
@@ -21,12 +22,12 @@ export default class Builder {
    * @constructor
    */
   constructor() {
-    this.joins        = []
-    this.tables       = []
-    this.unions       = []
+    this.joins        = null
+    this.tables       = null
+    this.unions       = null
     this.groups       = []
     this.orders       = []
-    this.columns      = []
+    this.columns      = null
     this.unionOrders  = []
     
     this._limit       = null
@@ -38,14 +39,6 @@ export default class Builder {
     
     this.conditions       = new Criteria()
     this.havingConditions = new Criteria()
-  }
-
-  /**
-   * 
-   * @returns {Boolean}
-   */
-  isDistinct() {
-    return this._distinct
   }
   
   /**
@@ -82,50 +75,40 @@ export default class Builder {
    * @returns {Builder}
    */
   select(columns) {
-    if (! isArray(columns) ) columns = toArray(arguments)
-    
-    // add the columns
-    columns.forEach(value => {
-      this.addColumn(value)
-    })
-    
+    this.getColumns().add(...arguments)
     return this
   }
-
+  
   /**
    * 
-   * @param {Expression} value
-   * @returns {Builder}
+   * @returns {Boolean}
    */
-  addColumn(value) {
-    if ( isString(value) )
-      value = new Column(value)
-      
-    if ( value instanceof Expression ) {
-      // TODO check duplicates before addition
-      this.columns.push(value)
-      return this
-    }
-    
-    throw new TypeError("Invalid column expression")
+  hasColumns() {
+    return !(this.columns == null || this.columns.isEmpty())
   }
 
   /**
    * 
-   * @param {Array} value
+   * @param {Columns} value
    * @returns {Builder}
    */
-  setColumns(value = []) {
+  setColumns(value) {
+    if (! (value instanceof Columns) )
+      throw new TypeError("Invalid builder columns")
+    
     this.columns = value
     return this
   }
 
   /**
    * 
-   * @returns {Array}
+   * @returns {Columns}
    */
   getColumns() {
-    return this.columns.slice()
+    if ( this.columns == null )
+      this.columns = new Columns()
+    
+    return this.columns
   }
   
   /**
@@ -134,11 +117,7 @@ export default class Builder {
    * @returns {Builder}
    */
   unselect(columns) {
-    if (! isArray(columns) ) columns = toArray(arguments)
-    
-    // remove the given columns
-    columns.forEach(col => remove(this.columns, c => c.isEqual(col)))
-    
+    this.getColumns().remove(columns)
     return this
   }
   
@@ -151,50 +130,55 @@ export default class Builder {
     this._distinct = flag
     return this
   }
-  
-  /**
-   * Add distinct columns to the query
-   * 
-   * @param {Array} columns
-   * @returns {Builder}
-   */
-  selectDistinct(columns) {
-    return this.select(...arguments).distinct()
-  }
-  
-  /**
-   * 
-   * @param {Any} value
-   * @returns {Builder}
-   */
-  from(value) {
-    if ( isString(value) )
-      value = new Table(value)
-    
-    if (! (value instanceof Expression) )
-      throw new TypeError("Invalid table expression")
-    
-    this.tables.push(value)
-    
-    return this
-  }
 
+  /**
+   * 
+   * @returns {Boolean}
+   */
+  isDistinct() {
+    return this._distinct
+  }
+  
   /**
    * 
    * @param {Array} value
    * @returns {Builder}
    */
-  setTables(value = []) {
+  from(tables) {
+    this.getTables().add(...arguments)
+    return this
+  }
+  
+  /**
+   * 
+   * @returns {Boolean}
+   */
+  hasTables() {
+    return !(this.tables == null || this.tables.isEmpty())
+  }
+
+  /**
+   * 
+   * @param {Tables} value
+   * @returns {Builder}
+   */
+  setTables(value) {
+    if (! (value instanceof Tables) )
+      throw new TypeError("Invalid builder tables")
+    
     this.tables = value
     return this
   }
 
   /**
    * 
-   * @returns {Array}
+   * @returns {Tables}
    */
   getTables() {
-    return this.tables.slice()
+    if ( this.tables == null )
+      this.tables = new Tables()
+    
+    return this.tables
   }
   
   /**
@@ -323,7 +307,7 @@ export default class Builder {
     
     columns.forEach(value => {
       // select the group by column by convention
-      this.addColumn(value)
+      this.getColumns().add(value)
       
       this.groups.push(value)
     })
@@ -414,10 +398,7 @@ export default class Builder {
    * @returns {Builder}
    */
   union(query, all = false) {
-    var union = new Union(SQ(query), all)
-    
-    this.unions.push(union)
-    
+    this.getUnions().add(SQ(query), all)
     return this
   }
   
@@ -429,35 +410,56 @@ export default class Builder {
   unionAll(query) {
     return this.union(query, true)
   }
+  
+  /**
+   * 
+   * @returns {Boolean}
+   */
+  hasUnions() {
+    return !(this.unions == null || this.unions.isEmpty())
+  }
 
   /**
-   * @param {Array} value
+   * 
+   * @param {Unions} value
    * @returns {Builder}
    */
-  setUnions(value = []) {
+  setUnions(value) {
+    if (! (value instanceof Unions) )
+      throw new TypeError("Invalid builder unions")
+    
     this.unions = value
     return this
   }
 
   /**
    * 
-   * @returns {Array}
+   * @returns {Unions}
    */
   getUnions() {
-    return this.unions.slice()
+    if ( this.unions == null )
+      this.unions = new Unions()
+    
+    return this.unions
   }
   
   /**
    * 
-   * @param {String} table
-   * @param {String} first
+   * @param {Any} table
+   * @param {Any} first
    * @param {String} operator
-   * @param {String} second
+   * @param {Any} second
    * @param {String} type
    * @returns {Builder}
    */
   join(table, first, operator, second, type = 'inner') {
     var criteria = null
+    
+    // handle raw expressions
+    if ( table instanceof RawExpr ) {
+      this.getJoins().push(table)
+      return this
+    }
     
     // add the join criteria object
     if ( first != null ) {
@@ -470,12 +472,12 @@ export default class Builder {
       
       // usually, a join clause compare between 2 columns
       if ( isString(second) )
-        criteria.on(first, operator, second)
-      else
-        criteria.where(first, operator, second)
+        second = new Column(second)
+      
+      criteria.where(first, operator, second)
     }
     
-    this.joins.push(new Join(table, type, criteria))
+    this.getJoins().add(table, type, criteria)
     
     return this
   }
@@ -540,22 +542,36 @@ export default class Builder {
   outerJoin(table, first, operator, second) {
     return this.join(table, first, operator, second, 'outer')
   }
+  
+  /**
+   * 
+   * @returns {Boolean}
+   */
+  hasJoins() {
+    return !(this.joins == null || this.joins.isEmpty())
+  }
 
   /**
-   * @param {Array} value
+   * @param {Joins} value
    * @returns {Builder}
    */
-  setJoins(value = []) {
+  setJoins(value) {
+    if (! (value instanceof Joins) )
+      throw new TypeError("Invalid builder joins")
+    
     this.joins = value
     return this
   }
 
   /**
    * 
-   * @returns {Array}
+   * @returns {Joins}
    */
   getJoins() {
-    return this.joins.slice()
+    if ( this.joins == null )
+      this.joins = new Joins()
+    
+    return this.joins
   }
   
   /**
