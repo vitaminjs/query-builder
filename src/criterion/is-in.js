@@ -1,6 +1,6 @@
 
 import Expression, { Column, SubQuery } from '../expression'
-import { isString, isArray } from 'lodash'
+import { isString, isArray, isEmpty } from 'lodash'
 import Criterion from './base'
 
 /**
@@ -37,6 +37,9 @@ export default class IsIn extends Criterion {
    * @returns {String}
    */
   compile(compiler) {
+    if ( isArray(this.values) && isEmpty(this.values) )
+      return `1 = ${this.not ? 1 : 0}`
+
     var op = (this.not ? 'not ' : '') + 'in'
     var operand = this.operand.compile(compiler)
     var values = compiler.parameterize(this.values)
