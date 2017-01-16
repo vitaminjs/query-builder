@@ -114,7 +114,7 @@ export default class Compiler {
    * @returns {String}
    */
   compileConditions(conditions, query) {
-    if ( conditions.isEmpty() ) return
+    if ( conditions == null || conditions.isEmpty() ) return
     
     return 'where ' + conditions.compile(this)
   }
@@ -138,7 +138,7 @@ export default class Compiler {
    * @returns {String}
    */
   compileHavingConditions(conditions, query) {
-    if ( conditions.isEmpty() ) return
+    if ( conditions == null || conditions.isEmpty() ) return
     
     return 'having ' + conditions.compile(this)
   }
