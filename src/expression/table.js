@@ -1,4 +1,5 @@
 
+import { isString } from 'lodash'
 import Expression from './base'
 
 /**
@@ -49,6 +50,9 @@ export default class Table extends Expression {
    * @returns {Boolean}
    */
   isEqual(expr) {
+    if ( isString(expr) )
+      return (this.alias === expr || this.name === expr)
+
     return super.isEqual() || (
       expr instanceof Table &&
       expr.name === this.name &&

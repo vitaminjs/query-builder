@@ -39,6 +39,9 @@ export default class Order extends Column {
    * @returns {Boolean}
    */
   isEqual(expr) {
+    if ( isString(expr) )
+      return this.name === expr
+
     return super.isEqual() &&
       expr instanceof Order &&
       expr.direction === this.direction
