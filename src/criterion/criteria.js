@@ -1,8 +1,11 @@
 
-import { each, isBoolean, isEmpty, isPlainObject, isArray, isFunction, isString, isObject } from 'lodash'
-import Criterion, { IsNull, Basic, IsIn, Raw, Between, Exists } from './index'
+import { each, isPlainObject, isArray, isFunction, isString, isObject } from 'lodash'
 import Expression, { Raw as RawExpr, Column } from '../expression'
-import { SQ, RAW } from '../helpers'
+import { SQ } from '../helpers'
+import Criterion from './base'
+import Basic from './basic'
+import IsIn from './is-in'
+import Raw from './raw'
 
 /**
  * @class CriteriaExpression
@@ -79,10 +82,6 @@ export default class Criteria extends Criterion {
       operator = '='
     }
     
-    // supports `.where(Boolean)`
-    if ( isBoolean(expr) )
-      expr = RAW`1 = ${expr ? 1 : 0}`
-    
     // supports `.where(new RawExpr(...))`
     if ( expr instanceof RawExpr )
       return this.add(new Raw(expr, bool))
@@ -103,22 +102,11 @@ export default class Criteria extends Criterion {
 
     // supports `.where(criterion)`
     if ( expr instanceof Criterion )
-      return this.add(expr)
-    
-    // format the operator
-    operator = String(operator).toLowerCase().trim()
-    
-    // supports between operator
-    if ( operator.indexOf('between') > -1 )
-      return this.between(expr, value, bool, not)
-    
-    // supports `.where('column', null)`
-    if ( value === null )
-      return this.isNull(expr, bool, not)
+      return this.add(expr.negate(not).setBoolean(bool))
     
     // supports `.where('column', [...])`
     if ( isArray(value) && operator === '=' )
-      return this.in(expr, value, bool, not)
+      return this.add(new IsIn(expr, value, bool, not))
     
     // supports sub queries
     if ( isFunction(value) || isObject(value) )
@@ -128,20 +116,13 @@ export default class Criteria extends Criterion {
   }
   
   /**
-   * @see where()
-   */
-  and() {
-    return this.where(...arguments)
-  }
-  
-  /**
    * 
    * @param {Any} expr
    * @param {String} operator
    * @param {Any} value
    * @returns {Criteria}
    */
-  or(expr, operator, value) {
+  orWhere(expr, operator, value) {
     return this.where(expr, operator, value, 'or')
   }
   
@@ -154,31 +135,7 @@ export default class Criteria extends Criterion {
    * @returns {Criteria}
    */
   whereNot(expr, operator, value, bool = 'and') {
-    var not = true
-    
-    if ( value == null && operator != null ) {
-      value = operator
-      operator = '='
-    }
-    
-    // format the operator
-    operator = String(operator).toLowerCase().trim()
-    
-    // supports `.whereNot('column', 'between', [...])`
-    if ( operator === 'between' )
-      return this.between(expr, operator, value, bool, not)
-    
-    // supports `.whereNot('column', 'in', [...])`
-    if ( operator === 'in' )
-      return this.in(expr, operator, value, bool, not)
-    
-    // supports `.whereNot('column', 'like', 'patern')`
-    if ( operator === 'like' ) {
-      operator = 'not like'
-      not = false
-    }
-    
-    return this.where(expr, operator, value, bool, not)
+    return this.where(expr, operator, value, bool, true)
   }
   
   /**
@@ -189,179 +146,8 @@ export default class Criteria extends Criterion {
    * @param {String} bool
    * @returns {Criteria}
    */
-  orNot(expr, operator, value) {
+  orWhereNot(expr, operator, value) {
     return this.whereNot(expr, operator, value, 'or')
-  }
-  
-  /**
-   * 
-   * @param {String|Expression} expr
-   * @param {Array} values
-   * @param {String} bool
-   * @param {Boolean} not
-   * @returns {Criteria}
-   */
-  between(expr, values, bool = 'and', not = false) {
-    return this.add(new Between(expr, values, bool, not))
-  }
-
-  /**
-   * 
-   * @param {String|Expression} expr
-   * @param {Array} values
-   * @returns {Criteria}
-   */
-  orBetween(expr, values) {
-    return this.between(expr, values, 'or')
-  }
-
-  /**
-   * 
-   * @param {String|Expression} expr
-   * @param {Array} values
-   * @param {Boolean} bool
-   * @returns {Criteria}
-   */
-  notBetween(expr, values, bool = 'and') {
-    return this.between(expr, values, bool, true)
-  }
-
-  /**
-   * 
-   * @param {String|Expression} expr
-   * @param {Array} values
-   * @returns {Criteria}
-   */
-  orNotBetween(expr, values) {
-    return this.notBetween(expr, values, 'or')
-  }
-  
-  /**
-   * 
-   * @param {String|Expression} expr
-   * @param {String} bool
-   * @param {Boolean} not
-   * @returns {Criteria}
-   */
-  isNull(expr, bool = 'and', not = false) {
-    return this.add(new IsNull(expr, bool, not))
-  }
-
-  /**
-   * 
-   * @param {String|Expression} expr
-   * @returns {Criteria}
-   */
-  orIsNull(expr) {
-    return this.isNull(expr, 'or')
-  }
-
-  /**
-   * 
-   * @param {String|Expression} expr
-   * @param {String} bool
-   * @returns {Criteria}
-   */
-  isNotNull(expr, bool = 'and') {
-    return this.isNull(expr, bool, true)
-  }
-
-  /**
-   * 
-   * @param {String|Expression} expr
-   * @returns {Criteria}
-   */
-  orIsNotNull(expr) {
-    return this.isNotNull(expr, 'or')
-  }
-  
-  /**
-   * @param {String|Expression} expr
-   * @param {Array|SubQuery} values
-   * @param {String} bool
-   * @param {Boolean} not
-   * @returns {Criteria}
-   */
-  in(expr, values, bool = 'and', not = false) {
-    // instead of an empty array of values, a boolean expression is used
-    if ( isArray(values) && isEmpty(values) )
-      return this.where(not)
-    
-    // accepts sub queries
-    if (! isArray(values) ) {
-      let operator = (not ? 'not ' : '') + 'in'
-      
-      return this.where(expr, operator, SQ(values), bool)
-    }
-    
-    return this.add(new IsIn(expr, values, bool, not))
-  }
-
-  /**
-   * @param {String|Expression} expr
-   * @param {Array|SubQuery} values
-   * @returns {Criteria}
-   */
-  orIn(expr, values) {
-    return this.in(expr, values, 'or')
-  }
-
-  /**
-   * @param {String|Expression} expr
-   * @param {Array|SubQuery} values
-   * @param {String} bool
-   * @returns {Criteria}
-   */
-  notIn(expr, values, bool = 'and') {
-    return this.in(expr, values, bool, true)
-  }
-
-  /**
-   * @param {String|Expression} expr
-   * @param {Array|SubQuery} values
-   * @returns {Criteria}
-   */
-  orNotIn(expr, values) {
-    return this.notIn(expr, values, 'or')
-  }
-  
-  /**
-   * 
-   * @param {SubQuery} query
-   * @param {String} bool
-   * @param {Boolean} not
-   * @returns {Criteria}
-   */
-  exists(query, bool = 'and', not = false) {
-    return this.add(new Exists(SQ(query), bool, not))
-  }
-
-  /**
-   * 
-   * @param {SubQuery} query
-   * @returns {Criteria}
-   */
-  orExists(query) {
-    return this.exists(query, 'or')
-  }
-
-  /**
-   * 
-   * @param {SubQuery} query
-   * @param {String} bool
-   * @returns {Criteria}
-   */
-  notExists(query, bool = 'and') {
-    return this.exists(query, bool, true)
-  }
-
-  /**
-   * 
-   * @param {SubQuery} query
-   * @returns {Criteria}
-   */
-  orNotExists(query) {
-    return this.notExists(query, 'or')
   }
   
   /**
@@ -385,13 +171,6 @@ export default class Criteria extends Criterion {
       throw new TypeError("Invalid column expression")
     
     return this.add(new Basic(expr, operator, value, bool))
-  }
-  
-  /**
-   * @see `on()`
-   */
-  andOn() {
-    return this.on(...arguments)
   }
   
   /**
