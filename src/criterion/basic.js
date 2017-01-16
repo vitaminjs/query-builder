@@ -1,5 +1,5 @@
 
-import Expression, { Column } from '../expression/index'
+import Expression, { Column } from '../expression'
 import { isString } from 'lodash'
 import Criterion from './base'
 
@@ -10,7 +10,7 @@ export default class Basic extends Criterion {
   
   /**
    * 
-   * @param {String|Expression} column
+   * @param {String|Expression} expr
    * @param {String} operator
    * @param {Any} value
    * @param {String} bool
