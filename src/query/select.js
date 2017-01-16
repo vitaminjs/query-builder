@@ -18,20 +18,20 @@ export default class extends Query {
     var qb = this.builder
     
     this.components = {
-      joins: qb.hasJoins() ? qb.getJoins().toArray() : [],
-      limit: this.builder.getLimit(),
-      tables: qb.hasTables() ? qb.getTables().toArray() : [],
+      limit: qb.getLimit(),
+      offset: qb.getOffset(),
+      distinct: qb.isDistinct(),
+      unionLimit: qb.getUnionLimit(),
+      unionOffset: qb.getUnionOffset(),
       unions: qb.hasUnions() ? qb.getUnions() : [],
-      orders: this.builder.getOrders(),
-      offset: this.builder.getOffset(),
-      groups: this.builder.getGroups(),
+      joins: qb.hasJoins() ? qb.getJoins().toArray() : [],
+      groups: qb.hasGroups() ? qb.getGroups().toArray() : [],
+      tables: qb.hasTables() ? qb.getTables().toArray() : [],
+      orders: qb.hasOrders() ? qb.getOrders().toArray() : [],
       columns: qb.hasColumns() ? qb.getColumns().toArray() : [],
-      distinct: this.builder.isDistinct(),
-      conditions: this.builder.getConditions(),
-      unionLimit: this.builder.getUnionLimit(),
-      unionOffset: this.builder.getUnionOffset(),
-      unionOrders: this.builder.getUnionOrders(),
-      havingConditions: this.builder.getHavingConditions(),
+      conditions: q.hasConditions() ? qb.getConditions() : null,
+      unionOrders: qb.hasUnionOrders() ? qb.getUnionOrders().toArray() : [],
+      havingConditions: qb.hasHavingConditions() ? qb.getHavingConditions() : null,
     }
   }
 
