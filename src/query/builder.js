@@ -3,7 +3,7 @@ import { Columns, Tables, Unions, Joins, Orders } from './components'
 import Expression, { Raw as RawExpr, Column } from '../expression'
 import Compiler, { createCompiler } from '../compiler'
 import { isString, isArray, toArray } from 'lodash'
-import Criteria from '../criterion/criteria'
+import { Criteria } from '../criterion'
 import { createQuery } from '.'
 import { SQ } from '../helpers'
 
