@@ -15,7 +15,9 @@ export default class Like extends Basic {
    * @constructor
    */
   constructor(expr, patern, bool = 'and', not = false) {
-    super(expr, 'like', patern, bool, not)
+    super(expr, 'like', patern, bool, false)
+
+    this.negate(not)
   }
   
   /**
@@ -25,7 +27,7 @@ export default class Like extends Basic {
    */
   negate(flag = true) {
     this.op = (flag ? 'not ' : '') + 'like'
-    return super.negate()
+    return this
   }
   
 }
