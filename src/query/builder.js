@@ -723,191 +723,23 @@ export default class Builder {
   
   /**
    * 
-   * @param {String|Column} expr
-   * @param {Array} values
-   * @param {String} bool
-   * @param {Boolean} not
-   * @returns {Builder}
-   */
-  whereBetween(expr, values, bool = 'and', not = false) {
-    this.getConditions().between(expr, values, bool, not)
-    return this
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
-   * @param {Array} values
-   * @returns {Builder}
-   */
-  orWhereBetween(expr, values) {
-    return this.whereBetween(expr, values, 'or')
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
-   * @param {Array} values
-   * @param {String} bool
-   * @returns {Builder}
-   */
-  whereNotBetween(expr, values, bool = 'and') {
-    return this.whereBetween(expr, values, bool, true)
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
-   * @param {Array} values
-   * @returns {Builder}
-   */
-  orWhereNotBetween(expr, values) {
-    return this.whereNotBetween(expr, values, 'or')
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
-   * @param {Any} values
-   * @param {String} bool
-   * @param {Boolean} not
-   * @returns {Builder}
-   */
-  whereIn(expr, values, bool = 'and', not = false) {
-    this.getConditions().in(expr, values, bool, not)
-    return this
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
-   * @param {Any} values
-   * @returns {Builder}
-   */
-  orWhereIn(expr, values) {
-    return this.whereIn(expr, values, 'or')
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
-   * @param {Any} values
-   * @param {String} bool
-   * @returns {Builder}
-   */
-  whereNotIn(expr, values, bool = 'and') {
-    return this.whereIn(expr, values, bool, true)
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
-   * @param {Any} values
-   * @returns {Builder}
-   */
-  orWhereNotIn(expr, values) {
-    return this.whereNotIn(expr, values, 'or')
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
-   * @param {String} bool
-   * @param {Boolean} not
-   * @returns {Builder}
-   */
-  whereNull(expr, bool = 'and', not = false) {
-    this.getConditions().isNull(expr, bool, not)
-    return this
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
-   * @returns {Builder}
-   */
-  orWhereNull(expr) {
-    return this.whereNull(expr, 'or')
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
-   * @param {String} bool
-   * @returns {Builder}
-   */
-  whereNotNull(expr, bool = 'and') {
-    return this.whereNull(expr, bool, true)
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
-   * @returns {Builder}
-   */
-  orWhereNotNull(expr) {
-    return this.whereNotNull(expr, 'or')
-  }
-  
-  /**
-   * 
-   * @param {SubQuery} query
-   * @param {String} bool
-   * @param {Boolean} not
-   * @returns {Builder}
-   */
-  whereExists(query, bool = 'and', not = false) {
-    this.getConditions().exists(query, bool, not)
-    return this
-  }
-  
-  /**
-   * 
-   * @param {SubQuery} query
-   * @returns {Builder}
-   */
-  orWhereExists(query) {
-    return this.whereExists(query, 'or')
-  }
-  
-  /**
-   * 
-   * @param {SubQuery} query
-   * @param {String} bool
-   * @returns {Builder}
-   */
-  whereNotExists(query, bool = 'and') {
-    return this.whereExists(query, bool, true)
-  }
-  
-  /**
-   * 
-   * @param {SubQuery} query
-   * @returns {Builder}
-   */
-  orWhereNotExists(query) {
-    return this.whereNotExists(query, 'or')
-  }
-  
-  /**
-   * 
-   * @param {String|Column} expr
+   * @param {String|Column} first
    * @param {String} operator
-   * @param {String|Column} value
+   * @param {String|Column} second
    * @param {String} bool
    * @param {Boolean} not
    * @returns {Builder}
    */
-  whereColumn(expr, operator, value, bool = 'and') {
-    this.getConditions().on(expr, operator, value, bool)
+  whereColumn(first, operator, second, bool = 'and') {
+    this.getConditions().on(first, operator, second, bool)
     return this
   }
   
   /**
    * 
-   * @param {String|Column} expr
+   * @param {String|Column} first
    * @param {String} operator
-   * @param {String|Column} value
+   * @param {String|Column} second
    * @returns {Builder}
    */
   orWhereColumn(first, operator, second) {
