@@ -1,6 +1,4 @@
-/* global it */
-/* global describe */
-/* global beforeEach */
+/* global it, describe, beforeEach */
 
 var RAW = require('../../lib/helpers').RAW
 var SQ = require('../../lib/helpers').SQ
@@ -134,8 +132,92 @@ describe("test the query builder:", () => {
       })
       
     })
+
+    describe("test limit() and offset():", () => {
+      
+      it("adds the limit clause", () => {
+        var q = compile(qb().from('table').limit(15))
+
+        assert.equal(q.sql, 'select * from "table" limit ?')
+        assert.equal(q.values.length, 1)
+        assert.equal(q.values[0], 15)
+      })
+
+      it("adds the offset clause", () => {
+        var q = compile(qb().from('table').offset(30))
+
+        assert.equal(q.sql, 'select * from "table" offset ?')
+        assert.equal(q.values.length, 1)
+        assert.equal(q.values[0], 30)
+      })
+
+      it("adds both offset and limit clauses", () => {
+        var q = compile(qb().from('table').offset(30).limit(15))
+
+        assert.equal(q.sql, 'select * from "table" limit ? offset ?')
+        assert.equal(q.values.length, 2)
+        assert.equal(q.values[0], 30)
+        assert.equal(q.values[1], 15)
+      })
+
+    })
+
+    describe("test orderBy():", () => {
+
+      it("adds columns to order with", () => {
+        var q = compile(qb().from('table').orderBy('col1', 'col2'))
+
+        assert.equal(q.sql, 'select * from "table" order by "col1" asc, "col2" asc')
+      })
+
+      it("adds descending order columns", () => {
+        var q = compile(qb().from('table').orderBy('col1', '-col2'))
+
+        assert.equal(q.sql, 'select * from "table" order by "col1" asc, "col2" desc')
+      })
+
+    })
+
+    describe("test where():", () => {})
+
+    describe("test join():", () => {
+
+      it("adds a basic join clause", () => {
+        var q = compile(qb().from('posts as p').join('users as author', 'p.author_id', 'author.id'))
+
+        assert.equal(q.sql, 'select * from "posts" as "p" inner join "users" as "author" on "p"."author_id" = "author"."id"')
+      })
+
+      it("adds a table join with more than 1 condition", () => {
+        var fn = cr => {
+          cr.on('p.salary', '>=', 'c.min_salary').on('p.salary', '<=', 'c.max_salary')
+        }
+
+        var q = compile(qb().from('people as p').join('category as c', fn))
+
+        assert.equal(q.sql, 'select * from "people" as "p" inner join "category" as "c" on ("p"."salary" >= "c"."min_salary" and "p"."salary" <= "c"."max_salary")')
+      })
+
+      it("adds a join with a sub query", () => {
+        var fn = builder => {
+          builder.from('table2')
+        }
+
+        var q = compile(qb().from('table1 as t1').crossJoin(SQ(fn).as('t2')))
+
+        assert.equal(q.sql, 'select * from "table1" as "t1" cross join (select * from "table2") as "t2"')
+      })
+
+      it("adds a raw join expression", () => {
+        var q = compile(qb().from('table1').join(RAW('natural full join table2')))
+
+        assert.equal(q.sql, 'select * from "table1" natural full join table2')
+      })
+
+    })
+
+    describe("test union():", () => {})
     
   })
 
-  
 })
