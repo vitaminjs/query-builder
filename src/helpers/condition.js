@@ -95,7 +95,7 @@ export function ISFALSE() {
  * @returns {Criterion}
  */
 export function IN(expr, values) {
-  if (! isArray(value) ) values = SQ(values)
+  if (! isArray(values) ) values = SQ(values)
 
   return new IsIn(expr, values)
 }
@@ -127,7 +127,7 @@ export function EXISTS(query) {
  * @returns {Criterion}
  */
 export function LIKE(expr, patern) {
-  return new LIKE(expr, patern)
+  return new Like(expr, patern)
 }
 
 /**

@@ -56,9 +56,10 @@ export default class Criteria extends Criterion {
     var conditions = this.components.map(child => {
       // compile a sub criteria
       if ( child instanceof Criteria ) {
+        let not = child.not ? 'not ' : ''
         let conditions = child.compile(compiler)
         
-        return `${child.bool} ${child.not}(${conditions})`
+        return `${child.bool} ${not}(${conditions})`
       }
       
       return child.compile(compiler)
@@ -109,8 +110,7 @@ export default class Criteria extends Criterion {
       return this.add(new IsIn(expr, value, bool, not))
     
     // supports sub queries
-    if ( isFunction(value) || isObject(value) )
-      value = SQ(value)
+    if ( isFunction(value) ) value = SQ(value)
 
     return this.add(new Basic(expr, operator, value, bool, not))
   }
@@ -165,9 +165,9 @@ export default class Criteria extends Criterion {
     }
     
     if ( isString(value) )
-      expr = new Column(value)
+      value = new Column(value)
     
-    if ( value instanceof Expression )
+    if (! (value instanceof Expression) )
       throw new TypeError("Invalid column expression")
     
     return this.add(new Basic(expr, operator, value, bool))

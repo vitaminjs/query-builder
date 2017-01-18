@@ -553,7 +553,7 @@ export default class Builder {
     if ( first != null ) {
       criteria =  new Criteria()
       
-      if ( second != null && operator == null ) {
+      if ( second == null && operator != null ) {
         second = operator
         operator = '='
       }

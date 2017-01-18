@@ -29,7 +29,7 @@ export default class extends Query {
       tables: qb.hasTables() ? qb.getTables().toArray() : [],
       orders: qb.hasOrders() ? qb.getOrders().toArray() : [],
       columns: qb.hasColumns() ? qb.getColumns().toArray() : [],
-      conditions: q.hasConditions() ? qb.getConditions() : null,
+      conditions: qb.hasConditions() ? qb.getConditions() : null,
       unionOrders: qb.hasUnionOrders() ? qb.getUnionOrders().toArray() : [],
       havingConditions: qb.hasHavingConditions() ? qb.getHavingConditions() : null,
     }

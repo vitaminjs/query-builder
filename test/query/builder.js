@@ -42,7 +42,7 @@ describe("test the query builder:", () => {
         var q = compile(builder)
         
         assert.equal(q.sql, 'select "t"."foo", "bar" as "baz" from "table" as "t"')
-        assert.equal(builder.columns.length, 2)
+        assert.equal(builder.getColumns().length, 2)
         assert.deepEqual(q.values, [])
       })
       
@@ -156,8 +156,8 @@ describe("test the query builder:", () => {
 
         assert.equal(q.sql, 'select * from "table" limit ? offset ?')
         assert.equal(q.values.length, 2)
-        assert.equal(q.values[0], 30)
-        assert.equal(q.values[1], 15)
+        assert.equal(q.values[0], 15)
+        assert.equal(q.values[1], 30)
       })
 
     })
