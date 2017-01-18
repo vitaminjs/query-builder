@@ -11,9 +11,7 @@ export default class Order extends Column {
    * @param {String} column
    * @constructor
    */
-  constructor(column) {
-    var direction = 'asc'
-    
+  constructor(column, direction = "asc") {
     if ( isString(column) && column.indexOf('-') === 0 ) {
       column = column.substr(1)
       direction = 'desc'
