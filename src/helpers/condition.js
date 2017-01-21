@@ -1,7 +1,7 @@
 
 import { Basic, IsNull, IsIn, Between, Exists, Like } from '../criterion'
 import { RAW, SQ } from './expression'
-import { isArray } from 'lodash'
+import { isArray, uniq } from 'lodash'
 
 /**
  * 
@@ -95,9 +95,7 @@ export function ISFALSE() {
  * @returns {Criterion}
  */
 export function IN(expr, values) {
-  if (! isArray(values) ) values = SQ(values)
-
-  return new IsIn(expr, values)
+  return new IsIn(expr, isArray(values) ? uniq(values) : SQ(values))
 }
 
 /**
