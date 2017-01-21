@@ -10,10 +10,12 @@ export default class Compiler {
   /**
    * BaseCompiler constructor
    * 
+   * @param {Object} options
    * @constructor
    */
-  constructor() {
+  constructor(options = {}) {
     this.bindings = []
+    this.options = options
   }
   
   /**
@@ -281,7 +283,7 @@ export default class Compiler {
    * @returns {String}
    */
   escapeIdentifier(value) {
-    return (value === '*') ? value : `"${value.trim()}"`
+    return (value === '*') ? value : `"${value.trim().replace(/"/g, '""')}"`
   }
   
   /**
