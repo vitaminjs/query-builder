@@ -40,6 +40,19 @@ export default class Compiler {
    * @param {Object} query
    * @returns {String}
    */
+  compileSelectQuery(query) {
+    var sql = this.compileSelectComponents(query)
+    
+    if ( isEmpty(query.unions) ) return sql
+    
+    return `(${sql}) ` + this.compileUnionComponents(this.components)
+  }
+  
+  /**
+   * 
+   * @param {Object} query
+   * @returns {String}
+   */
   compileSelectComponents(query) {
     var sql = [
       this.compileSelectColumns(query.columns, query),

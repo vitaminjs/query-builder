@@ -1,5 +1,4 @@
 
-import { isEmpty } from 'lodash'
 import Query from './base'
 
 /**
@@ -43,11 +42,7 @@ export default class extends Query {
   compile(compiler) {
     if (! (this.builder.hasColumns() || this.builder.hasTables()) ) return ''
     
-    var sql = compiler.compileSelectComponents(this.components)
-    
-    if (! this.builder.hasUnions() ) return sql
-    
-    return `(${sql}) ` + compiler.compileUnionComponents(this.components)
+    return compiler.compileSelectQuery(this.components)
   }
 
 }
