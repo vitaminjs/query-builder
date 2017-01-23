@@ -16,4 +16,18 @@ export default class extends Compiler {
     return (value === '*') ? value : '`' + value.trim().replace(/`/g, '``') + '`'
   }
   
+  /**
+   * 
+   * @param {Number} offset
+   * @param {Object} query
+   * @returns {String}
+   */
+  compileOffset(offset, query) {
+    if ( offset == null ) return
+
+    var expr = 'offset ' + this.parameterize(offset)
+    
+    return ((query.limit == null) ? 'limit 18446744073709551615 ' : '') + expr
+  }
+  
 }
