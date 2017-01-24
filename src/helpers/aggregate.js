@@ -9,6 +9,8 @@ import Expression, { Column, Count, Aggregate } from '../expression'
  */
 export function COUNT(columns) {
   if (! isArray(columns) ) columns = toArray(arguments)
+
+  if ( isEmpty(columns) ) return new Count()
   
   return new Count(columns.map(ensureExpression))
 }
