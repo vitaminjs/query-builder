@@ -16,7 +16,7 @@ export default class IsNull extends Criterion {
    * @constructor
    */
   constructor(expr, bool = 'and', not = false) {
-    super(bool)
+    super(bool, not)
     
     if ( isString(expr) )
       expr = new Column(expr)
