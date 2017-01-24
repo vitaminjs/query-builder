@@ -28,6 +28,16 @@ export default class Column extends Expression {
     this.name = value
     this.alias = as
   }
+
+  /**
+   * 
+   * @param {String} name
+   * @returns {Column}
+   */
+  as(name) {
+    this.alias = name
+    return this
+  }
   
   /**
    * 

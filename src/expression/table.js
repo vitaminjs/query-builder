@@ -28,6 +28,16 @@ export default class Table extends Expression {
     this.schema = schema
     this.name = value
   }
+
+  /**
+   * 
+   * @param {String} name
+   * @returns {Table}
+   */
+  as(name) {
+    this.alias = name
+    return this
+  }
   
   /**
    * 
