@@ -1,6 +1,6 @@
 
-import { isArray, isString, toArray } from 'lodash'
 import Expression, { Column, Count, Aggregate } from '../expression'
+import { isArray, isString, toArray, isEmpty } from 'lodash'
 
 /**
  * 
