@@ -15,18 +15,7 @@ export default class Aggregate extends Func {
   constructor(name, expr) {
     super(name, expr)
     
-    this.alias = ''
     this.column = expr
-  }
-  
-  /**
-   * 
-   * @param {String} name
-   * @returns {Count}
-   */
-  as(name) {
-    this.alias = name
-    return this
   }
   
   /**

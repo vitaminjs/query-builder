@@ -20,11 +20,8 @@ export default class Raw extends Expression {
     
     this.bindings = bindings
     this.expr = expression
-    this.name = null
     this.before = ''
     this.after = ''
-    
-    return this
   }
   
   /**
@@ -41,22 +38,12 @@ export default class Raw extends Expression {
   
   /**
    * 
-   * @param {String} name
-   * @returns {Raw}
-   */
-  as(name) {
-    this.name = name
-    return this
-  }
-  
-  /**
-   * 
    * @param {String|Compiler} compiler
    * @returns {String}
    */
   compile(compiler) {
     var expr = this.expr.replace(/\?/g, compiler.parameter)
-    var sql = compiler.alias(this.before + expr + this.after, this.name)
+    var sql = compiler.alias(this.before + expr + this.after, this.alias)
     
     // add query bindings
     this.bindings.forEach(value => compiler.addBinding(value))
@@ -69,14 +56,14 @@ export default class Raw extends Expression {
    * @param {Any} expr
    * @returns {Boolean}
    */
-  isEqual(value) {
+  isEqual(expr) {
     if ( isString(expr) )
-      return (this.expr === expr || this.name === expr)
+      return (this.expr === expr || this.alias === expr)
 
     return super.isEqual() || (
-      value instanceof Raw &&
-      value.expr === this.expr &&
-      isEqual(value.bindings, this.bindings)
+      expr instanceof Raw &&
+      expr.expr === this.expr &&
+      isEqual(expr.bindings, this.bindings)
     )
   }
   

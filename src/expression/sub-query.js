@@ -10,27 +10,15 @@ export default class SubQuery extends Expression {
   /**
    * 
    * @param {Select} query
-   * @param {String} as
    * @constructor
    */
-  constructor(query, as = '') {
+  constructor(query) {
     super()
     
     if (! (query instanceof Select) )
       throw new TypeError("Invalid sub query expression")
     
     this.query = query
-    this.name = as
-  }
-  
-  /**
-   * 
-   * @param {String} value
-   * @returns {SubQuery}
-   */
-  as(value) {
-    this.name = value
-    return this
   }
   
   /**
@@ -39,7 +27,7 @@ export default class SubQuery extends Expression {
    * @returns {String}
    */
   compile(compiler) {
-    return compiler.alias(`(${this.query.compile(compiler)})`, this.name)
+    return compiler.alias(`(${this.query.compile(compiler)})`, this.alias)
   }
   
   /**
@@ -50,7 +38,7 @@ export default class SubQuery extends Expression {
   isEqual(expr) {
     // TODO enhance this method
     return super.isEqual() || (
-      expr instanceof SubQuery && expr.name === this.name
+      expr instanceof SubQuery && expr.name === this.alias
     )
   }
   

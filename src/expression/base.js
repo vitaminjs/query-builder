@@ -12,6 +12,16 @@ export default class {
   compile(compiler) {
     throw new Error("Not overridden method")
   }
+
+  /**
+   * 
+   * @param {String} name
+   * @returns {Expression}
+   */
+  as(name) {
+    this.alias = name
+    return this
+  }
   
   /**
    * 
