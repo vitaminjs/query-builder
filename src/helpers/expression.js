@@ -1,28 +1,41 @@
 
-import { Raw as Expression, SubQuery } from '../expression'
-import { isString, isFunction } from 'lodash'
+import Expression, { Literal, SubQuery } from '../expression'
+import { isFunction, isArray, isString } from 'lodash'
 import Builder from '../query/builder'
 import { Select } from '../query'
 
 /**
  * A handler function for template strings
  * 
- * @param {String|Array} parts
+ * @param {String|Array} expr
  * @param {Array} args
- * @return {Raw}
+ * @returns {Literal}
  */
-export function RAW(parts, ...args) {
-  if ( isString(parts) ) parts = parts.split('?')
+export function RAW(expr, ...args) {
+  // handle template strings
+  if ( isArray(expr) ) {
+    let parts = expr
+    
+    // use the first fragment as base
+    expr = parts[0]
+    
+    // join it with the other fragments
+    for ( let i = 1; i < parts.length; i++ ) {
+      let isExpr = (args[i - 1] instanceof Expression)
+      
+      expr += (isExpr ? '??' : '?') + parts[i]
+    }
+  }
 
   // TODO check for undefined values
   
-  return new Expression(parts.join('?'), args)
+  return new Literal(expr, args)
 }
 
 /**
  * 
  * @param {Any} query
- * @return {SubQuery} expression
+ * @returns {SubQuery}
  * @throws {TypeError}
  */
 export function SQ(query) {

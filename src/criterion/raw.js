@@ -1,5 +1,5 @@
 
-import { Raw as Expression } from '../expression'
+import Expression from '../expression'
 import Criterion from './base'
 
 /**

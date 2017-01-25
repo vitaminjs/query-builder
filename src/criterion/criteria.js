@@ -1,6 +1,6 @@
 
 import { each, isPlainObject, isArray, isFunction, isString, isObject } from 'lodash'
-import Expression, { Raw as RawExpr, Column } from '../expression'
+import Expression, { Literal, Column } from '../expression'
 import { SQ } from '../helpers'
 import Criterion from './base'
 import Basic from './basic'
@@ -84,7 +84,7 @@ export default class Criteria extends Criterion {
     }
     
     // supports `.where(new RawExpr(...))`
-    if ( expr instanceof RawExpr )
+    if ( expr instanceof Literal )
       return this.add(new Raw(expr, bool))
     
     // supports `.where({a: 1, b: 3})`

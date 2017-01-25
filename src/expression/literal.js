@@ -1,25 +1,23 @@
 
-import { isArray, isString, isEqual } from 'lodash'
+import { isString, isEqual } from 'lodash'
 import Expression from './base'
 
 /**
- * @class RawExpression
+ * @class LiteralExpression
  */
-export default class Raw extends Expression {
+export default class Literal extends Expression {
   
   /**
    * 
-   * @param {String} expression
-   * @param {Array} bindings
+   * @param {String} expr
+   * @param {Array} values
    * @constructor
    */
-  constructor(expression, bindings = []) {
+  constructor(expr, values = []) {
     super()
     
-    if (! isArray(bindings) ) bindings = [bindings]
-    
-    this.bindings = bindings
-    this.expr = expression
+    this.values = values
+    this.expr = expr
     this.before = ''
     this.after = ''
   }
@@ -38,17 +36,25 @@ export default class Raw extends Expression {
   
   /**
    * 
+   * @param {String} name
+   * @returns {Literal}
+   */
+  as(name) {
+    return super.as(name).wrap()
+  }
+  
+  /**
+   * 
    * @param {String|Compiler} compiler
    * @returns {String}
    */
   compile(compiler) {
-    var expr = this.expr.replace(/\?/g, compiler.parameter)
-    var sql = compiler.alias(this.before + expr + this.after, this.alias)
+    var values = this.values.slice()
+    var expr = this.expr.replace(/\?\??/g, () => {
+      return compiler.parameterize(values.shift())
+    })
     
-    // add query bindings
-    this.bindings.forEach(value => compiler.addBinding(value))
-    
-    return sql
+    return compiler.alias(this.before + expr + this.after, this.alias)
   }
   
   /**
@@ -60,10 +66,12 @@ export default class Raw extends Expression {
     if ( isString(expr) )
       return (this.expr === expr || this.alias === expr)
 
+    // TODO compare also the values
+
     return super.isEqual() || (
-      expr instanceof Raw &&
+      expr instanceof Literal &&
       expr.expr === this.expr &&
-      isEqual(expr.bindings, this.bindings)
+      expr.alias === this.alias
     )
   }
   

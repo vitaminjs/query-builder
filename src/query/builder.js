@@ -1,6 +1,6 @@
 
 import { Columns, Tables, Unions, Joins, Orders } from './components'
-import Expression, { Raw as RawExpr, Column } from '../expression'
+import Expression, { Literal, Column } from '../expression'
 import Compiler, { createCompiler } from '../compiler'
 import { isString, isArray, toArray } from 'lodash'
 import { Criteria } from '../criterion'
@@ -544,7 +544,7 @@ export default class Builder {
     var criteria = null
     
     // handle raw expressions
-    if ( table instanceof RawExpr ) {
+    if ( table instanceof Literal ) {
       this.getJoins().push(table)
       return this
     }
