@@ -41,7 +41,10 @@ export function RAW(expr, ...args) {
 export function SQ(query) {
   // accept a raw query string
   if ( isString(query) )
-    return RAW(query).wrap()
+    query = RAW(query).wrap()
+  
+  if ( query instanceof Literal )
+    return query
   
   // accept a function as a parameter
   if ( isFunction(query) ) {
