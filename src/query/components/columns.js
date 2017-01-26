@@ -1,7 +1,7 @@
 
-import Expression, { Column } from '../../expression'
+import { isString, isBoolean, isNumber } from 'lodash'
+import Expression, { Literal } from '../../expression'
 import Container from './container'
-import { isString } from 'lodash'
 
 /**
  * @class ColumnContainer
@@ -15,8 +15,14 @@ export default class Columns extends Container {
    * @throws {TypeError}
    */
   push(value) {
+    if ( isBoolean(value) )
+      value = Number(value)
+    
+    if ( isNumber(value) )
+      value = String(value)
+    
     if ( isString(value) )
-      value = new Column(value)
+      value = new Literal(value)
     
     if ( value instanceof Expression )
       return super.push(value)

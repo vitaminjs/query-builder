@@ -59,9 +59,9 @@ export default class Builder {
     
     if ( dialect instanceof Compiler ) {
       let sql = this.build().compile(dialect)
-      let values = dialect.getBindings()
+      let params = dialect.getBindings()
 
-      return { sql, values }
+      return { sql, params }
     }
 
     throw new TypeError("Invalid query compiler")
