@@ -1,5 +1,5 @@
 
-import Expression, { Column, Count, Aggregate } from '../expression'
+import Expression, { Literal, Count, Aggregate } from '../expression'
 import { isArray, isString, toArray, isEmpty } from 'lodash'
 
 /**
@@ -59,7 +59,7 @@ export function MAX(expr) {
  */
 function ensureExpression(expr) {
   if ( isString(expr) )
-    expr = new Column(expr)
+    expr = new Literal(expr)
   
   if ( expr instanceof Expression )
     return expr
