@@ -9,13 +9,24 @@ export default class Aggregate extends Func {
   /**
    * 
    * @param {String} name
-   * @param {Expression} expr
+   * @param {Array} columns
    * @constructor
    */
-  constructor(name, expr) {
-    super(name, expr)
+  constructor(name, columns) {
+    super(name, columns)
     
-    this.column = expr
+    this.columns = columns
+    this.isDistinct = false
+  }
+  
+  /**
+   * 
+   * @param {Boolean} flag
+   * @returns {Count}
+   */
+  distinct(flag = true) {
+    this.isDistinct = flag
+    return this
   }
   
   /**
@@ -24,7 +35,10 @@ export default class Aggregate extends Func {
    * @returns {String}
    */
   compile(compiler) {
-    return compiler.alias(super.compile(compiler), this.alias)
+    var columns = compiler.columnize(this.columns)
+    var distinct = this.isDistinct ? 'distinct ' : ''
+    
+    return compiler.alias(`${this.name}(${distinct}${columns})`, this.alias)
   }
   
   /**
@@ -33,10 +47,8 @@ export default class Aggregate extends Func {
    * @returns {Boolean}
    */
   isEqual(expr) {
-    return super.isEqual() && 
-      expr instanceof Aggregate &&
-      expr.alias === this.alias &&
-      this.column.isEqual(expr.column)
+    // TODO compare also the columns
+    return super.isEqual() && expr instanceof Aggregate && expr.alias === this.alias
   }
   
 }
