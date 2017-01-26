@@ -25,7 +25,15 @@ export default class Column extends Expression {
    * @returns {String}
    */
   getName() {
-    return this.alias || (this.table ? this.table + '.' : '') + this.name
+    return (this.table ? this.table + '.' : '') + this.name
+  }
+
+  /**
+   * 
+   * @returns {String}
+   */
+  getAlias() {
+    return this.alias || this.getName()
   }
 
   /**

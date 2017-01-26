@@ -26,7 +26,15 @@ export default class Table extends Expression {
    * @returns {String}
    */
   getName() {
-    return this.alias || (this.schema ? this.schema + '.' : '') + this.name
+    return (this.schema ? this.schema + '.' : '') + this.name
+  }
+
+  /**
+   * 
+   * @returns {String}
+   */
+  getAlias() {
+    return this.alias || this.getName()
   }
 
   /**
