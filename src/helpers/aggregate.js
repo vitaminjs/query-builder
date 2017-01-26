@@ -1,18 +1,16 @@
 
-import Expression, { Literal, Count, Aggregate } from '../expression'
-import { isArray, isString, toArray, isEmpty } from 'lodash'
+import Expression, { Literal, Aggregate } from '../expression'
+import { isString, isEmpty } from 'lodash'
 
 /**
  * 
- * @param {Array} columns
+ * @param {String|Expression} expr
  * @return {Count}
  */
-export function COUNT(columns) {
-  if (! isArray(columns) ) columns = toArray(arguments)
+export function COUNT(...expr) {
+  if ( isEmpty(expr) ) expr = ['*']
 
-  if ( isEmpty(columns) ) return new Count()
-  
-  return new Count(columns.map(ensureExpression))
+  return createAggregate('count', expr)
 }
 
 /**
@@ -20,8 +18,8 @@ export function COUNT(columns) {
  * @param {String|Expression} expr
  * @return {Aggregate}
  */
-export function SUM(expr) {
-  return new Aggregate('sum', ensureExpression(expr))
+export function SUM(...expr) {
+  return createAggregate('sum', expr)
 }
 
 /**
@@ -29,8 +27,8 @@ export function SUM(expr) {
  * @param {String|Expression} expr
  * @return {Aggregate}
  */
-export function AVG(expr) {
-  return new Aggregate('avg', ensureExpression(expr))
+export function AVG(...expr) {
+  return createAggregate('avg', expr)
 }
 
 /**
@@ -38,8 +36,8 @@ export function AVG(expr) {
  * @param {String|Expression} expr
  * @return {Aggregate}
  */
-export function MIN(expr) {
-  return new Aggregate('min', ensureExpression(expr))
+export function MIN(...expr) {
+  return createAggregate('min', expr)
 }
 
 /**
@@ -47,22 +45,27 @@ export function MIN(expr) {
  * @param {String|Expression} expr
  * @return {Aggregate}
  */
-export function MAX(expr) {
-  return new Aggregate('max', ensureExpression(expr))
+export function MAX(...expr) {
+  return createAggregate('max', expr)
 }
 
 /**
  * 
- * @param {String|Expression} expr
- * @return {Expression}
+ * @param {String} name
+ * @param {Array} columns
+ * @return {Aggregate}
  * @throws {TypeError}
  */
-function ensureExpression(expr) {
-  if ( isString(expr) )
-    expr = new Literal(expr)
-  
-  if ( expr instanceof Expression )
-    return expr
-  
-  throw new TypeError("Invalid aggregation expression")
+function createAggregate(name, columns) {
+  columns = columns.map(name => {
+    if ( isString(name) )
+      name = new Literal(name)
+    
+    if ( name instanceof Expression )
+      return name
+    
+    throw new TypeError("Invalid aggregation expression")
+  })
+
+  return new Aggregate(name, columns)
 }
