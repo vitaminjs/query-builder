@@ -3,6 +3,14 @@
  * @class Expression
  */
 export default class {
+
+  /**
+   * 
+   * @constructor
+   */
+  constructor() {
+    this.alias = ''
+  }
   
   /**
    * 

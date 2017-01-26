@@ -1,6 +1,7 @@
 
 import { isString } from 'lodash'
 import Expression from './base'
+import Column from './column'
 
 /**
  * @class TableExpression
@@ -9,24 +10,42 @@ export default class Table extends Expression {
   
   /**
    * 
-   * @param {String} value
+   * @param {String} name
+   * @param {String} schema
    * @constructor
    */
-  constructor(value) {
+  constructor(name, schema = '') {
     super()
     
-    var as = ''
-    var schema = ''
-    
-    if ( !as && value.toLowerCase().indexOf(' as ') > 0 )
-      [value, as] = value.split(' as ').map(str => str.trim())
-    
-    if ( !schema && value.indexOf('.') > 0 )
-      [schema, value] = value.split('.').map(str => str.trim())
-    
-    this.alias = as
+    this.name = name
     this.schema = schema
-    this.name = value
+  }
+
+  /**
+   * 
+   * @returns {String}
+   */
+  getName() {
+    return this.alias || (this.schema ? this.schema + '.' : '') + this.name
+  }
+
+  /**
+   * 
+   * @param {String} column
+   * @returns {Field}
+   */
+  getColumn(name) {
+    return new Column(name, this.getName())
+  }
+
+  /**
+   * 
+   * @param {String} value
+   * @returns {Table}
+   */
+  setSchema(value) {
+    this.schema = value
+    return this
   }
   
   /**

@@ -10,23 +10,32 @@ export default class Column extends Expression {
   /**
    * 
    * @param {String} name
+   * @param {String} table
    * @constructor
    */
-  constructor(value) {
+  constructor(name, table = '') {
     super()
     
-    var as = ''
-    var table = ''
-    
-    if ( !as && value.toLowerCase().indexOf(' as ') > 0 )
-      [value, as] = value.split(' as ').map(str => str.trim())
-    
-    if ( !table && value.indexOf('.') > 0 )
-      [table, value] = value.split('.').map(str => str.trim())
-    
+    this.name = name
     this.table = table
-    this.name = value
-    this.alias = as
+  }
+
+  /**
+   * 
+   * @returns {String}
+   */
+  getName() {
+    return this.alias || (this.table ? this.table + '.' : '') + this.name
+  }
+
+  /**
+   * 
+   * @param {String} value
+   * @returns {Column}
+   */
+  setTable(value) {
+    this.table = table
+    return this
   }
   
   /**
