@@ -1,5 +1,5 @@
 
-import Expression, { Literal, SubQuery } from '../expression'
+import Expression, { Literal, SubQuery, Column, Table } from '../expression'
 import { isFunction, isArray, isString } from 'lodash'
 import Builder from '../query/builder'
 import { Select } from '../query'
@@ -66,4 +66,40 @@ export function SQ(query) {
   
   // throws an error for invalid argument
   throw new TypeError("Invalid sub query expression")
+}
+
+/**
+ * 
+ * @param {String} value
+ * @returns {Column}
+ */
+export function C(value) {
+  var alias = ''
+  var table = ''
+  
+  if ( value.toLowerCase().indexOf(' as ') > 0 )
+    [value, alias] = value.split(' as ').map(str => str.trim())
+  
+  if ( value.indexOf('.') > 0 )
+    [table, value] = value.split('.').map(str => str.trim())
+  
+  return new Column(value, table).as(alias)
+}
+
+/**
+ * 
+ * @param {String} value
+ * @returns {Table}
+ */
+export function T(value) {
+  var alias = ''
+  var schema = ''
+
+  if ( value.toLowerCase().indexOf(' as ') > 0 )
+    [value, alias] = value.split(' as ').map(str => str.trim())
+  
+  if ( value.indexOf('.') > 0 )
+    [schema, value] = value.split('.').map(str => str.trim())
+  
+  return new Table(value, schema).as(alias)
 }
