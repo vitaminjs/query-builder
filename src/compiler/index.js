@@ -19,21 +19,21 @@ export { Mysql, Mssql, Oracle, Sqlite, Postgre }
  * @returns {Query}
  * @throws {TypeError}
  */
-export function createCompiler(dialect) {
+export function createCompiler(dialect, options = {}) {
   dialect = dialect.toLowerCase()
   
   switch (dialect) {
-    case 'mysql': return new Mysql
+    case 'mysql': return new Mysql(options)
     
-    case 'mssql': return new Mssql
+    case 'mssql': return new Mssql(options)
     
-    case 'oracle': return new Oracle
+    case 'oracle': return new Oracle(options)
     
-    case 'sqlite': return new Sqlite
+    case 'sqlite': return new Sqlite(options)
     
     case 'pg':
     case 'postgre': 
-    case 'postgresql': return new Postgre
+    case 'postgresql': return new Postgre(options)
   }
   
   throw new TypeError("Unknown database dialect")

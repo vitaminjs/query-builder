@@ -28,6 +28,18 @@ export default class extends Compiler {
   }
   
   /**
+   * 
+   * @param {Array} tables
+   * @param {Object} query
+   * @returns {String}
+   */
+  compileTables(tables, query) {
+    if ( isEmpty(tables) ) return 'from dual'
+    
+    return super.compileTables(tables, query)
+  }
+  
+  /**
    * Join two identifiers by `AS` clause
    * 
    * @param {String} first
