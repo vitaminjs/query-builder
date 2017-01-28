@@ -74,16 +74,12 @@ export function SQ(query) {
  * @returns {Column}
  */
 export function C(value) {
-  var alias = ''
   var table = ''
   
-  if ( value.toLowerCase().indexOf(' as ') > 0 )
-    [value, alias] = value.split(' as ').map(str => str.trim())
-  
   if ( value.indexOf('.') > 0 )
-    [table, value] = value.split('.').map(str => str.trim())
+    [table, value] = value.split('.')
   
-  return new Column(value, table).as(alias)
+  return new Column(value.trim(), table ? T(table) : null)
 }
 
 /**
@@ -92,14 +88,10 @@ export function C(value) {
  * @returns {Table}
  */
 export function T(value) {
-  var alias = ''
   var schema = ''
-
-  if ( value.toLowerCase().indexOf(' as ') > 0 )
-    [value, alias] = value.split(' as ').map(str => str.trim())
   
   if ( value.indexOf('.') > 0 )
-    [schema, value] = value.split('.').map(str => str.trim())
+    [schema, value] = value.split('.')
   
-  return new Table(value, schema).as(alias)
+  return new Table(value.trim(), schema.trim())
 }
