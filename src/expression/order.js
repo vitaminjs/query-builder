@@ -14,13 +14,15 @@ export default class Order extends Expression {
   constructor(column) {
     super()
 
+    var direction = 'asc'
+    
     if ( isString(column) && column.indexOf('-') === 0 ) {
       column = column.substr(1)
       direction = 'desc'
     }
     
     this.name = column
-    this.direction = 'asc'
+    this.direction = direction
   }
 
   /**
