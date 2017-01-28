@@ -1,5 +1,4 @@
 
-import { Select } from '../query'
 import Expression from './base'
 
 /**
@@ -15,15 +14,12 @@ export default class SubQuery extends Expression {
   constructor(query) {
     super()
     
-    if (! (query instanceof Select) )
-      throw new TypeError("Invalid sub query expression")
-    
     this.query = query
   }
   
   /**
    * 
-   * @param {Compiler}
+   * @param {Compiler} compiler
    * @returns {String}
    */
   compile(compiler) {
