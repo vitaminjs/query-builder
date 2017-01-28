@@ -26,15 +26,7 @@ export default class Table extends Expression {
    * @returns {String}
    */
   getName() {
-    return (this.schema ? this.schema + '.' : '') + this.name
-  }
-
-  /**
-   * 
-   * @returns {String}
-   */
-  getAlias() {
-    return this.alias || this.getName()
+    return this.alias || (this.schema ? this.schema + '.' : '') + this.name
   }
 
   /**
@@ -42,8 +34,8 @@ export default class Table extends Expression {
    * @param {String} column
    * @returns {Field}
    */
-  getColumn(name) {
-    return new Column(name, this.getName())
+  column(name) {
+    return new Column(name, this)
   }
 
   /**
@@ -78,13 +70,10 @@ export default class Table extends Expression {
    */
   isEqual(expr) {
     if ( isString(expr) )
-      return (this.alias === expr || this.name === expr)
+      return expr === this.getName()
 
     return super.isEqual() || (
-      expr instanceof Table &&
-      expr.name === this.name &&
-      expr.alias === this.alias &&
-      expr.schema === this.schema
+      expr instanceof Table && this.getName() === expr.getName()
     )
   }
   

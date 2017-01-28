@@ -10,10 +10,10 @@ export default class Column extends Expression {
   /**
    * 
    * @param {String} name
-   * @param {String} table
+   * @param {Table} table
    * @constructor
    */
-  constructor(name, table = '') {
+  constructor(name, table = null) {
     super()
     
     this.name = name
@@ -25,24 +25,16 @@ export default class Column extends Expression {
    * @returns {String}
    */
   getName() {
-    return (this.table ? this.table + '.' : '') + this.name
+    return this.alias || (this.table ? this.table.getName() + '.' : '') + this.name
   }
 
   /**
    * 
-   * @returns {String}
-   */
-  getAlias() {
-    return this.alias || this.getName()
-  }
-
-  /**
-   * 
-   * @param {String} value
+   * @param {Table} value
    * @returns {Column}
    */
   setTable(value) {
-    this.table = table
+    this.table = value
     return this
   }
   
@@ -52,13 +44,12 @@ export default class Column extends Expression {
    * @returns {String}
    */
   compile(compiler) {
-    var table = this.table
-    var column = compiler.escapeIdentifier(this.name)
+    var expr = compiler.escapeIdentifier(this.name)
     
-    if ( table )
-      table = compiler.escapeIdentifier(this.table) + '.'
+    if ( this.table )
+      expr = compiler.escapeIdentifier(this.table.getName()) + '.' + expr
     
-    return compiler.alias(table + column, this.alias)
+    return compiler.alias(expr, this.alias)
   }
   
   /**
@@ -68,13 +59,10 @@ export default class Column extends Expression {
    */
   isEqual(expr) {
     if ( isString(expr) )
-      return (this.alias === expr || this.name === expr)
+      return expr === this.getName()
 
     return super.isEqual() || (
-      expr instanceof Column &&
-      expr.name === this.name &&
-      expr.table === this.table &&
-      expr.alias === this.alias
+      expr instanceof Column && this.getName() === expr.getName()
     )
   }
   
