@@ -1,7 +1,5 @@
 
-import { isString } from 'lodash'
 import Expression from './base'
-import Table from './table'
 
 /**
  * @class JoinExpression
@@ -17,13 +15,6 @@ export default class Join extends Expression {
    */
   constructor(table, type = 'inner', criteria = null) {
     super()
-    
-    if ( isString(table) ) table = new Table(table)
-    
-    if (! (table instanceof Expression) )
-      throw new TypeError("Invalid join expression")
-    
-    // TODO ensure the criteria
     
     this.type = type
     this.table = table
