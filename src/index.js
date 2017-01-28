@@ -1,5 +1,10 @@
 
-import Builder from './query/builder'
+import { Select } from './query'
 
-// exports
-module.exports = Builder
+/**
+ * 
+ * @returns {Select}
+ */
+export function select() {
+  return new Select().select(...arguments)
+}
