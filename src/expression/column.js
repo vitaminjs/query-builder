@@ -1,6 +1,7 @@
 
 import { isString } from 'lodash'
 import Expression from './base'
+import Order from './order'
 
 /**
  * @class ColumnExpression
@@ -64,6 +65,22 @@ export default class Column extends Expression {
     return super.isEqual() || (
       expr instanceof Column && this.getName() === expr.getName()
     )
+  }
+
+  /**
+   * 
+   * @returns {Order}
+   */
+  asc() {
+    return new Order(this.getName())
+  }
+
+  /**
+   * 
+   * @returns {Order}
+   */
+  desc() {
+    return new Order(this.getName()).desc()
   }
   
 }

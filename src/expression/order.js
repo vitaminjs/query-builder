@@ -1,25 +1,68 @@
 
 import { isString } from 'lodash'
-import Column from './column'
+import Expression from './base'
 
 /**
  * @class OrderExpression
  */
-export default class Order extends Column {
+export default class Order extends Expression {
   
   /**
    * @param {String} column
    * @constructor
    */
-  constructor(column, direction = "asc") {
+  constructor(column) {
+    super()
+
     if ( isString(column) && column.indexOf('-') === 0 ) {
       column = column.substr(1)
       direction = 'desc'
     }
     
-    super(column)
-    
-    this.direction = direction
+    this.name = column
+    this.direction = 'asc'
+  }
+
+  /**
+   * 
+   * @returns {String}
+   */
+  getName() {
+    return this.name
+  }
+
+  /**
+   * 
+   * @returns {Order}
+   */
+  asc() {
+    this.direction = 'asc'
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Order}
+   */
+  desc() {
+    this.direction = 'desc'
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Order}
+   */
+  nullsFirst() {
+    // TODO
+  }
+
+  /**
+   * 
+   * @returns {Order}
+   */
+  nullsLast() {
+    // TODO
   }
   
   /**
@@ -28,7 +71,8 @@ export default class Order extends Column {
    * @returns {String}
    */
   compile(compiler) {
-    return super.compile(compiler) +' '+ this.direction
+    // TODO compile nulls first or last
+    return compiler.escapeIdentifier(this.name) +' '+ this.direction
   }
   
   /**
@@ -38,11 +82,11 @@ export default class Order extends Column {
    */
   isEqual(expr) {
     if ( isString(expr) )
-      return this.name === expr
+      return expr === this.getName()
 
-    return super.isEqual() &&
-      expr instanceof Order &&
-      expr.direction === this.direction
+    return super.isEqual() || (
+      expr instanceof Order && expr.getName() === this.getName() 
+    )
   }
   
 }
