@@ -18,15 +18,15 @@ export { Select, Insert, Update, Delete }
  * @returns {Query}
  * @throws {TypeError}
  */
-export function createQuery(type, builder) {
+export function createQuery(type) {
   
-  if ( type === 'select' ) return new Select(builder)
+  if ( type === 'select' ) return new Select()
   
-  if ( type === 'insert' ) return new Insert(builder)
+  if ( type === 'insert' ) return new Insert()
   
-  if ( type === 'update' ) return new Update(builder)
+  if ( type === 'update' ) return new Update()
   
-  if ( type === 'delete' ) return new Delete(builder)
+  if ( type === 'delete' ) return new Delete()
   
   throw new TypeError("Invalid query type")
   
