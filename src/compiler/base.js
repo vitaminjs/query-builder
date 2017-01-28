@@ -37,12 +37,13 @@ export default class Compiler {
   
   /**
    * 
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
   compileSelectQuery(query) {
     var sql = this.compileSelectComponents(query)
     
+    // FIXME update with unions
     if ( isEmpty(query.unions) ) return sql
     
     return `(${sql}) ` + this.compileUnionComponents(this.components)
@@ -50,20 +51,20 @@ export default class Compiler {
   
   /**
    * 
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
   compileSelectComponents(query) {
     var sql = [
-      this.compileSelectColumns(query.columns, query),
-      this.compileTables(query.tables, query),
-      this.compileJoins(query.joins, query),
-      this.compileConditions(query.conditions, query),
-      this.compileGroups(query.groups, query),
-      this.compileHavingConditions(query.havingConditions, query),
-      this.compileOrders(query.orders, query),
-      this.compileLimit(query.limit, query),
-      this.compileOffset(query.offset, query),
+      this.compileSelectColumns(query),
+      this.compileTables(query),
+      this.compileJoins(query),
+      this.compileConditions(query),
+      this.compileGroups(query),
+      this.compileHavingConditions(query),
+      this.compileOrders(query),
+      this.compileLimit(query),
+      this.compileOffset(query),
     ]
     
     return compact(sql).join(' ')
@@ -71,15 +72,15 @@ export default class Compiler {
   
   /**
    * 
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
   compileUnionComponents(query) {
     var sql = [
-      this.compileUnions(query.unions, query),
-      this.compileOrders(query.unionOrders, query),
-      this.compileLimit(query.unionLimit, query),
-      this.compileOffset(query.unionOffset, query),
+      this.compileUnions(query),
+      this.compileOrders(query),
+      this.compileLimit(query),
+      this.compileOffset(query),
     ]
     
     return compact(sql).join(' ')
@@ -88,122 +89,113 @@ export default class Compiler {
   /**
    * Compile the query columns part
    * 
-   * @param {Array} columns
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileSelectColumns(columns, query) {
-    var select = 'select ' + (query.distinct ? 'distinct ' : '')
+  compileSelectColumns(query) {
+    var columns = query.hasColumns() ? query.getColumns() : ['*']
+    var select = 'select ' + (query.isDistinct() ? 'distinct ' : '')
 
-    return select + this.columnize(isEmpty(columns) ? ['*'] : columns)
+    return select + this.columnize(columns)
   }
   
   /**
    * 
-   * @param {Array} tables
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileTables(tables, query) {
-    if ( isEmpty(tables) ) return
+  compileTables(query) {
+    if (! query.hasTables() ) return ''
     
-    return 'from ' + tables.map(table => this.escape(table)).join(', ')
+    return 'from ' + query.getTables().map(expr => this.escape(expr)).join(', ')
   }
   
   /**
    * 
-   * @param {Array} joins
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileJoins(joins, query) {
-    if ( isEmpty(joins) ) return
+  compileJoins(query) {
+    if (! query.hasJoins() ) return ''
 
-    return joins.map(join => this.escape(join)).join(' ')
+    return query.getJoins().map(expr => this.escape(expr)).join(' ')
   }
   
   /**
    * 
-   * @param {Criteria} conditions
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileConditions(conditions, query) {
-    if ( conditions == null || conditions.isEmpty() ) return
+  compileConditions(query) {
+    if (! query.hasConditions() ) return ''
     
-    return 'where ' + conditions.compile(this)
+    return 'where ' + query.getConditions().compile(this)
   }
   
   /**
    * 
-   * @param {Array} groups
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileGroups(groups, query) {
-    if ( isEmpty(groups) ) return
+  compileGroups(query) {
+    if (! query.hasGroups() ) return ''
     
-    return 'group by ' + this.columnize(groups)
+    return 'group by ' + this.columnize(query.getGroups())
   }
   
   /**
    * 
-   * @param {Criteria} conditions
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileHavingConditions(conditions, query) {
-    if ( conditions == null || conditions.isEmpty() ) return
+  compileHavingConditions(query) {
+    if (! query.hasHavingConditions() ) return ''
     
-    return 'having ' + conditions.compile(this)
+    return 'having ' + query.getHavingConditions().compile(this)
   }
   
   /**
    * 
-   * @param {Array} orders
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileOrders(orders, query) {
-    if ( isEmpty(orders) ) return
+  compileOrders(query) {
+    if (! query.hasOrders() ) return ''
     
-    return 'order by ' + this.columnize(orders)
+    return 'order by ' + this.columnize(query.getOrders())
   }
   
   /**
    * 
-   * @param {Number} limit
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileLimit(limit, query) {
-    if (! isNumber(limit) ) return
+  compileLimit(query) {
+    if (! query.hasLimit() ) return ''
     
-    return 'limit ' + this.parameterize(limit)
+    return 'limit ' + this.parameterize(query.getLimit())
   }
   
   /**
    * 
-   * @param {Number} offset
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileOffset(offset, query) {
-    if (! isNumber(offset) ) return
+  compileOffset(query) {
+    if (! query.hasOffset() ) return ''
     
-    return 'offset ' + this.parameterize(offset)
+    return 'offset ' + this.parameterize(query.getOffset())
   }
   
   /**
    * 
-   * @param {Array} unions
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileUnions(unions, query) {
-    if ( isEmpty(unions) ) return
+  compileUnions(query) {
+    if (! query.hasUnions() ) return ''
 
-    return unions.map(union => this.escape(union)).join(' ')
+    return query.getUnions().map(expr => this.escape(expr)).join(' ')
   }
   
   /**
@@ -240,7 +232,8 @@ export default class Compiler {
     
     return value.map(val => {
       // escape expressions
-      if ( val instanceof Expression ) return this.escape(val)
+      if ( val instanceof Expression )
+        return this.escape(val)
 
       return this.addBinding(val).parameter
     }).join(', ')
@@ -269,7 +262,7 @@ export default class Compiler {
   columnize(columns) {
     if (! isArray(columns) ) columns = [columns]
     
-    return columns.map(col => this.escape(col)).join(', ')
+    return columns.map(expr => this.escape(expr)).join(', ')
   }
   
   /**

@@ -7,14 +7,13 @@ import Compiler from './base'
 export default class extends Compiler {
   
   /**
-   * BaseCompiler constructor
    * 
+   * @param {Object} options
    * @constructor
    */
-  constructor() {
-    super()
+  constructor(options = {}) {
+    super(options)
 
-    this.bindings = []
     this.paramCount = 1
   }
   

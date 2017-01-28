@@ -18,28 +18,25 @@ export default class extends Compiler {
   
   /**
    * 
-   * @param {Array} tables
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileTables(tables, query) {
-    if ( isEmpty(tables) ) return 'from dual'
+  compileTables(query) {
+    if (! query.hasTables() ) return 'from dual'
     
-    return super.compileTables(tables, query)
+    return super.compileTables(query)
   }
-  
+
   /**
    * 
-   * @param {Number} offset
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileOffset(offset, query) {
-    if ( offset == null ) return
-
-    var expr = 'offset ' + this.parameterize(offset)
+  compileLimit(query) {
+    if ( query.hasOffset() && !query.hasLimit() )
+      return 'limit 18446744073709551615 '
     
-    return ((query.limit == null) ? 'limit 18446744073709551615 ' : '') + expr
+    return super.compileLimit(query)
   }
   
 }

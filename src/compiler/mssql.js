@@ -8,14 +8,13 @@ import Compiler from './base'
 export default class extends Compiler {
   
   /**
-   * BaseCompiler constructor
    * 
+   * @param {Object} options
    * @constructor
    */
-  constructor() {
-    super()
+  constructor(options = {}) {
+    super(options)
 
-    this.bindings = []
     this.paramCount = 1
   }
   
@@ -40,89 +39,94 @@ export default class extends Compiler {
   
   /**
    * 
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
   compileSelectComponents(query) {
     var sql = super.compileSelectComponents(query)
 
-    if ( query.offset == null ) return sql
+    if ( query.hasOffset() ) {
+      let offset = this.parameterize(query.getOffset())
 
-    return `select * from (${sql}) as t where row_count > ${query.offset}`
+      return `select * from (${sql}) as t where [row_count] > ${offset}`
+    }
+
+    return sql
   }
 
   /**
    * Compile the query columns part
    * 
-   * @param {Array} columns
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileSelectColumns(columns, query) {
-    columns = this.columnize(isEmpty(columns) ? ['*'] : columns)
+  compileSelectColumns(query) {
+    var columns = query.hasColumns() ? query.getColumns() : ['*']
 
     return this.compileTop(query) + columns + this.compileRowCount(query)
   }
 
   /**
    * 
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
   compileTop(query) {
     // TODO show a warning if the query doesn't contain orders
-    var select = 'select ' + (query.distinct ? 'distinct ' : '')
+    var select = 'select ' + (query.isDistinct() ? 'distinct ' : '')
 
-    if ( query.limit != null )
-      select += `top (${query.limit + (query.offset || 0)}) `
+    if ( query.hasLimit() ) {
+      let limit = query.getLimit()
+      let offset = query.getOffset() || 0
+
+      // TODO ensure offset is number
+
+      select += `top (${this.parameterize(limit + offset)}) `
+    }
     
     return select
   }
 
   /**
    * 
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
   compileRowCount(query) {
-    if ( query.offset != null ) {
-      let orders = super.compileOrders(query.orders) || 'order by (select 0)'
+    if (! query.hasOffset() ) return ''
 
-      return `, row_number() over (${orders}) as [row_count]`
-    }
+    var orders = super.compileOrders(query) || 'order by (select 0)'
 
+    return `, row_number() over (${orders}) as [row_count]`
+  }
+  
+  /**
+   * 
+   * @param {Select} query
+   * @returns {String}
+   */
+  compileOrders(query) {
+    if ( query.hasOffset() ) return ''
+    
+    return super.compileOrders(query)
+  }
+
+  /**
+   * 
+   * @param {Select} query
+   * @returns {String}
+   */
+  compileLimit(query) {
     return ''
   }
   
   /**
    * 
-   * @param {Array} orders
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileOrders(orders, query) {
-    if ( query.offset == null )
-      return super.compileOrders(orders, query)
-  }
-
-  /**
-   * 
-   * @param {Number} limit
-   * @param {Object} query
-   * @returns {String}
-   */
-  compileLimit(limit, query) {
-    // noop
-  }
-  
-  /**
-   * 
-   * @param {Number} offset
-   * @param {Object} query
-   * @returns {String}
-   */
-  compileOffset(offset, query) {
-    // noop
+  compileOffset(query) {
+    return ''
   }
   
 }

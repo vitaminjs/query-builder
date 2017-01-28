@@ -7,14 +7,13 @@ import Compiler from './base'
 export default class extends Compiler {
 
   /**
-   * BaseCompiler constructor
    * 
+   * @param {Object} options
    * @constructor
    */
-  constructor() {
-    super()
+  constructor(options = {}) {
+    super(options)
 
-    this.bindings = []
     this.paramCount = 1
   }
   
@@ -29,18 +28,17 @@ export default class extends Compiler {
   
   /**
    * 
-   * @param {Array} tables
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileTables(tables, query) {
-    if ( isEmpty(tables) ) return 'from dual'
+  compileTables(query) {
+    if (! query.hasTables() ) return 'from dual'
     
-    return super.compileTables(tables, query)
+    return super.compileTables(query)
   }
   
   /**
-   * Join two identifiers by `AS` clause
+   * Alias an expression
    * 
    * @param {String} first
    * @param {String} second

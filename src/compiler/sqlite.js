@@ -7,14 +7,13 @@ import Compiler from './base'
 export default class extends Compiler {
   
   /**
-   * BaseCompiler constructor
    * 
+   * @param {Object} options
    * @constructor
    */
-  constructor() {
-    super()
+  constructor(options = {}) {
+    super(options)
 
-    this.bindings = []
     this.paramCount = 1
   }
   
@@ -26,19 +25,17 @@ export default class extends Compiler {
   get parameter() {
     return '$' + this.paramCount++
   }
-  
+
   /**
    * 
-   * @param {Number} offset
-   * @param {Object} query
+   * @param {Select} query
    * @returns {String}
    */
-  compileOffset(offset, query) {
-    if ( offset == null ) return
-
-    var expr = 'offset ' + this.parameterize(offset)
+  compileLimit(query) {
+    if ( query.hasOffset() && !query.hasLimit() )
+      return 'limit -1 '
     
-    return ((query.limit == null) ? 'limit -1 ' : '') + expr
+    return super.compileLimit(query)
   }
   
 }
