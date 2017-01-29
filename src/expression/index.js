@@ -1,6 +1,5 @@
 
 import Join from './join'
-import Count from './count'
 import Union from './union'
 import Order from './order'
 import Table from './table'
@@ -13,4 +12,4 @@ import Aggregate from './aggregate'
 
 export default Expression
 
-export { Literal, Order, Join, Table, Union, Column, Func, SubQuery, Aggregate, Count }
+export { Literal, Order, Join, Table, Union, Column, Func, SubQuery, Aggregate }

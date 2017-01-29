@@ -1,7 +1,6 @@
 
 import Expression, { Literal, SubQuery, Column, Table } from '../expression'
 import { isFunction, isArray, isString } from 'lodash'
-import Builder from '../query/builder'
 import { Select } from '../query'
 
 /**
@@ -50,12 +49,8 @@ export function SQ(query) {
   if ( isFunction(query) ) {
     let fn = query
     
-    fn(query = new Builder())
+    fn(query = new Select())
   }
-  
-  // accept a builder instance
-  if ( query instanceof Builder )
-    query = query.build()
   
   // accept a Select query instance
   if ( query instanceof Select )
