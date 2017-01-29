@@ -45,7 +45,7 @@ export default class extends Compiler {
    * @returns {String}
    */
   alias(first, second = null) {
-    return super.alias(first, second).replace(' as ', ' ')
+    return first + (second ? ' '+ this.escapeIdentifier(second) : '')
   }
   
 }

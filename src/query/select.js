@@ -1,6 +1,6 @@
 
 import Expression, { Literal, SubQuery, Order, Join } from '../expression'
-import { isArray, isNumber, isString, toArray } from 'lodash'
+import { isArray, isNumber, isString, isBoolean, toArray } from 'lodash'
 import { Criteria } from '../criterion'
 import Query from './base'
 
@@ -616,6 +616,9 @@ export default class Select extends Query {
    * @private
    */
   ensureExpression(value) {
+    if ( isBoolean(value) )
+      value = Number(value)
+    
     if ( isNumber(value) )
       value = String(value)
     

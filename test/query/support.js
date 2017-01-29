@@ -12,7 +12,7 @@ var assert = require('assert')
 exports.test = function test(purpose, qb, dialects, params) {
   for ( var name in dialects ) {
     it(name +': it '+ purpose, () => {
-      var q = qb.compile(name)
+      var q = qb.toSQL(name)
       var expected = dialects[name]
       
       assert.equal(q.sql, expected.sql || expected)
