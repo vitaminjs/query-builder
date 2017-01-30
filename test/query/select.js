@@ -1,7 +1,7 @@
 /* global describe */
 
 var fn = require('../../lib/helpers')
-var qb = require('../../lib/index')
+var qb = require('../../lib').default
 var support = require('./support')
 var COUNT = fn.COUNT
 var RAW   = fn.RAW
