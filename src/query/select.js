@@ -34,6 +34,27 @@ export default class Select extends Query {
 
   /**
    * 
+   * @returns {Select}
+   */
+  clone() {
+    var query = new select()
+
+    this.isDistinct() && query.distinct()
+    this.hasLimit() && query.limit(this.getLimit())
+    this.hasOffset() && query.offset(this.getOffset())
+    this.hasJoins() && query.setJoins(this.getJoins())
+    this.hasTables() && query.setTables(this.getTables())
+    this.hasGroups() && query.setGroups(this.getGroups())
+    this.hasOrders() && query.setOrders(this.getOrders())
+    this.hasColumns() && query.setColumns(this.getColumns())
+    this.hasConditions() && query.setConditions(this.getConditions())
+    this.hasHavingConditions() && query.setHavingConditions(this.getHavingConditions())
+
+    return query
+  }
+
+  /**
+   * 
    * @param {Compiler} compiler
    * @returns {String}
    */
