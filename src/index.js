@@ -1,19 +1,28 @@
 
 import { Select } from './query'
 
-/**
- * 
- * @returns {Select}
- */
-export function select() {
-  return new Select().select(...arguments)
+const builder = {
+
+  /**
+   * 
+   * @returns {Select}
+   */
+  select() {
+    return new Select().select(...arguments)
+  },
+
+  /**
+   * 
+   * @param {Any} table
+   * @return {Select}
+   */
+  selectFrom(table) {
+    return this.select().from(table)
+  }
+
 }
 
-/**
- * 
- * @param {Any} table
- * @returns {Select}
- */
-export function selectFrom(table) {
-  return select().from(table)
-}
+// export helpers
+export * from './helpers'
+
+export default builder
