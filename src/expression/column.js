@@ -48,7 +48,7 @@ export default class Column extends Expression {
     var expr = compiler.escapeIdentifier(this.name)
     
     if ( this.table )
-      expr = compiler.escapeIdentifier(this.table.getName()) + '.' + expr
+      expr = this.table.compile(compiler) + '.' + expr
     
     return compiler.alias(expr, this.alias)
   }
