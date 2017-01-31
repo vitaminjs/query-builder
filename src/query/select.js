@@ -26,6 +26,23 @@ export default class Select extends Query {
 
   /**
    * 
+   * @param {String} name
+   * @returns {SubQuery}
+   */
+  as(name) {
+    return this.toExpression().as(name)
+  }
+
+  /**
+   * 
+   * @returns {Select}
+   */
+  newQuery() {
+    return new Select()
+  }
+
+  /**
+   * 
    * @returns {SubQuery}
    */
   toExpression() {
@@ -142,6 +159,15 @@ export default class Select extends Query {
     tables.forEach(value => {
       if ( isString(value) )
         value = new Literal(value)
+
+      if ( isFunction(value) ) {
+        let fn = value
+
+        fn(value = this.newQuery())
+      }
+
+      if ( value instanceof Select )
+        value = value.toExpression()
       
       if ( value instanceof Expression )
         return this.getTables().push(value)
