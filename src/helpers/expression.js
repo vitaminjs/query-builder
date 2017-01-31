@@ -34,16 +34,13 @@ export function RAW(expr, ...args) {
 /**
  * 
  * @param {Any} query
- * @returns {SubQuery}
+ * @returns {Expression}
  * @throws {TypeError}
  */
 export function SQ(query) {
   // accept a raw query string
   if ( isString(query) )
-    query = RAW(query).wrap()
-  
-  if ( query instanceof Literal )
-    return query
+    return RAW(query).wrap()
   
   // accept a function as a parameter
   if ( isFunction(query) ) {
@@ -69,12 +66,17 @@ export function SQ(query) {
  * @returns {Column}
  */
 export function C(value) {
+  var alias = ''
   var table = ''
+  
+  if ( value.indexOf(' as ') > 0 ) {
+    [value, alias] = value.split(' as ')
+  }
   
   if ( value.indexOf('.') > 0 )
     [table, value] = value.split('.')
   
-  return new Column(value.trim(), table ? T(table) : null)
+  return new Column(value.trim(), table ? T(table) : null).as(alias)
 }
 
 /**
@@ -83,10 +85,15 @@ export function C(value) {
  * @returns {Table}
  */
 export function T(value) {
+  var alias = ''
   var schema = ''
+
+  if ( value.indexOf(' as ') > 0 ) {
+    [value, alias] = value.split(' as ')
+  }
   
   if ( value.indexOf('.') > 0 )
     [schema, value] = value.split('.')
   
-  return new Table(value.trim(), schema.trim())
+  return new Table(value.trim(), schema.trim()).as(alias)
 }
