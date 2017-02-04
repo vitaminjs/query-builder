@@ -1,6 +1,6 @@
 
+import { isArray, isNumber, isString, isBoolean, isFunction, toArray } from 'lodash'
 import Expression, { Literal, SubQuery, Order, Join } from '../expression'
-import { isArray, isNumber, isString, isBoolean, toArray } from 'lodash'
 import { Criteria } from '../criterion'
 import Query from './base'
 
@@ -412,8 +412,20 @@ export default class Select extends Query {
       return this
     }
     
+    // handle strings
     if ( isString(table) )
       table = new Literal(table)
+    
+    // handle functions
+    if ( isFunction(table) ) {
+      let fn = table
+
+      fn(table = this.newQuery())
+    }
+
+    // handle sub queries
+    if ( table instanceof Select )
+      table = table.toExpression()
     
     if (! (table instanceof Expression) )
       throw new TypeError("Invalid join expression")
