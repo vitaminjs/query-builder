@@ -1,7 +1,6 @@
 
-import { each, isPlainObject, isArray, isFunction, isString, isObject } from 'lodash'
-import Expression, { Literal, Column } from '../expression'
-import { SQ } from '../helpers'
+import { each, isPlainObject, isArray, isFunction, isString, isBoolean, isNumber } from 'lodash'
+import Expression, { Literal } from '../expression'
 import Criterion from './base'
 import Basic from './basic'
 import IsIn from './is-in'
@@ -14,14 +13,22 @@ export default class Criteria extends Criterion {
   
   /**
    * 
-   * @param {String} bool
-   * @param {Boolean} not
    * @constructor
    */
-  constructor(bool = 'and', not = false) {
-    super(bool, not)
+  constructor() {
+    super()
     
+    this.not = false
     this.components = []
+  }
+
+  /**
+   * 
+   * @returns {Criteria}
+   */
+  negate() {
+    this.not = !this.not
+    return this
   }
 
   /**
@@ -35,13 +42,17 @@ export default class Criteria extends Criterion {
   /**
    * 
    * @param {Criterion} value
+   * @param {String} bool
+   * @param {Boolean} not
    * @returns {Criteria}
    */
-  add(value) {
+  add(value, bool = 'and', not = false) {
     if (! (value instanceof Criterion) )
       throw new TypeError("Invalid condition expression")
     
-    this.components.push(value)
+    if ( not ) value.negate()
+
+    this.components.push(value.setBoolean(bool))
     
     return this
   }
@@ -83,9 +94,18 @@ export default class Criteria extends Criterion {
       operator = '='
     }
     
+    if ( isBoolean(expr) )
+      expr = new Literal(`1 = ${expr ? 1 : 0}`)
+    
+    if ( isNumber(expr) )
+      expr = String(expr)
+    
+    if ( isString(expr) )
+      expr = new Literal(expr)
+    
     // supports `.where(new RawExpr(...))`
     if ( expr instanceof Literal )
-      return this.add(new Raw(expr, bool))
+      return this.add(new Raw(expr), bool)
     
     // supports `.where({a: 1, b: 3})`
     if ( isPlainObject(expr) ) {
@@ -103,16 +123,13 @@ export default class Criteria extends Criterion {
 
     // supports `.where(criterion)`
     if ( expr instanceof Criterion )
-      return this.add(expr.negate(not).setBoolean(bool))
+      return this.add(expr, bool, not)
     
     // supports `.where('column', [...])`
     if ( isArray(value) && operator === '=' )
-      return this.add(new IsIn(expr, value, bool, not))
-    
-    // supports sub queries
-    if ( isFunction(value) ) value = SQ(value)
+      return this.add(new IsIn(expr, value), bool, not)
 
-    return this.add(new Basic(expr, operator, value, bool, not))
+    return this.add(new Basic(expr, operator, value), bool, not)
   }
   
   /**
@@ -165,12 +182,12 @@ export default class Criteria extends Criterion {
     }
     
     if ( isString(value) )
-      value = new Column(value)
+      value = new Literal(value)
     
     if (! (value instanceof Expression) )
       throw new TypeError("Invalid column expression")
     
-    return this.add(new Basic(expr, operator, value, bool))
+    return this.where(expr, operator, value, bool)
   }
   
   /**

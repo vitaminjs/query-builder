@@ -10,11 +10,10 @@ export default class Raw extends Criterion {
   /**
    * 
    * @param {Raw} expr
-   * @param {String} bool
    * @constructor
    */
-  constructor(expr, bool = 'and') {
-    super(bool, false)
+  constructor(expr) {
+    super()
     
     if ( expr instanceof Expression )
       throw new TypeError("Invalid `raw` condition")
@@ -28,7 +27,7 @@ export default class Raw extends Criterion {
    * @returns {String}
    */
   compile(compiler) {
-    return this.bool +' '+ this.expr.compile(compiler)
+    return `${this.bool} ${this.expr.compile(Compiler)}`
   }
   
 }

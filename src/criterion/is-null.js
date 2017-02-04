@@ -1,6 +1,5 @@
 
-import Expression, { Column } from '../expression'
-import { isString } from 'lodash'
+import Expression from '../expression'
 import Criterion from './base'
 
 /**
@@ -10,21 +9,26 @@ export default class IsNull extends Criterion {
   
   /**
    * 
-   * @param {String|Expression} expr
-   * @param {String} bool
-   * @param {Boolean} not
+   * @param {Expression} expr
    * @constructor
    */
-  constructor(expr, bool = 'and', not = false) {
-    super(bool, not)
-    
-    if ( isString(expr) )
-      expr = new Column(expr)
+  constructor(expr) {
+    super()
     
     if (! (expr instanceof Expression) )
       throw new TypeError("Invalid `is null` condition")
     
     this.operand = expr
+    this.op = 'is'
+  }
+
+  /**
+   * 
+   * @returns {Criterion}
+   */
+  negate() {
+    this.op = (this.op === 'is') ? 'is not' : 'is'
+    return this
   }
   
   /**
@@ -33,10 +37,7 @@ export default class IsNull extends Criterion {
    * @returns {String}
    */
   compile(compiler) {
-    var op = 'is' + (this.not ? ' not' : '')
-    var operand = this.operand.compile(compiler)
-    
-    return `${this.bool} ${operand} ${op} null`
+    return `${this.bool} ${this.operand.compile(compiler)} ${this.op} null`
   }
   
 }

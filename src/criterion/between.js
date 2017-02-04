@@ -1,25 +1,36 @@
 
 import { isArray } from 'lodash'
-import Basic from './basic'
+import Base from './base'
 
 /**
  * @class BetweenCriterion
  */
-export default class Between extends Basic {
+export default class Between extends Base {
   
   /**
    * 
-   * @param {String|Expression} expr
+   * @param {Expression} expr
    * @param {Any} values
-   * @param {String} bool
-   * @param {Boolean} not
    * @constructor
    */
-  constructor(expr, values, bool = 'and', not = false) {
+  constructor(expr, values) {
+    super()
+
     if (! (isArray(values) && values.length === 2) )
       throw new TypeError("Invalid values for `between` condition")
     
-    super(expr, 'between', values, bool, not)
+    this.operand = expr
+    this.op = 'between'
+    this.values = values
+  }
+
+  /**
+   * 
+   * @returns {Between}
+   */
+  negate() {
+    this.op = this.op === 'between' ? 'not between' : 'between'
+    return this
   }
   
   /**
@@ -29,11 +40,10 @@ export default class Between extends Basic {
    */
   compile(compiler) {
     var operand = this.operand.compile(compiler)
-    var op = (this.not ? 'not ' : '') + this.op
-    var value1 = compiler.parameterize(this.value[0])
-    var value2 = compiler.parameterize(this.value[1])
+    var value1 = compiler.parameterize(this.values[0])
+    var value2 = compiler.parameterize(this.values[1])
 
-    return `${this.bool} ${operand} ${op} ${value1} and ${value2}`
+    return `${this.bool} ${operand} ${this.op} ${value1} and ${value2}`
   }
   
 }

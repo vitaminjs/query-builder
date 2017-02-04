@@ -9,18 +9,16 @@ export default class Criterion {
    * @param {String} bool
    * @constructor
    */
-  constructor(bool = 'and', not = false) {
-    this.bool = bool
-    this.not = not
+  constructor() {
+    this.bool = 'and'
   }
 
   /**
    * 
-   * @param {Boolean} flag
    * @returns {Criterion}
    */
-  negate(flag = true) {
-    this.not = flag
+  negate() {
+    // noop
     return this
   }
 

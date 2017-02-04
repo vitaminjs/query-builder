@@ -1,6 +1,5 @@
 
-import Expression, { Column } from '../expression'
-import { isString } from 'lodash'
+import Expression from '../expression'
 import Criterion from './base'
 
 /**
@@ -10,18 +9,13 @@ export default class Basic extends Criterion {
   
   /**
    * 
-   * @param {String|Expression} expr
+   * @param {Expression} expr
    * @param {String} operator
    * @param {Any} value
-   * @param {String} bool
-   * @param {Boolean} not
    * @constructor
    */
-  constructor(expr, operator, value, bool = 'and', not = false) {
-    super(bool, not)
-    
-    if ( isString(expr) )
-      expr = new Column(expr)
+  constructor(expr, operator, value) {
+    super()
     
     if (! (expr instanceof Expression) )
       throw new TypeError("Invalid condition operand")
@@ -29,6 +23,32 @@ export default class Basic extends Criterion {
     this.operand = expr
     this.value = value
     this.op = operator
+  }
+
+  /**
+   * @type {Object}
+   */
+  get operators() {
+    return {
+      '=': '!=',
+      '<>': '=',
+      '!=': '=',
+      '<': '>=',
+      '>=': '<',
+      '<=': '>',
+      '>': '<=',
+      'like': 'not like',
+      'not like': 'like',
+    }
+  }
+
+  /**
+   * 
+   * @returns {Basic}
+   */
+  negate() {
+    this.op = this.operators[this.op]
+    return this
   }
   
   /**
@@ -40,9 +60,8 @@ export default class Basic extends Criterion {
     var operator = compiler.operator(this.op)
     var operand = this.operand.compile(compiler)
     var value = compiler.parameterize(this.value)
-    var prefix = this.bool + (this.not ? ' not' : '')
 
-    return `${prefix} ${operand} ${operator} ${value}`
+    return `${this.bool} ${operand} ${operator} ${value}`
   }
   
 }
