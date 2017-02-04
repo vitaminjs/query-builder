@@ -35,7 +35,7 @@ export default class Table extends Expression {
    * @returns {Field}
    */
   column(name) {
-    return new Column(name, this)
+    return new Column(name, this.getName())
   }
 
   /**
@@ -54,13 +54,12 @@ export default class Table extends Expression {
    * @returns {String}
    */
   compile(compiler) {
-    var schema = this.schema
-    var table = compiler.escapeIdentifier(this.name)
+    var expr = compiler.escapeIdentifier(this.name)
     
-    if ( schema )
-      schema = compiler.escapeIdentifier(this.schema) + '.'
+    if ( this.schema )
+      expr = compiler.escapeIdentifier(this.schema) + '.' + expr
     
-    return compiler.alias(schema + table, this.alias)
+    return compiler.alias(expr, this.alias)
   }
   
   /**

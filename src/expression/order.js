@@ -11,10 +11,8 @@ export default class Order extends Expression {
    * @param {String} column
    * @constructor
    */
-  constructor(column) {
+  constructor(column, direction = 'asc') {
     super()
-
-    var direction = 'asc'
     
     if ( isString(column) && column.indexOf('-') === 0 ) {
       column = column.substr(1)
