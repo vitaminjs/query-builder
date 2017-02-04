@@ -1,7 +1,9 @@
 
 import { each, isPlainObject, isArray, isFunction, isString, isBoolean, isNumber } from 'lodash'
 import Expression, { Literal } from '../expression'
+import Between from './between'
 import Criterion from './base'
+import IsNull from './is-null'
 import Basic from './basic'
 import IsIn from './is-in'
 import Raw from './raw'
@@ -45,6 +47,7 @@ export default class Criteria extends Criterion {
    * @param {String} bool
    * @param {Boolean} not
    * @returns {Criteria}
+   * @throws {TypeError}
    */
   add(value, bool = 'and', not = false) {
     if (! (value instanceof Criterion) )
@@ -87,25 +90,24 @@ export default class Criteria extends Criterion {
    * @param {String} bool
    * @param {Boolean} not
    * @returns {Criteria}
+   * @throws {TypeError}
    */
   where(expr, operator, value, bool = 'and', not = false) {
-    if ( value == null && operator != null ) {
-      value = operator
-      operator = '='
-    }
-    
+    // supports `.where(true|false)`
     if ( isBoolean(expr) )
       expr = new Literal(`1 = ${expr ? 1 : 0}`)
     
+    // supports `.where(new Literal(...))`
+    if ( expr instanceof Literal )
+      return this.add(new Raw(expr), bool)
+    
+    // supports scalar conditions
     if ( isNumber(expr) )
       expr = String(expr)
     
+    // each string expression will be wrapped into a Literal
     if ( isString(expr) )
       expr = new Literal(expr)
-    
-    // supports `.where(new RawExpr(...))`
-    if ( expr instanceof Literal )
-      return this.add(new Raw(expr), bool)
     
     // supports `.where({a: 1, b: 3})`
     if ( isPlainObject(expr) ) {
@@ -118,16 +120,35 @@ export default class Criteria extends Criterion {
     if ( isFunction(expr) ) {
       let fn = expr
       
-      fn(expr = new Criteria(bool, not))
+      fn(expr = new Criteria())
     }
 
     // supports `.where(criterion)`
     if ( expr instanceof Criterion )
       return this.add(expr, bool, not)
     
+    if ( value == null && operator != null ) {
+      value = operator
+      operator = '='
+    }
+
+    // format the operator
+    operator = operator.toLowerCase().trim()
+
+    // supports `.where('column', null)`
+    if ( value === null )
+      return this.add(new IsNull(expr), bool, not)
+    
     // supports `.where('column', [...])`
-    if ( isArray(value) && operator === '=' )
+    if ( isArray(value) && operator === '=' ) operator = 'in'
+
+    // supports `.where('column', 'in', ...)`
+    if ( operator.indexOf('in') > -1 )
       return this.add(new IsIn(expr, value), bool, not)
+    
+    // supports `.where('column', 'between', [val1, val2])`
+    if ( operator.indexOf('between') > -1 )
+      return this.add(new Between(expr, value), bool, not)
 
     return this.add(new Basic(expr, operator, value), bool, not)
   }
@@ -165,40 +186,6 @@ export default class Criteria extends Criterion {
    */
   orWhereNot(expr, operator, value) {
     return this.whereNot(expr, operator, value, 'or')
-  }
-  
-  /**
-   * 
-   * @param {String|Expression} expr
-   * @param {String} operator
-   * @param {String|Expression} value
-   * @param {String} bool
-   * @returns {Criteria}
-   */
-  on(expr, operator, value, bool = 'and') {
-    if ( value == null && operator != null ) {
-      value = operator
-      operator = '='
-    }
-    
-    if ( isString(value) )
-      value = new Literal(value)
-    
-    if (! (value instanceof Expression) )
-      throw new TypeError("Invalid column expression")
-    
-    return this.where(expr, operator, value, bool)
-  }
-  
-  /**
-   * 
-   * @param {String|Expression} expr
-   * @param {String} operator
-   * @param {String|Expression} value
-   * @returns {Criteria}
-   */
-  orOn(expr, operator, value) {
-    return this.on(expr, operator, value, 'or')
   }
   
 }
