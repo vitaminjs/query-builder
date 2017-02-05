@@ -1,8 +1,10 @@
 /* global describe */
 
+var Select = require('../../lib/query').Select
 var fn = require('../../lib/helpers')
 var qb = require('../../lib').default
 var support = require('./support')
+var assert = require('assert')
 var COUNT = fn.COUNT
 var RAW   = fn.RAW
 var MAX   = fn.MAX
@@ -230,5 +232,13 @@ describe("test building select queries:", () => {
   })
 
   describe("test where():", () => {})
+  
+  describe("test clone():", () => {
+    
+    it("returns an instance of Select query", () => {
+      assert.ok(qb.select().clone() instanceof Select)
+    })
+    
+  })
   
 })

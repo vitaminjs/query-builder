@@ -21,7 +21,33 @@ export default class Criteria extends Criterion {
     super()
     
     this.not = false
-    this.components = []
+    this._components = []
+  }
+  
+  /**
+   * 
+   * @returns {Criteria}
+   */
+  clone() {
+    return new Criteria().setComponents(this.getComponents())
+  }
+  
+  /**
+   * 
+   * @returns {Array}
+   */
+  getComponents() {
+    return this._components
+  }
+  
+  /**
+   * 
+   * @param {Array} value
+   * @returns {Criteria}
+   */
+  setComponents(value) {
+    this._components = value
+    return this
   }
 
   /**
@@ -38,7 +64,7 @@ export default class Criteria extends Criterion {
    * @returns {Boolean}
    */
   isEmpty() {
-    return this.components.length === 0
+    return this.getComponents().length === 0
   }
   
   /**
@@ -55,7 +81,7 @@ export default class Criteria extends Criterion {
     
     if ( not ) value.negate()
 
-    this.components.push(value.setBoolean(bool))
+    this.getComponents().push(value.setBoolean(bool))
     
     return this
   }
@@ -67,7 +93,7 @@ export default class Criteria extends Criterion {
    */
   compile(compiler) {
     // compile the conditions
-    var conditions = this.components.map(child => {
+    var conditions = this.getComponents().map(child => {
       // compile a sub criteria
       if ( child instanceof Criteria ) {
         let not = child.not ? 'not ' : ''

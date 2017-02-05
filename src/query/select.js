@@ -54,18 +54,18 @@ export default class Select extends Query {
    * @returns {Select}
    */
   clone() {
-    var query = new select()
+    var query = new Select()
 
     this.isDistinct() && query.distinct()
     this.hasLimit() && query.limit(this.getLimit())
     this.hasOffset() && query.offset(this.getOffset())
-    this.hasJoins() && query.setJoins(this.getJoins())
-    this.hasTables() && query.setTables(this.getTables())
-    this.hasGroups() && query.setGroups(this.getGroups())
-    this.hasOrders() && query.setOrders(this.getOrders())
-    this.hasColumns() && query.setColumns(this.getColumns())
-    this.hasConditions() && query.setConditions(this.getConditions())
-    this.hasHavingConditions() && query.setHavingConditions(this.getHavingConditions())
+    this.hasJoins() && query.setJoins(this.getJoins().slice())
+    this.hasTables() && query.setTables(this.getTables().slice())
+    this.hasGroups() && query.setGroups(this.getGroups().slice())
+    this.hasOrders() && query.setOrders(this.getOrders().slice())
+    this.hasColumns() && query.setColumns(this.getColumns().slice())
+    this.hasConditions() && query.setConditions(this.getConditions().clone())
+    this.hasHavingConditions() && query.setHavingConditions(this.getHavingConditions().clone())
 
     return query
   }
