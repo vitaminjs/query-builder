@@ -22,7 +22,7 @@ export default class extends Compiler {
    * 
    * @type {String}
    */
-  get parameter() {
+  get placeholder() {
     return '$' + this.paramCount++
   }
 

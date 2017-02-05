@@ -23,7 +23,7 @@ export default class Compiler {
    * 
    * @type {String}
    */
-  get parameter() {
+  get placeholder() {
     return '?'
   }
 
@@ -230,7 +230,7 @@ export default class Compiler {
       if ( val instanceof Expression )
         return val.compile(this)
 
-      return this.addBinding(val).parameter
+      return this.addBinding(val).placeholder
     }).join(', ')
   }
   
