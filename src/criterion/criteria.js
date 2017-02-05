@@ -139,7 +139,7 @@ export default class Criteria extends Criterion {
     if ( isPlainObject(expr) ) {
       let obj = expr
       
-      expr = cr => each(obj, (val, key) => cr.where(key, '=', val))
+      expr = cr => each(obj, (v, k) => cr.where(k, '=', v))
     }
     
     // supports `.where(cr => { ... })`
@@ -153,7 +153,7 @@ export default class Criteria extends Criterion {
     if ( expr instanceof Criterion )
       return this.add(expr, bool, not)
     
-    if ( value == null && operator != null ) {
+    if ( value === undefined && operator !== undefined ) {
       value = operator
       operator = '='
     }

@@ -5,12 +5,14 @@ var fn = require('../../lib/helpers')
 var qb = require('../../lib').default
 var support = require('./support')
 var assert = require('assert')
-var COUNT = fn.COUNT
-var RAW   = fn.RAW
-var MAX   = fn.MAX
-var SQ    = fn.SQ
-var T     = fn.T
-var C     = fn.C
+var EXISTS  = fn.EXISTS
+var COUNT   = fn.COUNT
+var RAW     = fn.RAW
+var MAX     = fn.MAX
+var SQ      = fn.SQ
+var IN      = fn.IN
+var T       = fn.T
+var C       = fn.C
 
 describe("test building select queries:", () => {
   
@@ -167,7 +169,7 @@ describe("test building select queries:", () => {
 
     support.test(
       "accepts sub queries",
-      qb.selectFrom(SQ(q => q.select('*').from('a_table')).as('t')),
+      qb.selectFrom(qb.select('*').from('a_table').as('t')),
       {
         pg:     'select * from (select * from a_table) as "t"',
         mysql:  'select * from (select * from a_table) as `t`',
@@ -205,16 +207,17 @@ describe("test building select queries:", () => {
       }
     )
 
-    support.skip(
+    support.test(
       "adds a table join with more than one condition",
       qb.selectFrom('departments dept').join('employees emp', cr => cr.where(RAW('emp.department_id = dept.id')).where('emp.salary', '>', 2500)),
       {
-        pg:     'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salaty > ?)',
-        mysql:  'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salaty > ?)',
-        mssql:  'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salaty > ?)',
-        sqlite: 'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salaty > ?)',
-        oracle: 'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salaty > ?)',
-      }
+        pg:     'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > $1)',
+        mysql:  'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > ?)',
+        mssql:  'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > @1)',
+        sqlite: 'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > $1)',
+        oracle: 'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > :1)',
+      },
+      [2500]
     )
 
     support.test(
@@ -243,7 +246,100 @@ describe("test building select queries:", () => {
 
   })
 
-  describe("test where():", () => {})
+  describe("test where():", () => {
+    
+    support.test(
+      "adds a basic where condition",
+      qb.select().from('table').where('id', 123),
+      {
+        pg:     'select * from table where id = $1',
+        mysql:  'select * from table where id = ?',
+        mssql:  'select * from table where id = @1',
+        sqlite: 'select * from table where id = $1',
+        oracle: 'select * from table where id = :1',
+      },
+      [123]
+    )
+    
+    support.test(
+      "adds multiple where conditions",
+      qb.selectFrom('table').where('a', 'x').whereNot('b', '<', 300).orWhere('c', 'like', 'zoo%'),
+      {
+        pg:     'select * from table where a = $1 and b >= $2 or c like $3',
+        mysql:  'select * from table where a = ? and b >= ? or c like ?',
+        mssql:  'select * from table where a = @1 and b >= @2 or c like @3',
+        sqlite: 'select * from table where a = $1 and b >= $2 or c like $3',
+        oracle: 'select * from table where a = :1 and b >= :2 or c like :3',
+      },
+      ['x', 300, 'zoo%']
+    )
+    
+    support.test(
+      "accepts raw expressions",
+      qb.selectFrom('table').where(RAW('a = ? or b != ?', 'x', 'y')),
+      {
+        pg:     'select * from table where a = $1 or b != $2',
+        mysql:  'select * from table where a = ? or b != ?',
+        mssql:  'select * from table where a = @1 or b != @2',
+        sqlite: 'select * from table where a = $1 or b != $2',
+        oracle: 'select * from table where a = :1 or b != :2',
+      },
+      ['x', 'y']
+    )
+    
+    support.test(
+      "accepts object expressions",
+      qb.selectFrom('table').where({ a: 123, b: ['foo', 'bar'], c: null }),
+      {
+        pg:     'select * from table where (a = $1 and b in ($2, $3) and c is null)',
+        mysql:  'select * from table where (a = ? and b in (?, ?) and c is null)',
+        mssql:  'select * from table where (a = @1 and b in (@2, @3) and c is null)',
+        sqlite: 'select * from table where (a = $1 and b in ($2, $3) and c is null)',
+        oracle: 'select * from table where (a = :1 and b in (:2, :3) and c is null)',
+      },
+      [123, 'foo', 'bar']
+    )
+    
+    support.test(
+      "accepts nested conditions",
+      qb.selectFrom('table').whereNot(cr => cr.where('a', null).orWhere('b', 'between', [10, 20])),
+      {
+        pg:     'select * from table where not (a is null or b between $1 and $2)',
+        mysql:  'select * from table where not (a is null or b between ? and ?)',
+        mssql:  'select * from table where not (a is null or b between @1 and @2)',
+        sqlite: 'select * from table where not (a is null or b between $1 and $2)',
+        oracle: 'select * from table where not (a is null or b between :1 and :2)',
+      },
+      [10, 20]
+    )
+    
+    support.test(
+      "accepts sub queries",
+      qb.selectFrom('table').where(IN('key', qb.select('id').from('foo').where('status', 'active'))),
+      {
+        pg:     'select * from table where key in (select id from foo where status = $1)',
+        mysql:  'select * from table where key in (select id from foo where status = ?)',
+        mssql:  'select * from table where key in (select id from foo where status = @1)',
+        sqlite: 'select * from table where key in (select id from foo where status = $1)',
+        oracle: 'select * from table where key in (select id from foo where status = :1)',
+      },
+      ['active']
+    )
+    
+    support.test(
+      "accepts exists conditions",
+      qb.selectFrom('table').where(EXISTS(qb.select('id').from('foo').where('status', 'active'))),
+      {
+        pg:     'select * from table where exists (select id from foo where status = $1)',
+        mysql:  'select * from table where exists (select id from foo where status = ?)',
+        mssql:  'select * from table where exists (select id from foo where status = @1)',
+        sqlite: 'select * from table where exists (select id from foo where status = $1)',
+        oracle: 'select * from table where exists (select id from foo where status = :1)',
+      },
+      ['active']
+    )
+    
+  })
 
   describe("test orderBy():", () => {
     

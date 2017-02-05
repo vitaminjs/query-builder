@@ -37,7 +37,7 @@ export default class Exists extends Criterion {
    * @returns {String}
    */
   compile(compiler) {
-    return `${this.bool} ${this.op} (${this.query.compile(compiler)})`
+    return `${this.bool} ${this.op} ${this.query.compile(compiler)}`
   }
   
 }

@@ -1,7 +1,8 @@
 
 import { Basic, IsNull, IsIn, Between, Exists, Like } from '../criterion'
+import Expression, { Literal } from '../expression'
+import { isArray, isString, uniq } from 'lodash'
 import { RAW, SQ } from './expression'
-import { isArray, uniq } from 'lodash'
 
 /**
  * 
@@ -10,7 +11,7 @@ import { isArray, uniq } from 'lodash'
  * @return {Criterion}
  */
 export function EQ(expr, value) {
-  return new Basic(expr, '=', value)
+  return new Basic(ensureExpression(expr), '=', value)
 }
 
 /**
@@ -20,7 +21,7 @@ export function EQ(expr, value) {
  * @return {Criterion}
  */
 export function NE(expr, value) {
-  return new Basic(expr, '!=', value)
+  return new Basic(ensureExpression(expr), '!=', value)
 }
 
 /**
@@ -30,7 +31,7 @@ export function NE(expr, value) {
  * @return {Criterion}
  */
 export function GT(expr, value) {
-  return new Basic(expr, '>', value)
+  return new Basic(ensureExpression(expr), '>', value)
 }
 
 /**
@@ -40,7 +41,7 @@ export function GT(expr, value) {
  * @return {Criterion}
  */
 export function LT(expr, value) {
-  return new Basic(expr, '<', value)
+  return new Basic(ensureExpression(expr), '<', value)
 }
 
 /**
@@ -50,7 +51,7 @@ export function LT(expr, value) {
  * @return {Criterion}
  */
 export function GTE(expr, value) {
-  return new Basic(expr, '>=', value)
+  return new Basic(ensureExpression(expr), '>=', value)
 }
 
 /**
@@ -60,7 +61,7 @@ export function GTE(expr, value) {
  * @return {Criterion}
  */
 export function LTE(expr, value) {
-  return new Basic(expr, '<=', value)
+  return new Basic(ensureExpression(expr), '<=', value)
 }
 
 /**
@@ -69,7 +70,7 @@ export function LTE(expr, value) {
  * @returns {Criterion}
  */
 export function ISNULL(expr) {
-  return new IsNull(expr)
+  return new IsNull(ensureExpression(expr))
 }
 
 /**
@@ -95,7 +96,7 @@ export function ISFALSE() {
  * @returns {Criterion}
  */
 export function IN(expr, values) {
-  return new IsIn(expr, isArray(values) ? uniq(values) : SQ(values))
+  return new IsIn(ensureExpression(expr), isArray(values) ? uniq(values) : SQ(values))
 }
 
 /**
@@ -106,7 +107,7 @@ export function IN(expr, values) {
  * @returns {Criterion}
  */
 export function BETWEEN(expr, lower, higher) {
-  return new Between(expr, [lower, higher])
+  return new Between(ensureExpression(expr), [lower, higher])
 }
 
 /**
@@ -125,7 +126,7 @@ export function EXISTS(query) {
  * @returns {Criterion}
  */
 export function LIKE(expr, patern) {
-  return new Like(expr, patern)
+  return new Like(ensureExpression(expr), patern)
 }
 
 /**
@@ -146,4 +147,20 @@ export function STARTSWITH(expr, value) {
  */
 export function ENDSWITH(expr, value) {
   return LIKE(expr, '%' + value.replace(/(_|%)/g, '\\$1'))
+}
+
+/**
+ * 
+ * @param {Any} value
+ * @returns {Expression}
+ * @throws {TypeError}
+ */
+function ensureExpression(value) {
+  if ( isString(value) )
+    value = new Literal(value)
+  
+  if ( value instanceof Expression )
+    return value
+  
+  throw new TypeError("Invalid condition operand")
 }

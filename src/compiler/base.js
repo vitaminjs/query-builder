@@ -274,7 +274,8 @@ export default class Compiler {
     if ( value instanceof Expression )
       return value.compile(this)
 
-    if ( isString(value) ) value = `'${value}'`
+    if ( isString(value) )
+      value = `'${value.replace(/'/g, "''")}'`
     
     return value
   }
