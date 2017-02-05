@@ -40,7 +40,7 @@ export default class Literal extends Expression {
    * @returns {Literal}
    */
   as(name) {
-    return super.as(name).wrap()
+    return super.as(name)
   }
   
   /**

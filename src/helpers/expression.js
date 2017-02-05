@@ -1,6 +1,6 @@
 
 import Expression, { Literal, SubQuery, Column, Table } from '../expression'
-import { isFunction, isArray, isString } from 'lodash'
+import { isFunction, isArray, isString, trim } from 'lodash'
 import { Select } from '../query'
 
 /**
@@ -70,13 +70,13 @@ export function C(value) {
   var table = ''
   
   if ( value.indexOf(' as ') > 0 ) {
-    [value, alias] = value.split(' as ')
+    [value, alias] = value.split(' as ').map(trim)
   }
   
   if ( value.indexOf('.') > 0 )
-    [table, value] = value.split('.')
+    [table, value] = value.split('.').map(trim)
   
-  return new Column(value.trim(), table ? T(table) : null).as(alias)
+  return new Column(value, table).as(alias)
 }
 
 /**
@@ -89,11 +89,11 @@ export function T(value) {
   var schema = ''
 
   if ( value.indexOf(' as ') > 0 ) {
-    [value, alias] = value.split(' as ')
+    [value, alias] = value.split(' as ').map(trim)
   }
   
   if ( value.indexOf('.') > 0 )
-    [schema, value] = value.split('.')
+    [schema, value] = value.split('.').map(trim)
   
-  return new Table(value.trim(), schema.trim()).as(alias)
+  return new Table(value, schema).as(alias)
 }

@@ -13,11 +13,10 @@ const builder = {
 
   /**
    * 
-   * @param {Any} table
    * @return {Select}
    */
-  selectFrom(table) {
-    return this.select().from(table)
+  selectFrom() {
+    return this.select().from(...arguments)
   }
 
 }

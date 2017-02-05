@@ -40,7 +40,7 @@ describe("test building select queries:", () => {
     
     support.test(
       "accepts raw expressions",
-      qb.select(RAW('1 + ?', 2).as('operation')),
+      qb.select(RAW('1 + ?', 2).as('operation').wrap()),
       {
         pg:     'select (1 + $1) as "operation"',
         mysql:  'select (1 + ?) as `operation` from dual',
@@ -153,7 +153,7 @@ describe("test building select queries:", () => {
 
     support.test(
       "accepts sub queries",
-      qb.selectFrom(q => q.select('*').from('a_table').as('t')),
+      qb.selectFrom(SQ(q => q.select('*').from('a_table')).as('t')),
       {
         pg:     'select * from (select * from a_table) as "t"',
         mysql:  'select * from (select * from a_table) as `t`',
@@ -171,17 +171,17 @@ describe("test building select queries:", () => {
       "adds a basic join clause",
       qb.select().from(T('posts as p')).join(T('users as a'), C('p.author_id'), C('a.id')),
       {
-        pg:     'select * from "posts" as p inner join "users" as a on "p"."author_id" = "a"."id"',
-        mysql:  'select * from `posts` as p inner join `users` as a on `p`.`author_id` = `a`.`id`',
-        mssql:  'select * from [posts] as p inner join [users] as a on [p].[author_id] = [a].[id]',
-        sqlite: 'select * from "posts" as p inner join "users" as a on "p"."author_id" = "a"."id"',
-        oracle: 'select * from "posts" p inner join "users" a on "p"."author_id" = "a"."id"',
+        pg:     'select * from "posts" as "p" inner join "users" as "a" on "p"."author_id" = "a"."id"',
+        mysql:  'select * from `posts` as `p` inner join `users` as `a` on `p`.`author_id` = `a`.`id`',
+        mssql:  'select * from [posts] as [p] inner join [users] as [a] on [p].[author_id] = [a].[id]',
+        sqlite: 'select * from "posts" as "p" inner join "users" as "a" on "p"."author_id" = "a"."id"',
+        oracle: 'select * from "posts" "p" inner join "users" "a" on "p"."author_id" = "a"."id"',
       }
     )
 
     support.test(
       "adds a raw join expression",
-      qb.from(T('table1')).join(RAW`natural full join ${T('table2')}`),
+      qb.selectFrom(T('table1')).join(RAW`natural full join ${T('table2')}`),
       {
         pg:     'select * from "table1" natural full join "table2"',
         mysql:  'select * from `table1` natural full join `table2`',
@@ -217,7 +217,7 @@ describe("test building select queries:", () => {
 
     support.test(
       "adds a join with a sub query",
-      qb.selectFrom('table1').crossJoin(SQ(q => q.select().from('table2'))),
+      qb.selectFrom('table1').crossJoin(q => q.select().from('table2')),
       {
         pg:     'select * from table1 cross join (select * from table2)',
         mysql:  'select * from table1 cross join (select * from table2)',
