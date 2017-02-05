@@ -45,10 +45,10 @@ export default class Column extends Expression {
    * @returns {String}
    */
   compile(compiler) {
-    var expr = compiler.escapeIdentifier(this.name)
+    var expr = compiler.quote(this.name)
     
     if ( this.table )
-      expr = compiler.escapeIdentifier(this.table) + '.' + expr
+      expr = compiler.quote(this.table) + '.' + expr
     
     return compiler.alias(expr, this.alias)
   }

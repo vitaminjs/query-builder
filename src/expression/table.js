@@ -54,10 +54,10 @@ export default class Table extends Expression {
    * @returns {String}
    */
   compile(compiler) {
-    var expr = compiler.escapeIdentifier(this.name)
+    var expr = compiler.quote(this.name)
     
     if ( this.schema )
-      expr = compiler.escapeIdentifier(this.schema) + '.' + expr
+      expr = compiler.quote(this.schema) + '.' + expr
     
     return compiler.alias(expr, this.alias)
   }

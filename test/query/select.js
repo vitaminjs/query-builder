@@ -30,13 +30,13 @@ describe("test building select queries:", () => {
     
     support.test(
       "accepts literal expressions",
-      qb.select(1, false, 'xXx'),
+      qb.select(123, 'xXx'),
       {
-        pg:     'select 1, 0, xXx',
-        mysql:  'select 1, 0, xXx from dual',
-        mssql:  'select 1, 0, xXx',
-        sqlite: 'select 1, 0, xXx',
-        oracle: 'select 1, 0, xXx from dual',
+        pg:     'select 123, xXx',
+        mysql:  'select 123, xXx from dual',
+        mssql:  'select 123, xXx',
+        sqlite: 'select 123, xXx',
+        oracle: 'select 123, xXx from dual',
       }
     )
     

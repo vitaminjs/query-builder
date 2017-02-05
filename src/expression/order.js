@@ -72,7 +72,7 @@ export default class Order extends Expression {
    */
   compile(compiler) {
     // TODO compile nulls first or last
-    return compiler.escapeIdentifier(this.name) +' '+ this.direction
+    return compiler.quote(this.name) +' '+ this.direction
   }
   
   /**

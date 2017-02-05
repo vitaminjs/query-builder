@@ -1,5 +1,5 @@
 
-import { compact, isEmpty, isObject, isArray, isNumber, isUndefined } from 'lodash'
+import { compact, isObject, isArray, isBoolean, isString, isUndefined } from 'lodash'
 import Expression from '../expression'
 
 /**
@@ -43,10 +43,7 @@ export default class Compiler {
   compileSelectQuery(query) {
     var sql = this.compileSelectComponents(query)
     
-    // FIXME update with unions
-    if ( isEmpty(query.unions) ) return sql
-    
-    return `(${sql}) ` + this.compileUnionComponents(this.components)
+    return sql
   }
   
   /**
@@ -228,12 +225,10 @@ export default class Compiler {
   parameterize(value) {
     if (! isArray(value) ) value = [value]
     
-    if ( isEmpty(value) ) return ''
-    
     return value.map(val => {
       // escape expressions
       if ( val instanceof Expression )
-        return this.escape(val)
+        return val.compile(this)
 
       return this.addBinding(val).parameter
     }).join(', ')
@@ -268,7 +263,7 @@ export default class Compiler {
   /**
    * Escape the given value
    * 
-   * @param {String|Expression} value
+   * @param {Any} value
    * @returns {String}
    */
   escape(value) {
@@ -279,16 +274,18 @@ export default class Compiler {
     if ( value instanceof Expression )
       return value.compile(this)
 
-    throw new TypeError("Invalid expression to escape")
+    if ( isString(value) ) value = `'${value}'`
+    
+    return value
   }
   
   /**
-   * Escape the table or column name
+   * Quotes a string so it can be safely used as a table or column name
    * 
    * @param {String} value
    * @returns {String}
    */
-  escapeIdentifier(value) {
+  quote(value) {
     return (value === '*') ? value : `"${value.trim().replace(/"/g, '""')}"`
   }
   
@@ -300,7 +297,7 @@ export default class Compiler {
    * @returns {String}
    */
   alias(first, second = null) {
-    return first + (second ? ' as ' + this.escapeIdentifier(second) : '')
+    return first + (second ? ' as ' + this.quote(second) : '')
   }
   
 }

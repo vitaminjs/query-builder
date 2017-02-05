@@ -90,7 +90,10 @@ export default class Select extends Query {
     if (! isArray(columns) ) columns = toArray(arguments)
 
     columns.forEach(value => {
-      return this.getColumns().push(this.ensureExpression(value))
+      if ( isString(value) )
+        value = new Literal(value)
+      
+      return this.getColumns().push(value)
     })
 
     return this
@@ -291,7 +294,8 @@ export default class Select extends Query {
     if (! isArray(columns) ) columns = toArray(arguments)
 
     columns.forEach(value => {
-      value = this.ensureExpression(value)
+      if ( isString(value) )
+        value = new Literal(value)
 
       this.getGroups().push(value)
 
@@ -665,29 +669,6 @@ export default class Select extends Query {
       this.resetHavingConditions()
 
     return this._havingConditions
-  }
-
-  /**
-   * 
-   * @param {Any} value
-   * @returns {Expression}
-   * @throws {TypeError}
-   * @private
-   */
-  ensureExpression(value) {
-    if ( isBoolean(value) )
-      value = Number(value)
-    
-    if ( isNumber(value) )
-      value = String(value)
-    
-    if ( isString(value) )
-      value = new Literal(value)
-    
-    if ( value instanceof Expression )
-      return value
-    
-    throw new TypeError("Invalid column expression")
   }
 
 }

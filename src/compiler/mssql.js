@@ -28,12 +28,12 @@ export default class extends Compiler {
   }
   
   /**
-   * Escape the table or column name
+   * Quotes a string so it can be safely used as a table or column name
    * 
    * @param {String} value
    * @returns {String}
    */
-  escapeIdentifier(value) {
+  quote(value) {
     return (value === '*') ? value : `[${value.trim()}]`
   }
   
