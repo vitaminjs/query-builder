@@ -72,7 +72,7 @@ export default class Column extends Expression {
    * @returns {Order}
    */
   asc() {
-    return new Order(this.getName())
+    return new Order(this, 'asc')
   }
 
   /**
@@ -80,7 +80,7 @@ export default class Column extends Expression {
    * @returns {Order}
    */
   desc() {
-    return new Order(this.getName(), 'desc')
+    return new Order(this, 'desc')
   }
   
 }

@@ -93,7 +93,7 @@ export default class Select extends Query {
       if ( isString(value) )
         value = new Literal(value)
       
-      return this.getColumns().push(value)
+      this.getColumns().push(value)
     })
 
     return this
@@ -349,16 +349,10 @@ export default class Select extends Query {
     if (! isArray(columns) ) columns = toArray(arguments)
 
     columns.forEach(value => {
-      if ( isNumber(value) )
-        value = Literal(value)
-      
       if ( isString(value) )
-        value = new Order(value)
+        value = new Literal(value)
       
-      if ( value instanceof Expression )
-        return this.getOrders().push(value)
-      
-      throw new TypeError("Invalid order expression")
+      this.getOrders().push(value)
     })
 
     return this

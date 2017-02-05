@@ -1,5 +1,4 @@
 
-import { isString } from 'lodash'
 import Expression from './base'
 
 /**
@@ -8,18 +7,13 @@ import Expression from './base'
 export default class Order extends Expression {
   
   /**
-   * @param {String} column
+   * @param {Column} expr
    * @constructor
    */
-  constructor(column, direction = 'asc') {
+  constructor(expr, direction = 'asc') {
     super()
     
-    if ( isString(column) && column.indexOf('-') === 0 ) {
-      column = column.substr(1)
-      direction = 'desc'
-    }
-    
-    this.name = column
+    this.column = expr
     this.direction = direction
   }
 
@@ -28,7 +22,7 @@ export default class Order extends Expression {
    * @returns {String}
    */
   getName() {
-    return this.name
+    return this.column
   }
 
   /**
@@ -72,7 +66,7 @@ export default class Order extends Expression {
    */
   compile(compiler) {
     // TODO compile nulls first or last
-    return compiler.quote(this.name) +' '+ this.direction
+    return this.column.compile(compiler) +' '+ this.direction
   }
   
   /**
@@ -82,7 +76,7 @@ export default class Order extends Expression {
    */
   isEqual(expr) {
     if ( isString(expr) )
-      return expr === this.getName()
+      return expr === this.column.getName()
 
     return super.isEqual() || (
       expr instanceof Order && expr.getName() === this.getName() 

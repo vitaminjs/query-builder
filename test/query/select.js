@@ -140,6 +140,18 @@ describe("test building select queries:", () => {
         oracle: 'select * from foo, bar',
       }
     )
+    
+    support.test(
+      "appends more tables when called multiple times",
+      qb.select().from('foo').from('bar'),
+      {
+        pg:     'select * from foo, bar',
+        mysql:  'select * from foo, bar',
+        mssql:  'select * from foo, bar',
+        sqlite: 'select * from foo, bar',
+        oracle: 'select * from foo, bar',
+      }
+    )
 
     support.test(
       "accepts raw expressions",
@@ -195,13 +207,13 @@ describe("test building select queries:", () => {
 
     support.skip(
       "adds a table join with more than one condition",
-      qb,
+      qb.selectFrom('departments dept').join('employees emp', cr => cr.where(RAW('emp.department_id = dept.id')).where('emp.salary', '>', 2500)),
       {
-        pg:     '',
-        mysql:  '',
-        mssql:  '',
-        sqlite: '',
-        oracle: '',
+        pg:     'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salaty > ?)',
+        mysql:  'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salaty > ?)',
+        mssql:  'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salaty > ?)',
+        sqlite: 'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salaty > ?)',
+        oracle: 'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salaty > ?)',
       }
     )
 
@@ -232,6 +244,75 @@ describe("test building select queries:", () => {
   })
 
   describe("test where():", () => {})
+
+  describe("test orderBy():", () => {
+    
+    support.test(
+      "adds columns to sort with",
+      qb.select().from('table').orderBy(1, 'col1', 'col2 desc'),
+      {
+        pg:     'select * from table order by 1, col1, col2 desc',
+        mysql:  'select * from table order by 1, col1, col2 desc',
+        mssql:  'select * from table order by 1, col1, col2 desc',
+        sqlite: 'select * from table order by 1, col1, col2 desc',
+        oracle: 'select * from table order by 1, col1, col2 desc',
+      }
+    )
+    
+    support.test(
+      "appends more orders when called multiple times",
+      qb.select().from('table').orderBy(1).orderBy('col1').orderBy('col2 desc'),
+      {
+        pg:     'select * from table order by 1, col1, col2 desc',
+        mysql:  'select * from table order by 1, col1, col2 desc',
+        mssql:  'select * from table order by 1, col1, col2 desc',
+        sqlite: 'select * from table order by 1, col1, col2 desc',
+        oracle: 'select * from table order by 1, col1, col2 desc',
+      }
+    )
+    
+    support.test(
+      "accepts order expressions",
+      qb.select().from(T('table')).orderBy(C('col1').asc(), C('col2').desc()),
+      {
+        pg:     'select * from "table" order by "col1" asc, "col2" desc',
+        mysql:  'select * from `table` order by `col1` asc, `col2` desc',
+        mssql:  'select * from [table] order by [col1] asc, [col2] desc',
+        sqlite: 'select * from "table" order by "col1" asc, "col2" desc',
+        oracle: 'select * from "table" order by "col1" asc, "col2" desc',
+      }
+    )
+    
+  })
+
+  describe.skip("test limit() and offset():", () => {
+    
+    it("adds the limit clause", () => {
+        var q = compile(qb.select().from('table').limit(15))
+
+        assert.equal(q.sql, 'select * from "table" limit ?')
+        assert.equal(q.params.length, 1)
+        assert.equal(q.params[0], 15)
+      })
+
+      it("adds the offset clause", () => {
+        var q = compile(qb.select().from('table').offset(30))
+
+        assert.equal(q.sql, 'select * from "table" offset ?')
+        assert.equal(q.params.length, 1)
+        assert.equal(q.params[0], 30)
+      })
+
+      it("adds both offset and limit clauses", () => {
+        var q = compile(qb.select().from('table').offset(30).limit(15))
+
+        assert.equal(q.sql, 'select * from "table" limit ? offset ?')
+        assert.equal(q.params.length, 2)
+        assert.equal(q.params[0], 15)
+        assert.equal(q.params[1], 30)
+      })
+    
+  })
   
   describe("test clone():", () => {
     
