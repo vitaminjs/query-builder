@@ -11,14 +11,12 @@ export default class Column extends Expression {
   /**
    * 
    * @param {String} name
-   * @param {String} table
    * @constructor
    */
-  constructor(name, table = '') {
+  constructor(name) {
     super()
     
     this.name = name
-    this.table = table
   }
 
   /**
@@ -26,17 +24,7 @@ export default class Column extends Expression {
    * @returns {String}
    */
   getName() {
-    return this.alias || (this.table ? this.table + '.' : '') + this.name
-  }
-
-  /**
-   * 
-   * @param {String} value
-   * @returns {Column}
-   */
-  setTable(value) {
-    this.table = value
-    return this
+    return this.alias || this.name
   }
   
   /**
@@ -45,10 +33,7 @@ export default class Column extends Expression {
    * @returns {String}
    */
   compile(compiler) {
-    var expr = compiler.quote(this.name)
-    
-    if ( this.table )
-      expr = compiler.quote(this.table) + '.' + expr
+    var expr = this.name.split('.').map(s => compiler.quote(s)).join('.')
     
     return compiler.alias(expr, this.alias)
   }
