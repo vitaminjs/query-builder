@@ -170,7 +170,7 @@ export default class Compiler {
   compileLimit(query) {
     if (! query.hasLimit() ) return ''
     
-    return 'limit ' + this.parameterize(query.getLimit())
+    return 'limit ' + this.parameter(query.getLimit())
   }
   
   /**
@@ -181,7 +181,7 @@ export default class Compiler {
   compileOffset(query) {
     if (! query.hasOffset() ) return ''
     
-    return 'offset ' + this.parameterize(query.getOffset())
+    return 'offset ' + this.parameter(query.getOffset())
   }
   
   /**
@@ -203,7 +203,7 @@ export default class Compiler {
    * @returns {String}
    */
   compileFunction(name, args = []) {
-    return `${name}(${this.parameterize(args)})`
+    return name + this.parameterize(args)
   }
   
   /**
@@ -219,19 +219,26 @@ export default class Compiler {
   
   /**
    * 
-   * @param {Any} value
+   * @param {Array} value
    * @returns {String}
    */
   parameterize(value) {
-    if (! isArray(value) ) value = [value]
-    
-    return value.map(val => {
-      // escape expressions
-      if ( val instanceof Expression )
-        return val.compile(this)
+    if (! isArray(value) ) return this.parameter(value)
 
-      return this.addBinding(val).placeholder
-    }).join(', ')
+    return `(${value.map(v => this.parameter(v)).join(', ')})`
+  }
+
+  /**
+   * 
+   * @param {Any} value
+   * @returns {String}
+   */
+  parameter(value) {
+    // compile expressions
+    if ( value instanceof Expression )
+      return value.compile(this)
+
+    return this.addBinding(value).placeholder
   }
   
   /**
