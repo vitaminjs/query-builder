@@ -98,7 +98,7 @@ describe("test building select queries:", () => {
         pg:     'select distinct foo, "bar"',
         mysql:  'select distinct foo, `bar` from dual',
         mssql:  'select distinct foo, [bar]',
-        sqlite: 'select distinct foo, ""bar"',
+        sqlite: 'select distinct foo, "bar"',
         oracle: 'select distinct foo, "bar" from dual',
       }
     )

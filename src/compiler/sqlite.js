@@ -33,7 +33,7 @@ export default class extends Compiler {
    */
   compileLimit(query) {
     if ( query.hasOffset() && !query.hasLimit() )
-      return 'limit -1 '
+      return 'limit -1'
     
     return super.compileLimit(query)
   }

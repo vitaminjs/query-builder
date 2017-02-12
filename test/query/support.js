@@ -10,7 +10,7 @@ var assert = require('assert')
  * @param {Array} params
  */
 exports.test = function test(purpose, qb, dialects, params) {
-  for ( var name in dialects ) {
+  Object.keys(dialects).forEach(name => {
     it(name +': it '+ purpose, () => {
       var q = qb.toSQL(name)
       var expected = dialects[name]
@@ -18,7 +18,7 @@ exports.test = function test(purpose, qb, dialects, params) {
       assert.equal(q.sql, expected.sql || expected)
       assert.deepEqual(q.params, expected.params || params || [])
     })
-  }
+  })
 }
 
 /**

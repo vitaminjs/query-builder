@@ -34,7 +34,7 @@ export default class extends Compiler {
    */
   compileLimit(query) {
     if ( query.hasOffset() && !query.hasLimit() )
-      return 'limit 18446744073709551615 '
+      return 'limit 18446744073709551615'
     
     return super.compileLimit(query)
   }
