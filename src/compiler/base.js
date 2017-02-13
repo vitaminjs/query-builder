@@ -52,7 +52,9 @@ export default class Compiler {
    * @returns {String}
    */
   compileSelectComponents(query) {
-    var sql = [
+    var select = 'select ' + (query.isDistinct() ? 'distinct ' : '')
+    
+    var components = [
       this.compileSelectColumns(query),
       this.compileTables(query),
       this.compileJoins(query),
@@ -64,7 +66,7 @@ export default class Compiler {
       this.compileOffset(query),
     ]
     
-    return compact(sql).join(' ')
+    return select + compact(components).join(' ')
   }
   
   /**
@@ -90,10 +92,7 @@ export default class Compiler {
    * @returns {String}
    */
   compileSelectColumns(query) {
-    var columns = query.hasColumns() ? query.getColumns() : ['*']
-    var select = 'select ' + (query.isDistinct() ? 'distinct ' : '')
-
-    return select + this.columnize(columns)
+    return this.columnize(query.hasColumns() ? query.getColumns() : ['*'])
   }
   
   /**

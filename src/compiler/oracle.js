@@ -38,6 +38,33 @@ export default class extends Compiler {
   }
   
   /**
+   * 
+   * @param {Select} query
+   * @returns {String}
+   */
+  compileLimit(query) {
+    if ( !query.hasLimit() || query.hasOffset() ) return ''
+    
+    return `fetch first ${this.parameter(query.getLimit())} rows only`
+  }
+  
+  /**
+   * 
+   * @param {Select} query
+   * @returns {String}
+   */
+  compileOffset(query) {
+    if (! query.hasOffset() ) return ''
+    
+    let expr = `offset ${this.parameter(query.getOffset())} rows`
+    
+    if ( query.hasLimit() )
+      expr += ` fetch next ${this.parameter(query.getLimit())} rows only`
+    
+    return expr
+  }
+  
+  /**
    * Alias an expression
    * 
    * @param {String} first

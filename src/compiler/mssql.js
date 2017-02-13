@@ -36,23 +36,6 @@ export default class extends Compiler {
   quote(value) {
     return (value === '*') ? value : `[${value.trim()}]`
   }
-  
-  /**
-   * 
-   * @param {Select} query
-   * @returns {String}
-   */
-  compileSelectComponents(query) {
-    var sql = super.compileSelectComponents(query)
-
-    if ( query.hasOffset() ) {
-      let offset = this.parameterize(query.getOffset())
-
-      return `select * from (${sql}) as t where [row_count] > ${offset}`
-    }
-
-    return sql
-  }
 
   /**
    * Compile the query columns part
@@ -61,9 +44,7 @@ export default class extends Compiler {
    * @returns {String}
    */
   compileSelectColumns(query) {
-    var columns = query.hasColumns() ? query.getColumns() : ['*']
-
-    return this.compileTop(query) + columns + this.compileRowCount(query)
+    return this.compileTop(query) + super.compileSelectColumns(query)
   }
 
   /**
@@ -72,32 +53,9 @@ export default class extends Compiler {
    * @returns {String}
    */
   compileTop(query) {
-    // TODO show a warning if the query doesn't contain orders
-    var select = 'select ' + (query.isDistinct() ? 'distinct ' : '')
-
-    if ( query.hasLimit() ) {
-      let limit = query.getLimit()
-      let offset = query.getOffset() || 0
-
-      // TODO ensure offset is number
-
-      select += `top (${this.parameterize(limit + offset)}) `
-    }
+    if ( !query.hasLimit() || query.hasOffset() ) return ''
     
-    return select
-  }
-
-  /**
-   * 
-   * @param {Select} query
-   * @returns {String}
-   */
-  compileRowCount(query) {
-    if (! query.hasOffset() ) return ''
-
-    var orders = super.compileOrders(query) || 'order by (select 0)'
-
-    return `, row_number() over (${orders}) as [row_count]`
+    return  `top(${this.parameterize(query.getLimit())}) `
   }
   
   /**
@@ -106,9 +64,28 @@ export default class extends Compiler {
    * @returns {String}
    */
   compileOrders(query) {
-    if ( query.hasOffset() ) return ''
+    var orders = super.compileOrders(query)
     
-    return super.compileOrders(query)
+    if ( !orders && query.hasOffset() )
+      orders = 'order by (select 0)' // a dummy order
+    
+    return orders + this.compileOffsetAndFetch(query)
+  }
+  
+  /**
+   * 
+   * @param {Select} query
+   * @returns {String}
+   */
+  compileOffsetAndFetch(query) {
+    if (! query.hasOffset() ) return ''
+    
+    let expr = ` offset ${this.parameter(query.getOffset())} rows`
+    
+    if ( query.hasLimit() )
+      expr += ` fetch next ${this.parameter(query.getLimit())} rows only`
+    
+    return expr
   }
 
   /**

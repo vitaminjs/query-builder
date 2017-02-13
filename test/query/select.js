@@ -381,32 +381,52 @@ describe("test building select queries:", () => {
     
   })
 
-  describe.skip("test limit() and offset():", () => {
+  describe("test limit() and offset():", () => {
     
-    it("adds the limit clause", () => {
-        var q = compile(qb.select().from('table').limit(15))
-
-        assert.equal(q.sql, 'select * from "table" limit ?')
-        assert.equal(q.params.length, 1)
-        assert.equal(q.params[0], 15)
-      })
-
-      it("adds the offset clause", () => {
-        var q = compile(qb.select().from('table').offset(30))
-
-        assert.equal(q.sql, 'select * from "table" offset ?')
-        assert.equal(q.params.length, 1)
-        assert.equal(q.params[0], 30)
-      })
-
-      it("adds both offset and limit clauses", () => {
-        var q = compile(qb.select().from('table').offset(30).limit(15))
-
-        assert.equal(q.sql, 'select * from "table" limit ? offset ?')
-        assert.equal(q.params.length, 2)
-        assert.equal(q.params[0], 15)
-        assert.equal(q.params[1], 30)
-      })
+    support.test(
+      "adds only the limit clause",
+      qb.select().from('table').limit(5),
+      {
+        pg:     'select * from table limit $1',
+        mysql:  'select * from table limit ?',
+        mssql:  'select top(@1) * from table',
+        sqlite: 'select * from table limit $1',
+        oracle: 'select * from table fetch first :1 rows only',
+      },
+      [5]
+    )
+    
+    support.test(
+      "adds a numeric offset only",
+      qb.selectFrom('table').offset(30),
+      {
+        pg:     'select * from table offset $1',
+        mysql:  'select * from table limit 18446744073709551615 offset ?',
+        mssql:  'select * from table order by (select 0) offset @1 rows',
+        sqlite: 'select * from table limit -1 offset $1',
+        oracle: 'select * from table offset :1 rows',
+      },
+      [30]
+    )
+    
+    support.test(
+      "adds both offset and limit clauses",
+      qb.selectFrom('table').limit(3).offset(6).orderBy('pk'),
+      {
+        pg:     'select * from table order by pk limit $1 offset $2',
+        mysql:  'select * from table order by pk limit ? offset ?',
+        sqlite: 'select * from table order by pk limit $1 offset $2',
+        mssql:  {
+          sql: 'select * from table order by pk offset @1 rows fetch next @2 rows only',
+          params: [6, 3]
+        },
+        oracle: {
+          sql: 'select * from table order by pk offset :1 rows fetch next :2 rows only',
+          params: [6, 3]
+        },
+      },
+      [3, 6]
+    )
     
   })
   
