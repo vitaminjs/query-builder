@@ -1,6 +1,6 @@
 
-import { isArray, isNumber, isString, isBoolean, isFunction, toArray } from 'lodash'
-import Expression, { Literal, SubQuery, Order, Join } from '../expression'
+import Expression, { Literal, SubQuery, Join } from '../expression'
+import { isString, isFunction } from 'lodash'
 import { Criteria } from '../criterion'
 import Query from './base'
 
@@ -83,12 +83,10 @@ export default class Select extends Query {
 
   /**
    * 
-   * @param {Array} columns
+   * @param {Any} columns
    * @returns {Select}
    */
-  select(columns) {
-    if (! isArray(columns) ) columns = toArray(arguments)
-
+  select(...columns) {
     columns.forEach(value => {
       if ( isString(value) )
         value = new Literal(value)
@@ -153,12 +151,10 @@ export default class Select extends Query {
   
   /**
    * 
-   * @param {Array} value
+   * @param {Any} tables
    * @returns {Select}
    */
-  from(tables) {
-    if (! isArray(tables) ) tables = toArray(arguments)
-
+  from(...tables) {
     tables.forEach(value => {
       if ( isString(value) )
         value = new Literal(value)
@@ -287,12 +283,10 @@ export default class Select extends Query {
 
   /**
    * 
-   * @param {Array} columns
+   * @param {Any} columns
    * @returns {Select}
    */
-  groupBy(columns) {
-    if (! isArray(columns) ) columns = toArray(arguments)
-
+  groupBy(...columns) {
     columns.forEach(value => {
       if ( isString(value) )
         value = new Literal(value)
@@ -342,12 +336,10 @@ export default class Select extends Query {
   
   /**
    * 
-   * @param {Array} columns
+   * @param {Any} columns
    * @returns {Select}
    */
-  orderBy(columns) {
-    if (! isArray(columns) ) columns = toArray(arguments)
-
+  orderBy(...columns) {
     columns.forEach(value => {
       if ( isString(value) )
         value = new Literal(value)
