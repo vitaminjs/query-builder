@@ -1,6 +1,7 @@
 
+import { isString, isEmpty, isArray, chain, keys } from 'lodash'
 import Expression, { Literal } from '../expression'
-import { isString, isEmpty } from 'lodash'
+import Select from './select'
 import Query from './base'
 
 /**
@@ -15,9 +16,13 @@ export default class Insert extends Query {
   constructor() {
     super()
     
-    this._data = null
-    this._table = null
+    this._data    = []
+    this._table   = null
+    this._select  = null
     this._columns = []
+
+    // a flag to determine who added to query columns
+    this._userDefinedColumns = false
   }
 
   /**
@@ -26,16 +31,30 @@ export default class Insert extends Query {
    * @returns {Insert}
    */
   values(data) {
-    this._data = data
-    return this
+    return this.setValues(data)
   }
 
   /**
    * 
-   * @returns {Any}
+   * @returns {Array}
    */
   getValues() {
     return this._data
+  }
+
+  /**
+   * 
+   * @param {Object|Array} data
+   * @returns {Insert}
+   */
+  setValues(data) {
+    if (! isArray(data) ) data = [data]
+
+    if (! this._userDefinedColumns )
+      this.setColumns(chain(data).map(keys).flatten().uniq().value())
+
+    this._data = data
+    return this
   }
 
   /**
@@ -56,24 +75,53 @@ export default class Insert extends Query {
 
   /**
    * 
+   * @param {Select|Expression}
+   * @returns {Insert}
+   */
+  select(query) {
+    return this.setSelect(query)
+  }
+
+  /**
+   * 
+   * @returns {Boolean}
+   */
+  hasSelect() {
+    return this._select != null
+  }
+
+  /**
+   * 
+   * @returns {Expression}
+   */
+  getSelect() {
+    return this._select
+  }
+
+  /**
+   * 
+   * @param {Select|Expression}
+   * @returns {Insert}
+   */
+  setSelect(query) {
+    if ( query instanceof Select )
+      query = query.toExpression()
+
+    this._select = query
+    return this
+  }
+
+  /**
+   * 
    * @param {String|Expression} table
    * @param {String|Expression} columns
    * @returns {Insert}
    */
   into(table, ...columns) {
-    if ( isString(table) )
-      table = new Literal(table)
+    if (! isEmpty(columns) )
+      this._userDefinedColumns = true
     
-    // ensure the table expression
-    if (! (table instanceof Expression) )
-      throw new TypeError("Invalid insert expression")
-    
-    // map the column names
-    columns.forEach(value => isString(value) ? new Literal(value) : value)
-
-    this._columns = columns
-    this._table = table
-    return this
+    return this.setTable(table).setColumns(columns)
   }
 
   /**
@@ -82,6 +130,23 @@ export default class Insert extends Query {
    */
   getTable() {
     return this._table
+  }
+
+  /**
+   * 
+   * @param {String|Expression} value
+   * @returns {Insert}
+   */
+  setTable(value) {
+    if ( isString(value) )
+      value = new Literal(value)
+    
+    // ensure the table expression
+    if (! (value instanceof Expression) )
+      throw new TypeError("Invalid insert expression")
+    
+    this._table = value
+    return this
   }
 
   /**
@@ -102,6 +167,18 @@ export default class Insert extends Query {
 
   /**
    * 
+   * @param {Array} columns
+   * @returns {Insert}
+   */
+  setColumns(columns) {
+    let mapper = value => isString(value) ? new Literal(value) : value
+    
+    this._columns = columns.map(mapper)
+    return this
+  }
+
+  /**
+   * 
    * @returns {Boolean}
    */
   hasColumns() {
@@ -115,6 +192,24 @@ export default class Insert extends Query {
    */
   returning(...output) {
     return this.option('returning', output)
+  }
+
+  /**
+   * 
+   * @returns {Insert}
+   */
+  onConflictIgnore($) {
+    // TODO
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Insert}
+   */
+  onConflictUpdate($) {
+    // TODO
+    return this
   }
 
   /**
