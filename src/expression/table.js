@@ -60,5 +60,13 @@ export default class Table extends Expression {
       expr instanceof Table && this.getName() === expr.getName()
     )
   }
+
+  /**
+   * 
+   * @returns {String}
+   */
+  toString() {
+    return this.getName()
+  }
   
 }

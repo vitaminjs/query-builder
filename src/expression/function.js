@@ -36,5 +36,13 @@ export default class Func extends Expression {
   isEqual(expr) {
     return super.isEqual() || ( expr instanceof Func && expr.name === this.name )
   }
+
+  /**
+   * 
+   * @returns {String}
+   */
+  toString() {
+    return this.name
+  }
   
 }

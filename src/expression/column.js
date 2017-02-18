@@ -67,5 +67,13 @@ export default class Column extends Expression {
   desc() {
     return new Order(this, 'desc')
   }
+
+  /**
+   * 
+   * @returns {String}
+   */
+  toString() {
+    return this.getName()
+  }
   
 }

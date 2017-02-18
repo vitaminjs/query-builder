@@ -74,5 +74,13 @@ export default class Literal extends Expression {
       expr.alias === this.alias
     )
   }
+
+  /**
+   * 
+   * @returns {String}
+   */
+  toString() {
+    return this.expr
+  }
   
 }

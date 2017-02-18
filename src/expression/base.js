@@ -39,5 +39,13 @@ export default class {
   isEqual(expr) {
     return this === expr
   }
+
+  /**
+   * 
+   * @returns {String}
+   */
+  toString() {
+    return ''
+  }
   
 }
