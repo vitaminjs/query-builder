@@ -139,7 +139,7 @@ export default class Insert extends Query {
    */
   setTable(value) {
     if ( isString(value) )
-      value = new Literal(value)
+      value = Literal.from(value)
     
     // ensure the table expression
     if (! (value instanceof Expression) )
@@ -171,9 +171,7 @@ export default class Insert extends Query {
    * @returns {Insert}
    */
   setColumns(columns) {
-    let mapper = value => isString(value) ? new Literal(value) : value
-    
-    this._columns = columns.map(mapper)
+    this._columns = columns.map(value => Literal.from(value))
     return this
   }
 
@@ -191,7 +189,7 @@ export default class Insert extends Query {
    * @returns {Insert}
    */
   returning(...output) {
-    return this.option('returning', output)
+    return this.option('returning', output.map(value => Literal.from(value)))
   }
 
   /**
