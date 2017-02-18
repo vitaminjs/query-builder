@@ -1,5 +1,5 @@
 
-import { compact, isObject, isArray, isBoolean, isString, isUndefined } from 'lodash'
+import { compact, isObject, isArray, isString, isUndefined } from 'lodash'
 import Expression from '../expression'
 
 /**
@@ -16,6 +16,15 @@ export default class Compiler {
   constructor(options = {}) {
     this.bindings = []
     this.options = options
+  }
+
+  /**
+   * Placeholder for undefined values
+   * 
+   * @type {Object}
+   */
+  get undefinedValueReplacement() {
+    return 'default'
   }
   
   /**
@@ -41,9 +50,9 @@ export default class Compiler {
    * @returns {String}
    */
   compileSelectQuery(query) {
-    var sql = this.compileSelectComponents(query)
+    var select = 'select ' + (query.isDistinct() ? 'distinct ' : '')
     
-    return sql
+    return select + this.compileSelectComponents(query)
   }
   
   /**
@@ -52,8 +61,6 @@ export default class Compiler {
    * @returns {String}
    */
   compileSelectComponents(query) {
-    var select = 'select ' + (query.isDistinct() ? 'distinct ' : '')
-    
     var components = [
       this.compileSelectColumns(query),
       this.compileTables(query),
@@ -66,7 +73,7 @@ export default class Compiler {
       this.compileOffset(query),
     ]
     
-    return select + compact(components).join(' ')
+    return compact(components).join(' ')
   }
   
   /**
@@ -193,6 +200,74 @@ export default class Compiler {
 
     return query.getUnions().map(expr => this.escape(expr)).join(' ')
   }
+
+  /**
+   * 
+   * @param {Insert} query
+   * @returns {String}
+   */
+  compileInsertQuery(query) {
+    if ( query.option('default values') === true )
+      return this.compileInsertDefaultValues(query)
+
+    var values = this.compileInsertValues(query)
+    var table = this.compileInsertTable(query)
+
+    return `insert into ${table} ${values}`
+  }
+
+  /**
+   * 
+   * @param {Insert} query
+   * @returns {String}
+   */
+  compileInsertDefaultValues(query) {
+    return `insert into ${this.compileInsertTable(query)} default values`
+  }
+
+  /**
+   * 
+   * @param {Insert} query
+   * @returns {String}
+   */
+  compileInsertTable(query) {
+    var columns = query.hasColumns() ? ` (${this.columnize(query.getColumns())})` : ''
+
+    return this.escape(query.getTable()) + columns
+  }
+
+  /**
+   * 
+   * @param {Insert} query
+   * @returns {String}
+   */
+  compileInsertValues(query) {
+    var columns = query.getColumns().map(value => value.toString())
+
+    return 'values ' + query.getValues().map(value => {
+
+      return `(${columns.map(key => this.parameter(value[key], true)).join(', ')})`
+
+    }).join(', ')
+  }
+
+  /**
+   * 
+   * @param {Insert} query
+   * @returns {String}
+   */
+  compileUpdateQuery(query) {
+    return `update ${table} set ${values} [where ${conditions}]`
+  }
+
+  /**
+   * 
+   * @param {Insert} query
+   * @returns {String}
+   */
+  compileDeleteQuery(query) {
+    return `delete from ${table} [where ${conditions}]`
+  }
   
   /**
    * Escape function name
@@ -224,18 +299,23 @@ export default class Compiler {
   parameterize(value) {
     if (! isArray(value) ) return this.parameter(value)
 
-    return `(${value.map(v => this.parameter(v)).join(', ')})`
+    return `(${value.map(item => this.parameter(item)).join(', ')})`
   }
 
   /**
    * 
    * @param {Any} value
+   * @param {Boolean} replaceUndefined
    * @returns {String}
    */
-  parameter(value) {
+  parameter(value, replaceUndefined = false) {
     // compile expressions
     if ( value instanceof Expression )
       return value.compile(this)
+
+    // replace undefined values with `default` placeholder
+    if ( replaceUndefined && isUndefined(value) )
+      return 'default'
 
     return this.addBinding(value).placeholder
   }

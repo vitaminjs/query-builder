@@ -37,5 +37,20 @@ export default class extends Compiler {
     
     return super.compileLimit(query)
   }
+
+  /**
+   * 
+   * @param {Any} value
+   * @param {Boolean} replaceUndefined
+   * @returns {String}
+   */
+  parameter(value, replaceUndefined = false) {
+    // sqlite does not support the `default` keyword,
+    // so we replace undefined values with `null` instead
+    if ( replaceUndefined && isUndefined(value) )
+      return 'null'
+
+    return super.parameter(value, replaceUndefined)
+  }
   
 }

@@ -1,4 +1,5 @@
 
+import { fill } from 'lodash'
 import Compiler from './base'
 
 /**
@@ -62,6 +63,37 @@ export default class extends Compiler {
       expr += ` fetch next ${this.parameter(query.getLimit())} rows only`
     
     return expr
+  }
+
+  /**
+   * 
+   * @param {Insert} query
+   * @returns {String}
+   */
+  compileInsertValues(query) {
+    var columns = query.getColumns().map(value => value.toString())
+
+    return query.getValues().map(value => {
+      
+      return `select ${columns.map(key => this.parameter(value[key], true)).join(', ')} from dual`
+
+    }).join(' union all ')
+  }
+
+  /**
+   * 
+   * @param {Insert} query
+   * @returns {String}
+   * @throws {Error}
+   */
+  compileInsertDefaultValues(query) {
+    if (! query.hasColumns() )
+      throw new Error("Missing insert columns")
+
+    var table = this.compileInsertTable(query)
+    var values = query.getColumns().map(() => 'default').join(', ')
+
+    return `insert into ${table} values (${values})`
   }
   
   /**
