@@ -1,7 +1,10 @@
 /* global describe */
 
-var qb = require('../../lib').default
+var qb      = require('../../lib').default
+var fn      = require('../../lib/helpers')
 var support = require('./support')
+var C       = fn.C
+var T       = fn.T
 
 describe("test building insert queries:", () => {
 
@@ -42,35 +45,33 @@ describe("test building insert queries:", () => {
   
   support.test(
     "inserts an new row with default values",
-    qb.insertInto('people').defaultValues(),
+    qb.insertInto(T('table')).defaultValues(),
     {
-      pg:     'insert into people default values',
-      mysql:  'insert into people () values ()',
-      mssql:  'insert into people default values',
-      sqlite: 'insert into people default values',
+      pg:     'insert into "table" default values',
+      mysql:  'insert into `table` () values ()',
+      mssql:  'insert into [table] default values',
+      sqlite: 'insert into "table" default values',
     }
   )
 
   support.test(
     "replaces missing bindings with default for multirow insert",
-    qb.insert([{ x: 20 }, { y: 40 }, { x: 10, y: 30 }]).into('coords'),
+    qb.insertInto('coords', C('y'), 'x').values([{ x: 20 }, { y: 40 }, { x: 10, y: 30 }]),
     {
-      pg:     'insert into coords (x, y) values ($1, default), (default, $2), ($3, $4)',
-      mysql:  'insert into coords (x, y) values (?, default), (default, ?), (?, ?)',
-      mssql:  'insert into coords (x, y) values (@1, default), (default, @2), (@3, @4)',
-      sqlite: 'insert into coords (x, y) values ($1, null), (null, $2), ($3, $4)',
+      pg:     'insert into coords ("y", x) values (default, $1), ($2, default), ($3, $4)',
+      mysql:  'insert into coords (`y`, x) values (default, ?), (?, default), (?, ?)',
+      mssql:  'insert into coords ([y], x) values (default, @1), (@2, default), (@3, @4)',
+      sqlite: 'insert into coords ("y", x) values (null, $1), ($2, null), ($3, $4)',
     },
-    [20, 40, 10, 30]
+    [20, 40, 30, 10]
   )
 
   support.test(
     "adds a returning clause",
-    qb.insert({ fname: "foo", lname: 'bar' }).into('users').returning('id'),
+    qb.insert({ fname: "foo", lname: 'bar' }).into('users').returning(C('id')),
     {
-      pg:     'insert into users (fname, lname) values ($1, $2) returning id',
-      mysql:  'insert into users (fname, lname) values (?, ?)',
-      mssql:  'insert into users (fname, lname) output id values (@1, @2)',
-      sqlite: 'insert into users (fname, lname) values ($1, $2)',
+      pg:     'insert into users (fname, lname) values ($1, $2) returning "id"',
+      mssql:  'insert into users (fname, lname) output inserted.[id] values (@1, @2)',
     },
     ['foo', 'bar']
   )

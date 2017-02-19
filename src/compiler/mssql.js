@@ -114,18 +114,31 @@ export default class extends Compiler {
   compileInsertTable(query) {
     var sql = super.compileInsertTable(query)
 
-    return this.appendOutputClause(sql, query.option('returning'))
+    return this.appendOutputClause(sql, 'inserted', query.option('returning'))
   }
 
   /**
    * 
    * @param {String} sql
+   * @param {String} prefix
    * @param {Array} columns
    * @returns {String}
    * @private
    */
-  appendOutputClause(sql, columns = undefined) {
-    return columns ? `${sql} output ${this.columnize(columns)}` : sql
+  appendOutputClause(sql, prefix, columns = undefined) {
+    if (! columns ) return sql
+    
+    // add  the inserted or deleted prefix for each column
+    columns = columns.map(value => {
+      value = this.escape(value)
+      
+      if ( value.indexOf('inserted') > -1 || value.indexOf('deleted') > -1 )
+        return value
+      
+      return `${prefix}.${value}`
+    })
+    
+    return `${sql} output ${columns.join(', ')}`
   }
   
 }

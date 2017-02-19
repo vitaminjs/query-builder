@@ -173,7 +173,9 @@ export default class Insert extends Query {
    * @returns {Insert}
    */
   setColumns(columns) {
-    this._columns = columns.map(value => Literal.from(value))
+    var mapper = value => isString(value) ? Literal.from(value) : value
+    
+    this._columns = columns.map(mapper)
     return this
   }
 
@@ -191,7 +193,9 @@ export default class Insert extends Query {
    * @returns {Insert}
    */
   returning(...output) {
-    return this.option('returning', output.map(value => Literal.from(value)))
+    var mapper = value => isString(value) ? Literal.from(value) : value
+    
+    return this.option('returning', output.map(mapper))
   }
 
   /**
