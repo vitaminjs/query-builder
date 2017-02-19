@@ -5,20 +5,19 @@ const builder = {
 
   /**
    * 
-   * @param {Any} value
    * @returns {Select}
    */
-  select(...value) {
-    return new Select().setColumns(value)
+  select() {
+    return new Select().select(...arguments)
   },
 
   /**
    * 
-   * @param {Any} value
+   * @param {Any} table
    * @return {Select}
    */
-  selectFrom(...value) {
-    return this.select().setTables(value)
+  selectFrom(table) {
+    return this.select().from(...arguments)
   },
 
   /**

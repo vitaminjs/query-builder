@@ -22,7 +22,7 @@ export default class Insert extends Query {
     this._columns = []
 
     // a flag to determine who added to query columns
-    this._userDefinedColumns = false
+    this._columnsAlreadyDefined = false
   }
 
   /**
@@ -50,7 +50,7 @@ export default class Insert extends Query {
   setValues(data) {
     if (! isArray(data) ) data = [data]
 
-    if (! this._userDefinedColumns )
+    if (! this._columnsAlreadyDefined )
       this.setColumns(chain(data).map(keys).flatten().uniq().value())
 
     this._data = data
@@ -118,10 +118,12 @@ export default class Insert extends Query {
    * @returns {Insert}
    */
   into(table, ...columns) {
-    if (! isEmpty(columns) )
-      this._userDefinedColumns = true
+    if (! isEmpty(columns) ) {
+      this._columnsAlreadyDefined = true
+      this.setColumns(columns)
+    }
     
-    return this.setTable(table).setColumns(columns)
+    return this.setTable(table)
   }
 
   /**

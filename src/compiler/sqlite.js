@@ -1,4 +1,5 @@
 
+import { isUndefined } from 'lodash'
 import Compiler from './base'
 
 /**

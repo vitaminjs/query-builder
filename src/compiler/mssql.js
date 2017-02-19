@@ -69,7 +69,7 @@ export default class extends Compiler {
     if ( !orders && query.hasOffset() )
       orders = 'order by (select 0)' // a dummy order
     
-    return orders +' '+ this.compileOffsetAndFetch(query)
+    return orders + this.compileOffsetAndFetch(query)
   }
   
   /**
@@ -80,7 +80,7 @@ export default class extends Compiler {
   compileOffsetAndFetch(query) {
     if (! query.hasOffset() ) return ''
     
-    let expr = `offset ${this.parameter(query.getOffset())} rows`
+    let expr = ` offset ${this.parameter(query.getOffset())} rows`
     
     if ( query.hasLimit() )
       expr += ` fetch next ${this.parameter(query.getLimit())} rows only`

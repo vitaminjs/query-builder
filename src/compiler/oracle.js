@@ -71,6 +71,9 @@ export default class extends Compiler {
    * @returns {String}
    */
   compileInsertValues(query) {
+    if ( query.getValues().length === 1 )
+      return super.compileInsertValues(query)
+    
     var columns = query.getColumns().map(value => value.toString())
 
     return query.getValues().map(value => {
