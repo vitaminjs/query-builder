@@ -9,6 +9,8 @@ var EXISTS  = fn.EXISTS
 var COUNT   = fn.COUNT
 var RAW     = fn.RAW
 var MAX     = fn.MAX
+var MIN     = fn.MIN
+var SUM     = fn.SUM
 var SQ      = fn.SQ
 var IN      = fn.IN
 var T       = fn.T
@@ -392,6 +394,72 @@ describe("test building select queries:", () => {
         },
       },
       [3, 6]
+    )
+    
+  })
+  
+  describe("test groupBy():", () => {
+    
+    support.test(
+      "adds group by columns",
+      qb.select().from('table').groupBy('col1', C('col2')),
+      {
+        pg:     'select * from table group by col1, "col2"',
+        mysql:  'select * from table group by col1, `col2`',
+        mssql:  'select * from table group by col1, [col2]',
+        sqlite: 'select * from table group by col1, "col2"',
+      }
+    )
+    
+    support.test(
+      "appends more groups when called multiple times",
+      qb.select().from('table').groupBy('col1').groupBy(C('col2')),
+      {
+        pg:     'select * from table group by col1, "col2"',
+        mysql:  'select * from table group by col1, `col2`',
+        mssql:  'select * from table group by col1, [col2]',
+        sqlite: 'select * from table group by col1, "col2"',
+      }
+    )
+    
+  })
+  
+  describe("test having():", () => {
+    
+    support.test(
+      "adds a basic having condition",
+      qb.select('name', COUNT()).from('table').groupBy('name').having(COUNT(), '>', 5),
+      {
+        pg:     'select name, count(*) from table group by name having count(*) > $1',
+        mysql:  'select name, count(*) from table group by name having count(*) > ?',
+        mssql:  'select name, count(*) from table group by name having count(*) > @1',
+        sqlite: 'select name, count(*) from table group by name having count(*) > $1',
+      },
+      [5]
+    )
+    
+    support.test(
+      "adds a raw having condition",
+      qb.select('name', COUNT().as('count')).from('table').groupBy('name').having(RAW`count > ${5}`),
+      {
+        pg:     'select name, count(*) as "count" from table group by name having count > $1',
+        mysql:  'select name, count(*) as `count` from table group by name having count > ?',
+        mssql:  'select name, count(*) as [count] from table group by name having count > @1',
+        sqlite: 'select name, count(*) as "count" from table group by name having count > $1',
+      },
+      [5]
+    )
+    
+    support.test(
+      "adds a complex having condition",
+      qb.select('name', MIN("age"), SUM('wallet')).from('guys').groupBy('name').havingNot(MIN('age'), 'between', [14, 21]).orHaving('sum(wallet)', [300, 400, 500]),
+      {
+        pg:     'select name, min(age), sum(wallet) from guys group by name having min(age) not between $1 and $2 or sum(wallet) in ($3, $4, $5)',
+        mysql:  'select name, min(age), sum(wallet) from guys group by name having min(age) not between ? and ? or sum(wallet) in (?, ?, ?)',
+        mssql:  'select name, min(age), sum(wallet) from guys group by name having min(age) not between @1 and @2 or sum(wallet) in (@3, @4, @5)',
+        sqlite: 'select name, min(age), sum(wallet) from guys group by name having min(age) not between $1 and $2 or sum(wallet) in ($3, $4, $5)',
+      },
+      [14, 21, 300, 400, 500]
     )
     
   })
