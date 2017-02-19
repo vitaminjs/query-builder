@@ -13,7 +13,6 @@ describe("test building insert queries:", () => {
       mysql:  '',
       mssql:  '',
       sqlite: '',
-      oracle: '',
     }
   )
 
@@ -25,7 +24,6 @@ describe("test building insert queries:", () => {
       mysql:  'insert into people (name, age) values (?, ?)',
       mssql:  'insert into people (name, age) values (@1, @2)',
       sqlite: 'insert into people (name, age) values ($1, $2)',
-      oracle: 'insert into people (name, age) values (:1, :2)',
     },
     ['foo', 30]
   )
@@ -38,7 +36,6 @@ describe("test building insert queries:", () => {
       mysql:  'insert into people (name, age) values (?, ?), (?, ?)',
       mssql:  'insert into people (name, age) values (@1, @2), (@3, @4)',
       sqlite: 'insert into people (name, age) values ($1, $2), ($3, $4)',
-      oracle: 'insert into people (name, age) select :1, :2 from dual union all select :3, :4 from dual',
     },
     ['foo', 30, 'bar', 40]
   )

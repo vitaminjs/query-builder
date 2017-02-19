@@ -2,7 +2,6 @@
 import Base from './base'
 import Mysql from './mysql'
 import Mssql from './mssql'
-import Oracle from './oracle'
 import Sqlite from './sqlite'
 import Postgre from './postgre'
 
@@ -22,8 +21,6 @@ export function createCompiler(dialect, options = {}) {
     case 'mysql': return new Mysql(options)
     
     case 'mssql': return new Mssql(options)
-    
-    case 'oracle': return new Oracle(options)
     
     case 'sqlite': return new Sqlite(options)
     

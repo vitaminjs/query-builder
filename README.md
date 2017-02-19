@@ -1,5 +1,5 @@
 A fluent SQL query builder for Node.
-It provides support for **MySQL**, **PostgreSQL**, **Sqlite**, **MSSQL** and **Oracle**.
+It provides support for **SQLite**, **MySQL**, **PostgreSQL** and **MSSQL**.
 
 ## Installing
 
@@ -17,7 +17,7 @@ import qb, { COUNT, RAW } from 'vitamin-query'
 var query = qb.select(COUNT()).from('employees').where(RAW`salary > ${2000}`)
 
 // compile the built query to SQL, using a database dialect
-var q = query.toSQL('pg' || 'mysql' || 'mssql' || 'oracle' || 'sqlite')
+var q = query.toSQL('pg' || 'mysql' || 'mssql' || 'sqlite')
 
 // assertions
 assert.equal(q.sql, 'select count(*) from employees where salary > $1')
