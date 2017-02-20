@@ -67,7 +67,7 @@ export default class Select extends Query {
     this.hasConditions() && query.setConditions(this.getConditions().clone())
     this.hasHavingConditions() && query.setHavingConditions(this.getHavingConditions().clone())
 
-    return query
+    return query.setOptions(this.getOptions())
   }
 
   /**

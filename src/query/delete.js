@@ -1,6 +1,7 @@
 
 import Expression, { Literal } from '../expression'
-import { isString } from 'lodash'
+import { isString, isEmpty } from 'lodash'
+import { Criteria } from '../criterion'
 import Query from './base'
 
 /**
@@ -56,7 +57,7 @@ export default class Delete extends Query {
     
     // ensure the table expression
     if (! (value instanceof Expression) )
-      throw new TypeError("Invalid update expression")
+      throw new TypeError("Invalid delete expression")
 
     this._table = value
     return this
@@ -66,8 +67,76 @@ export default class Delete extends Query {
    * 
    * @returns {Delete}
    */
-  where() {
-    // TODO
+  resetTable() {
+    this._table = null
+    return this
+  }
+
+  /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @param {String} bool
+   * @param {Boolean} not
+   * @returns {Delete}
+   */
+  where(expr, operator, value, bool = 'and', not = false) {
+    this.getConditions().where(expr, operator, value, bool, not)
+    return this
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @param {Boolean} not
+   * @returns {Delete}
+   */
+  orWhere(expr, operator, value) {
+    return this.where(expr, operator, value, 'or')
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @param {String} bool
+   * @returns {Delete}
+   */
+  whereNot(expr, operator, value, bool = 'and') {
+    this.getConditions().whereNot(expr, operator, value, bool)
+    return this
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @returns {Delete}
+   */
+  orWhereNot(expr, operator, value) {
+    return this.whereNot(expr, operator, value, 'or')
+  }
+
+  /**
+   * 
+   * @returns {Boolean}
+   */
+  hasConditions() {
+    return !( this._conditions == null || this._conditions.isEmpty() )
+  }
+
+  /**
+   * 
+   * @param {Criteria} value
+   * @returns {Delete}
+   */
+  setConditions(value) {
+    this._conditions = value
     return this
   }
 
@@ -75,15 +144,25 @@ export default class Delete extends Query {
    * 
    * @returns {Delete}
    */
-  orWhere() {
-    // TODO
-    return this
+  resetConditions() {
+    return this.setConditions(new Criteria())
+  }
+
+  /**
+   * 
+   * @returns {Criteria}
+   */
+  getConditions() {
+    if ( this._conditions == null )
+      this.resetConditions()
+
+    return this._conditions
   }
 
   /**
    * 
    * @param {String[]} columns
-   * @returns {Insert}
+   * @returns {Delete}
    */
   returning(...columns) {
     return this.setReturning(columns)
@@ -108,7 +187,7 @@ export default class Delete extends Query {
   /**
    * 
    * @param {Array} columns
-   * @returns {Insert}
+   * @returns {Delete}
    */
   setReturning(columns) {
     var mapper = value => isString(value) ? Literal.from(value) : value
@@ -120,13 +199,35 @@ export default class Delete extends Query {
 
   /**
    * 
+   * @returns {Delete}
+   */
+  resetReturning() {
+    return this.setReturning([])
+  }
+
+  /**
+   * 
    * @param {Compiler} compiler
    * @returns {String}
    */
   compile(compiler) {
-    if ( this._table == null ) return ''
+    if (! this.hasTable() ) return ''
 
     return compiler.compileDeleteQuery(this)
+  }
+
+  /**
+   * 
+   * @return {Delete}
+   */
+  clone() {
+    var query = new Delete()
+
+    this.hasTable() && query.getTable()
+    this.hasReturning() && query.setReturning(this.getReturning().slice())
+    this.hasConditions() && query.setConditions(this.getConditions().clone())
+
+    return query.setOptions(this.getOptions())
   }
   
 }

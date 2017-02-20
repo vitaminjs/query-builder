@@ -1,6 +1,6 @@
 
 import Compiler, { createCompiler } from '../compiler'
-import { has, isString } from 'lodash'
+import { has, extend, isString, isPlainObject } from 'lodash'
 
 /**
  * @class BaseQuery
@@ -23,6 +23,11 @@ export default class Query {
    * @returns {Any|Query}
    */
   option(name, value = undefined) {
+    if ( isPlainObject(name) ) {
+      extend(this._options, name)
+      return this
+    }
+
     if ( undefined !== value ) {
       this._options[name] = value
       return this
@@ -54,7 +59,7 @@ export default class Query {
    * @returns {Query}
    */
   setOptions(value) {
-    this._options = value
+    this._options = extend({}, value)
     return this
   }
   

@@ -1,6 +1,7 @@
 
+import { extend, fromPairs, isString, isEmpty } from 'lodash'
 import Expression, { Literal } from '../expression'
-import { isString } from 'lodash'
+import { Criteria } from '../criterion'
 import Query from './base'
 
 /**
@@ -53,40 +54,153 @@ export default class Update extends Query {
     this._table = value
     return this
   }
+
+  /**
+   * 
+   * @returns {Update}
+   */
+  resetTable() {
+    this._table = null
+    return this
+  }
   
   /**
    * 
-   * @param {String|Object} key
+   * @param {String|Object} one
+   * @param {Any} two
+   * @returns {Update}
+   */
+  set(one, two = undefined) {
+    extend(this._data, isString(one) ? fromPairs([[one, two]]) : one)
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Object}
+   */
+  getValues() {
+    return this._data
+  }
+
+  /**
+   * 
+   * @param {Object} data
+   * @returns {Update}
+   */
+  setValues(data) {
+    this._data = extend({}, data)
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Update}
+   */
+  resetValues() {
+    this._data = {}
+    return this
+  }
+
+  /**
+   * 
+   * @returns {Boolean}
+   */
+  hasValues() {
+    return !isEmpty(this._data)
+  }
+
+  /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @param {String} bool
+   * @param {Boolean} not
+   * @returns {Update}
+   */
+  where(expr, operator, value, bool = 'and', not = false) {
+    this.getConditions().where(expr, operator, value, bool, not)
+    return this
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @param {Boolean} not
+   * @returns {Update}
+   */
+  orWhere(expr, operator, value) {
+    return this.where(expr, operator, value, 'or')
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @param {String} bool
+   * @returns {Update}
+   */
+  whereNot(expr, operator, value, bool = 'and') {
+    this.getConditions().whereNot(expr, operator, value, bool)
+    return this
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
    * @param {Any} value
    * @returns {Update}
    */
-  set(key, value = undefined) {
-    // TODO
+  orWhereNot(expr, operator, value) {
+    return this.whereNot(expr, operator, value, 'or')
+  }
+
+  /**
+   * 
+   * @returns {Boolean}
+   */
+  hasConditions() {
+    return !( this._conditions == null || this._conditions.isEmpty() )
+  }
+
+  /**
+   * 
+   * @param {Criteria} value
+   * @returns {Update}
+   */
+  setConditions(value) {
+    this._conditions = value
     return this
   }
 
   /**
    * 
-   * @returns {Delete}
+   * @returns {Update}
    */
-  where() {
-    // TODO
-    return this
+  resetConditions() {
+    return this.setConditions(new Criteria())
   }
 
   /**
    * 
-   * @returns {Delete}
+   * @returns {Criteria}
    */
-  orWhere() {
-    // TODO
-    return this
+  getConditions() {
+    if ( this._conditions == null )
+      this.resetConditions()
+
+    return this._conditions
   }
 
   /**
    * 
    * @param {String[]} columns
-   * @returns {Insert}
+   * @returns {Update}
    */
   returning(...columns) {
     return this.setReturning(columns)
@@ -111,7 +225,7 @@ export default class Update extends Query {
   /**
    * 
    * @param {Array} columns
-   * @returns {Insert}
+   * @returns {Update}
    */
   setReturning(columns) {
     var mapper = value => isString(value) ? Literal.from(value) : value
@@ -123,13 +237,36 @@ export default class Update extends Query {
 
   /**
    * 
+   * @returns {Update}
+   */
+  resetReturning() {
+    return this.setReturning([])
+  }
+
+  /**
+   * 
    * @param {Compiler} compiler
    * @returns {String}
    */
   compile(compiler) {
-    if ( this._table == null ) return ''
+    if (! (this.hasTable() && this.hasValues()) ) return ''
 
     return compiler.compileUpdateQuery(this)
+  }
+
+  /**
+   * 
+   * @return {Update}
+   */
+  clone() {
+    var query = new Update()
+
+    this.hasTable() && query.getTable()
+    this.hasValues() && query.setValues(this.getValues())
+    this.hasReturning() && query.setReturning(this.getReturning().slice())
+    this.hasConditions() && query.setConditions(this.getConditions().clone())
+
+    return query.setOptions(this.getOptions())
   }
   
 }

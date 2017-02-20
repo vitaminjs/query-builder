@@ -21,9 +21,6 @@ export default class Insert extends Query {
     this._select    = null
     this._columns   = []
     this._returning = []
-
-    // a flag to determine who added to query columns
-    this._columnsAlreadyDefined = false
   }
 
   /**
@@ -51,11 +48,19 @@ export default class Insert extends Query {
   setValues(data) {
     if (! isArray(data) ) data = [data]
 
-    if (! this._columnsAlreadyDefined )
+    if (! this.hasColumns() )
       this.setColumns(chain(data).map(keys).flatten().uniq().value())
 
     this._data = data
     return this
+  }
+
+  /**
+   * 
+   * @returns {Insert}
+   */
+  resetValues() {
+    return this.setValues([])
   }
 
   /**
@@ -81,6 +86,14 @@ export default class Insert extends Query {
    */
   select(query) {
     return this.setSelect(query)
+  }
+
+  /**
+   * 
+   * @returns {Insert}
+   */
+  resetSelect() {
+    return this.setSelect(null)
   }
 
   /**
@@ -154,6 +167,15 @@ export default class Insert extends Query {
 
   /**
    * 
+   * @returns {Insert}
+   */
+  resetTable() {
+    this._table = null
+    return this
+  }
+
+  /**
+   * 
    * @returns {Boolean}
    */
   hasTable() {
@@ -178,6 +200,14 @@ export default class Insert extends Query {
     
     this._columns = columns.map(mapper)
     return this
+  }
+
+  /**
+   * 
+   * @returns {Insert}
+   */
+  resetColumns() {
+    return this.setColumns([])
   }
 
   /**
@@ -230,6 +260,14 @@ export default class Insert extends Query {
    * 
    * @returns {Insert}
    */
+  resetReturning() {
+    return this.setReturning([])
+  }
+
+  /**
+   * 
+   * @returns {Insert}
+   */
   onConflictIgnore($) {
     // TODO
     return this
@@ -250,9 +288,25 @@ export default class Insert extends Query {
    * @returns {String}
    */
   compile(compiler) {
-    if (! this._table ) return ''
+    if (! this.hasTable() ) return ''
 
     return compiler.compileInsertQuery(this)
+  }
+
+  /**
+   * 
+   * @return {Insert}
+   */
+  clone() {
+    var query = new Insert()
+
+    this.hasTable() && query.getTable()
+    this.hasSelect() && query.setSelect(this.getSelect())
+    this.hasValues() && query.setValues(this.getValues().slice())
+    this.hasColumns() && query.setColumns(this.getColumns().slice())
+    this.hasReturning() && query.setReturning(this.getReturning().slice())
+
+    return query.setOptions(this.getOptions())
   }
   
 }
