@@ -1,4 +1,5 @@
 
+import { isEmpty } from 'lodash'
 import Compiler from './base'
 
 /**
@@ -34,7 +35,7 @@ export default class extends Compiler {
   compileInsertQuery(query) {
     var sql = super.compileInsertQuery(query)
 
-    return this.appendReturningClause(sql, query.option('returning'))
+    return this.appendReturningClause(sql, query.getReturning())
   }
 
   /**
@@ -45,7 +46,7 @@ export default class extends Compiler {
   compileInsertDefaultValues(query) {
     var sql = super.compileInsertDefaultValues(query)
 
-    return this.appendReturningClause(sql, query.option('returning'))
+    return this.appendReturningClause(sql, query.getReturning())
   }
 
   /**
@@ -55,8 +56,8 @@ export default class extends Compiler {
    * @returns {String}
    * @private
    */
-  appendReturningClause(sql, columns = undefined) {
-    return columns ? `${sql} returning ${this.columnize(columns)}` : sql
+  appendReturningClause(sql, columns) {
+    return isEmpty(columns) ? sql : `${sql} returning ${this.columnize(columns)}`
   }
   
 }

@@ -114,7 +114,7 @@ export default class extends Compiler {
   compileInsertTable(query) {
     var sql = super.compileInsertTable(query)
 
-    return this.appendOutputClause(sql, 'inserted', query.option('returning'))
+    return this.appendOutputClause(sql, query.getReturning())
   }
 
   /**
@@ -125,8 +125,8 @@ export default class extends Compiler {
    * @returns {String}
    * @private
    */
-  appendOutputClause(sql, prefix, columns = undefined) {
-    if (! columns ) return sql
+  appendOutputClause(sql, columns, prefix = 'inserted') {
+    if ( isEmpty(columns) ) return sql
     
     // add  the inserted or deleted prefix for each column
     columns = columns.map(value => {
