@@ -15,6 +15,7 @@ export default class Delete extends Query {
   constructor() {
     super()
     
+    this._returning   = []
     this._conditions  = null
     this._table       = null
   }
@@ -76,6 +77,44 @@ export default class Delete extends Query {
    */
   orWhere() {
     // TODO
+    return this
+  }
+
+  /**
+   * 
+   * @param {String[]} columns
+   * @returns {Insert}
+   */
+  returning(...columns) {
+    return this.setReturning(columns)
+  }
+
+  /**
+   * 
+   * @returns {Boolean}
+   */
+  hasReturning() {
+    return !isEmpty(this._returning)
+  }
+
+  /**
+   * 
+   * @returns {Array}
+   */
+  getReturning() {
+    return this._returning
+  }
+
+  /**
+   * 
+   * @param {Array} columns
+   * @returns {Insert}
+   */
+  setReturning(columns) {
+    var mapper = value => isString(value) ? Literal.from(value) : value
+    
+    this._returning = columns.map(mapper)
+
     return this
   }
 

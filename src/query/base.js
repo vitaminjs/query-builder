@@ -1,6 +1,6 @@
 
 import Compiler, { createCompiler } from '../compiler'
-import { isString } from 'lodash'
+import { has, isString } from 'lodash'
 
 /**
  * @class BaseQuery
@@ -33,10 +33,29 @@ export default class Query {
 
   /**
    * 
+   * @param {String} name
+   * @returns {Boolean}
+   */
+  hasOption(name) {
+    return has(this._options, name)
+  }
+
+  /**
+   * 
    * @returns {Object}
    */
   getOptions() {
     return this._options
+  }
+
+  /**
+   * 
+   * @param {Object} value
+   * @returns {Query}
+   */
+  setOptions(value) {
+    this._options = value
+    return this
   }
   
   /**

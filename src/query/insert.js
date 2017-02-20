@@ -16,10 +16,11 @@ export default class Insert extends Query {
   constructor() {
     super()
     
-    this._data    = []
-    this._table   = null
-    this._select  = null
-    this._columns = []
+    this._data      = []
+    this._table     = null
+    this._select    = null
+    this._columns   = []
+    this._returning = []
 
     // a flag to determine who added to query columns
     this._columnsAlreadyDefined = false
@@ -189,13 +190,40 @@ export default class Insert extends Query {
 
   /**
    * 
-   * @param {String[]} output
+   * @param {String[]} columns
    * @returns {Insert}
    */
-  returning(...output) {
+  returning(...columns) {
+    return this.setReturning(columns)
+  }
+
+  /**
+   * 
+   * @returns {Boolean}
+   */
+  hasReturning() {
+    return !isEmpty(this._returning)
+  }
+
+  /**
+   * 
+   * @returns {Array}
+   */
+  getReturning() {
+    return this._returning
+  }
+
+  /**
+   * 
+   * @param {Array} columns
+   * @returns {Insert}
+   */
+  setReturning(columns) {
     var mapper = value => isString(value) ? Literal.from(value) : value
     
-    return this.option('returning', output.map(mapper))
+    this._returning = columns.map(mapper)
+
+    return this
   }
 
   /**
