@@ -23,11 +23,12 @@ describe("test building delete queries:", () => {
     "creates a conditional delete query",
     qb.delete(T('accounts')).where(C('activated'), false),
     {
-      pg:     'delete from "table" where "activated" = $1',
-      mysql:  'delete from `table` where `activated` = ?',
-      mssql:  'delete from [table] where [activated] = @1',
-      sqlite: 'delete from "table" where "activated" = $1',
-    }
+      pg:     'delete from "accounts" where "activated" = $1',
+      mysql:  'delete from `accounts` where `activated` = ?',
+      mssql:  'delete from [accounts] where [activated] = @1',
+      sqlite: 'delete from "accounts" where "activated" = $1',
+    },
+    [ false ]
   )
 
 })

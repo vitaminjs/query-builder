@@ -271,9 +271,13 @@ export default class Compiler {
    * @returns {String}
    */
   compileUpdateValues(query) {
-    return 'set ' + each(query.getValues(), (value, key) => {
-      return `${this.escape(key)} = ${this.parameterize(value)}`
-    }).join(' ')
+    var expr = 'set'
+    
+    each(query.getValues(), (value, key) => {
+      expr += ` ${key} = ${this.parameterize(value)}`
+    })
+    
+    return expr
   }
 
   /**
