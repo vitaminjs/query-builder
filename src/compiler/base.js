@@ -1,5 +1,5 @@
 
-import { compact, isObject, isArray, isString, isUndefined } from 'lodash'
+import { compact, each, isObject, isArray, isString, isUndefined } from 'lodash'
 import Expression from '../expression'
 
 /**
@@ -253,20 +253,41 @@ export default class Compiler {
 
   /**
    * 
-   * @param {Insert} query
+   * @param {Update} query
    * @returns {String}
    */
   compileUpdateQuery(query) {
-    return `update ${table} set ${values} [where ${conditions}]`
+    var sql = `update ${this.escape(query.getTable())} ${this.compileUpdateValues(query)}`
+
+    if ( query.hasConditions() )
+      sql += ` ${this.compileConditions(query)}`
+    
+    return sql
   }
 
   /**
    * 
-   * @param {Insert} query
+   * @param {Update} query
+   * @returns {String}
+   */
+  compileUpdateValues(query) {
+    return 'set ' + each(query.getValues(), (value, key) => {
+      return `${this.escape(key)} = ${this.parameterize(value)}`
+    }).join(' ')
+  }
+
+  /**
+   * 
+   * @param {Delete} query
    * @returns {String}
    */
   compileDeleteQuery(query) {
-    return `delete from ${table} [where ${conditions}]`
+    var sql = `delete from ${this.escape(query.getTable())}`
+
+    if ( query.hasConditions() )
+      sql += ` ${this.compileConditions(query)}`
+    
+    return sql
   }
   
   /**
