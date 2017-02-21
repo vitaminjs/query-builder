@@ -40,6 +40,28 @@ export default class extends Compiler {
 
   /**
    * 
+   * @param {Update} query
+   * @returns {String}
+   */
+  compileUpdateQuery(query) {
+    var sql = super.compileUpdateQuery(query)
+
+    return this.appendReturningClause(sql, query.getReturning())
+  }
+
+  /**
+   * 
+   * @param {Delete} query
+   * @returns {String}
+   */
+  compileDeleteQuery(query) {
+    var sql = super.compileDeleteQuery(query)
+
+    return this.appendReturningClause(sql, query.getReturning())
+  }
+
+  /**
+   * 
    * @param {Insert} query
    * @returns {String}
    */

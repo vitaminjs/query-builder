@@ -257,7 +257,8 @@ export default class Compiler {
    * @returns {String}
    */
   compileUpdateQuery(query) {
-    var sql = `update ${this.escape(query.getTable())} ${this.compileUpdateValues(query)}`
+    var table = this.escape(query.getTable())
+    var sql = `update ${table} ${this.compileUpdateValues(query)}`
 
     if ( query.hasConditions() )
       sql += ` ${this.compileConditions(query)}`

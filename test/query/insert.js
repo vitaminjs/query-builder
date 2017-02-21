@@ -71,7 +71,9 @@ describe("test building insert queries:", () => {
     qb.insert({ fname: "foo", lname: 'bar' }).into('users').returning(C('id')),
     {
       pg:     'insert into users (fname, lname) values ($1, $2) returning "id"',
+      mysql:  'insert into users (fname, lname) values (?, ?)',
       mssql:  'insert into users (fname, lname) output inserted.[id] values (@1, @2)',
+      sqlite: 'insert into users (fname, lname) values ($1, $2)',
     },
     ['foo', 'bar']
   )

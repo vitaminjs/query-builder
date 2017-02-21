@@ -44,4 +44,16 @@ describe("test building update queries:", () => {
     ['archived', 2000]
   )
 
+  support.test(
+    "adds a returning clause",
+    qb.update('foo').set('a', RAW`a + 1`).where('a', '<', 3).returning('*'),
+    {
+      pg:     'update foo set a = a + 1 where a < $1 returning *',
+      mysql:  'update foo set a = a + 1 where a < ?',
+      mssql:  'update foo set a = a + 1 output inserted.* where a < @1',
+      sqlite: 'update foo set a = a + 1 where a < $1',
+    },
+    [3]
+  )
+
 })
