@@ -17,15 +17,6 @@ export default class Compiler {
     this.bindings = []
     this.options = options
   }
-
-  /**
-   * Placeholder for undefined values
-   * 
-   * @type {Object}
-   */
-  get undefinedValueReplacement() {
-    return 'default'
-  }
   
   /**
    * Default parameter placeholder
@@ -242,6 +233,9 @@ export default class Compiler {
    * @returns {String}
    */
   compileInsertValues(query) {
+    if ( query.hasSelect() )
+      return this.compileSelectQuery(query.getSelect())
+
     var columns = query.getColumns().map(value => value.toString())
 
     return 'values ' + query.getValues().map(value => {
@@ -275,7 +269,7 @@ export default class Compiler {
     var expr = 'set'
     
     each(query.getValues(), (value, key) => {
-      expr += ` ${key} = ${this.parameterize(value)}`
+      expr += ` ${key} = ${this.parameter(value, true)}`
     })
     
     return expr
