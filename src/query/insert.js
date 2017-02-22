@@ -1,5 +1,5 @@
 
-import { isString, isEmpty, isArray, chain, keys } from 'lodash'
+import { isString, isEmpty, isFunction, isArray, chain, keys } from 'lodash'
 import Expression, { Literal } from '../expression'
 import Select from './select'
 import Query from './base'
@@ -81,10 +81,16 @@ export default class Insert extends Query {
 
   /**
    * 
-   * @param {Select|Expression}
+   * @param {Select|Function}
    * @returns {Insert}
    */
   select(query) {
+    if ( isFunction(query) ) {
+      let fn = query
+
+      fn(query = new Select())
+    }
+
     return this.setSelect(query)
   }
 
@@ -106,7 +112,7 @@ export default class Insert extends Query {
 
   /**
    * 
-   * @returns {Expression}
+   * @returns {Select}
    */
   getSelect() {
     return this._select
@@ -114,13 +120,10 @@ export default class Insert extends Query {
 
   /**
    * 
-   * @param {Select|Expression}
+   * @param {Select}
    * @returns {Insert}
    */
   setSelect(query) {
-    if ( query instanceof Select )
-      query = query.toExpression()
-
     this._select = query
     return this
   }
