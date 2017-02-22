@@ -78,4 +78,16 @@ describe("test building insert queries:", () => {
     ['foo', 'bar']
   )
 
+  support.test(
+    "",
+    qb.insertInto('table', 'a', 'b').select(qb.selectFrom('another_table').limit(3)),
+    {
+      pg:     'insert into table (a, b) select * from another_table limit $1',
+      mysql:  'insert into table (a, b) select * from another_table limit ?',
+      mssql:  'insert into table (a, b) select top(@1) * from another_table',
+      sqlite: 'insert into table (a, b) select * from another_table limit $1',
+    },
+    [ 3 ]
+  )
+
 })
