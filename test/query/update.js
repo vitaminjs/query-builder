@@ -62,7 +62,7 @@ describe("test building update queries:", () => {
     "generates an update query using a sub query",
     qb.update('players').set('level', SQ(qb.select(MAX('level')).from('levels'))).where('id', 123),
     {
-      pg:     'update players set level = (select max(level) from levels) where id = $&',
+      pg:     'update players set level = (select max(level) from levels) where id = $1',
       mysql:  'update players set level = (select max(level) from levels) where id = ?',
       mssql:  'update players set level = (select max(level) from levels) where id = @1',
       sqlite: 'update players set level = (select max(level) from levels) where id = $1',

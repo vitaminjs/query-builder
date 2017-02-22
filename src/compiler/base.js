@@ -269,10 +269,11 @@ export default class Compiler {
     var expr = 'set'
     
     each(query.getValues(), (value, key) => {
-      expr += ` ${key} = ${this.parameter(value, true)}`
+      expr += ` ${key} = ${this.parameter(value, true)},`
     })
     
-    return expr
+    // we omit the last comma
+    return expr.substr(0, expr.length - 1)
   }
 
   /**
