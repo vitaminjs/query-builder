@@ -1,5 +1,5 @@
 
-import Expression, { Literal, SubQuery, Column, Table } from '../expression'
+import { Literal, SubQuery, Column, Table } from '../expression'
 import { isFunction, isArray, isString, trim } from 'lodash'
 import { Select } from '../query'
 
@@ -12,21 +12,8 @@ import { Select } from '../query'
  */
 export function RAW(expr, ...args) {
   // handle template strings
-  if ( isArray(expr) ) {
-    let parts = expr
-    
-    // use the first fragment as base
-    expr = parts[0]
-    
-    // join it with the other fragments
-    for ( let i = 1; i < parts.length; i++ ) {
-      let isExpr = (args[i - 1] instanceof Expression)
-      
-      expr += (isExpr ? '??' : '?') + parts[i]
-    }
-  }
-
-  // TODO check for undefined values
+  if ( isArray(expr) )
+    expr = expr.join('?')
   
   return new Literal(expr, args)
 }
