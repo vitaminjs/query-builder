@@ -105,5 +105,75 @@ export default class extends Compiler {
   compileOffset(query) {
     return ''
   }
+
+  /**
+   * 
+   * @param {Insert} query
+   * @returns {String}
+   */
+  compileInsertTable(query) {
+    var sql = super.compileInsertTable(query)
+
+    return this.appendOutputClause(sql, query.getReturning())
+  }
+
+  /**
+   * 
+   * @param {Update} query
+   * @returns {String}
+   */
+  compileUpdateQuery(query) {
+    var table = this.escape(query.getTable())
+    var sql = `update ${table} ${this.compileUpdateValues(query)}`
+    
+    if ( query.hasReturning() )
+      sql = this.appendOutputClause(sql, query.getReturning())
+
+    if ( query.hasConditions() )
+      sql += ` ${this.compileConditions(query)}`
+    
+    return sql
+  }
+
+  /**
+   * 
+   * @param {Delete} query
+   * @returns {String}
+   */
+  compileDeleteQuery(query) {
+    var sql = `delete from ${this.escape(query.getTable())}`
+    
+    if ( query.hasReturning() )
+      sql = this.appendOutputClause(sql, query.getReturning(), 'deleted')
+
+    if ( query.hasConditions() )
+      sql += ` ${this.compileConditions(query)}`
+    
+    return sql
+  }
+
+  /**
+   * 
+   * @param {String} sql
+   * @param {String} prefix
+   * @param {Array} columns
+   * @returns {String}
+   * @private
+   */
+  appendOutputClause(sql, columns, prefix = 'inserted') {
+    if ( isEmpty(columns) ) return sql
+    
+    // add  the inserted or deleted prefix for each column
+    columns = columns.map(value => {
+      value = this.escape(value)
+      
+      if ( value.indexOf('inserted') > -1 || value.indexOf('deleted') > -1 )
+        return value
+      
+      return `${prefix}.${value}`
+    })
+    
+    return `${sql} output ${columns.join(', ')}`
+  }
   
 }

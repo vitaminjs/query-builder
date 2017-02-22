@@ -21,6 +21,15 @@ export default class Literal extends Expression {
     this.before = ''
     this.after = ''
   }
+
+  /**
+   * 
+   * @param {String|Expression} value
+   * @returns {Literal}
+   */
+  static from(value) {
+    return new Literal(value.toString())
+  }
   
   /**
    * 
@@ -73,6 +82,14 @@ export default class Literal extends Expression {
       expr.expr === this.expr &&
       expr.alias === this.alias
     )
+  }
+
+  /**
+   * 
+   * @returns {String}
+   */
+  toString() {
+    return this.expr
   }
   
 }

@@ -1,4 +1,5 @@
 
+import { isUndefined } from 'lodash'
 import Compiler from './base'
 
 /**
@@ -36,6 +37,21 @@ export default class extends Compiler {
       return 'limit -1'
     
     return super.compileLimit(query)
+  }
+
+  /**
+   * 
+   * @param {Any} value
+   * @param {Boolean} replaceUndefined
+   * @returns {String}
+   */
+  parameter(value, replaceUndefined = false) {
+    // sqlite does not support the `default` keyword,
+    // so we replace undefined values with `null` instead
+    if ( replaceUndefined && isUndefined(value) )
+      return 'null'
+
+    return super.parameter(value, replaceUndefined)
   }
   
 }

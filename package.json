@@ -1,7 +1,7 @@
 {
   "name": "vitamin-query",
   "version": "0.1.0-alpha",
-  "description": "A fluent SQL query builder for node.js",
+  "description": "A fluent SQL query builder for node.js applications",
   "main": "lib/index.js",
   "scripts": {
     "prepublish": "npm run build",
@@ -16,7 +16,11 @@
     "vitamin",
     "query",
     "query-builder",
-    "sql"
+    "sql",
+    "postgresql",
+    "sqlite",
+    "mssql",
+    "mysql"
   ],
   "author": "absolux",
   "license": "MIT",

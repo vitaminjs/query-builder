@@ -1,6 +1,6 @@
 
-import { isArray, isNumber, isString, isBoolean, isFunction, toArray } from 'lodash'
-import Expression, { Literal, SubQuery, Order, Join } from '../expression'
+import Expression, { Literal, SubQuery, Join } from '../expression'
+import { isString, isFunction } from 'lodash'
 import { Criteria } from '../criterion'
 import Query from './base'
 
@@ -67,7 +67,7 @@ export default class Select extends Query {
     this.hasConditions() && query.setConditions(this.getConditions().clone())
     this.hasHavingConditions() && query.setHavingConditions(this.getHavingConditions().clone())
 
-    return query
+    return query.setOptions(this.getOptions())
   }
 
   /**
@@ -83,19 +83,27 @@ export default class Select extends Query {
 
   /**
    * 
-   * @param {Array} columns
+   * @param {Any} columns
    * @returns {Select}
    */
-  select(columns) {
-    if (! isArray(columns) ) columns = toArray(arguments)
-
-    columns.forEach(value => {
-      if ( isString(value) )
-        value = new Literal(value)
-      
-      this.getColumns().push(value)
-    })
-
+  select(...columns) {
+    for ( let value of columns )
+      this.addColumn(value)
+    
+    return this
+  }
+  
+  /**
+   * 
+   * @param {Any} value
+   * @returns {Select}
+   */
+  addColumn(value) {
+    if ( isString(value) )
+      value = Literal.from(value)
+    
+    this.getColumns().push(value)
+    
     return this
   }
 
@@ -153,31 +161,39 @@ export default class Select extends Query {
   
   /**
    * 
-   * @param {Array} value
+   * @param {Any} tables
    * @returns {Select}
    */
-  from(tables) {
-    if (! isArray(tables) ) tables = toArray(arguments)
+  from(...tables) {
+    for ( let value of tables )
+      this.addTable(value)
 
-    tables.forEach(value => {
-      if ( isString(value) )
-        value = new Literal(value)
+    return this
+  }
+  
+  /**
+   * 
+   * @param {Any} value
+   * @returns {Select}
+   */
+  addTable(value) {
+    if ( isString(value) )
+      value = Literal.from(value)
 
-      if ( isFunction(value) ) {
-        let fn = value
+    if ( isFunction(value) ) {
+      let fn = value
 
-        fn(value = this.newQuery())
-      }
+      fn(value = this.newQuery())
+    }
 
-      if ( value instanceof Select )
-        value = value.toExpression()
-      
-      if ( value instanceof Expression )
-        return this.getTables().push(value)
-      
-      throw new TypeError("Invalid from expression")
-    })
-
+    if ( value instanceof Select )
+      value = value.toExpression()
+    
+    if (! (value instanceof Expression) )
+      throw new TypeError("Invalid table expression")
+    
+    this.getTables().push(value)
+    
     return this
   }
   
@@ -287,21 +303,26 @@ export default class Select extends Query {
 
   /**
    * 
-   * @param {Array} columns
+   * @param {Any} columns
    * @returns {Select}
    */
-  groupBy(columns) {
-    if (! isArray(columns) ) columns = toArray(arguments)
+  groupBy(...columns) {
+    for ( let value of columns )
+      this.addGroup(value)
+    
+    return this
+  }
+  
+  /**
+   * 
+   * @param {Any} value
+   * @returns {Select}
+   */
+  addGroup(value) {
+    if ( isString(value) )
+      value = Literal.from(value)
 
-    columns.forEach(value => {
-      if ( isString(value) )
-        value = new Literal(value)
-
-      this.getGroups().push(value)
-
-      // by convention, select the group by columns
-      this.getColumns().push(value)
-    })
+    this.getGroups().push(value)
     
     return this
   }
@@ -342,19 +363,27 @@ export default class Select extends Query {
   
   /**
    * 
-   * @param {Array} columns
+   * @param {Any} columns
    * @returns {Select}
    */
-  orderBy(columns) {
-    if (! isArray(columns) ) columns = toArray(arguments)
+  orderBy(...columns) {
+    for ( let value of columns )
+      this.addOrder(value)
 
-    columns.forEach(value => {
-      if ( isString(value) )
-        value = new Literal(value)
-      
-      this.getOrders().push(value)
-    })
+    return this
+  }
+  
+  /**
+   * 
+   * @param {Any} value
+   * @returns {Select}
+   */
+  addOrder(value) {
+    if ( isString(value) )
+      value = Literal.from(value)
 
+    this.getOrders().push(value)
+    
     return this
   }
 
@@ -409,10 +438,25 @@ export default class Select extends Query {
       this.getJoins().push(table)
       return this
     }
+      
+    // add the join criteria object
+    if ( first != null )
+      criteria =  new Criteria().where(first, operator, second)
     
+    return this.addJoin(type, table, criteria)
+  }
+  
+  /**
+   * 
+   * @param {String} type
+   * @param {Any} table
+   * @param {Criteria} criteria
+   * @returns {Select}
+   */
+  addJoin(type, table, criteria = null) {
     // handle strings
     if ( isString(table) )
-      table = new Literal(table)
+      table = Literal.from(table)
     
     // handle functions
     if ( isFunction(table) ) {
@@ -428,10 +472,6 @@ export default class Select extends Query {
     if (! (table instanceof Expression) )
       throw new TypeError("Invalid join expression")
       
-    // add the join criteria object
-    if ( first != null )
-      criteria =  new Criteria().where(first, operator, second)
-    
     this.getJoins().push(new Join(table, type, criteria))
     
     return this
@@ -439,11 +479,10 @@ export default class Select extends Query {
   
   /**
    * 
-   * @param {String} table
-   * @param {String} first
+   * @param {Any} table
+   * @param {Any} first
    * @param {String} operator
-   * @param {String} second
-   * @param {String} type
+   * @param {Any} second
    * @returns {Select}
    */
   innerJoin(table, first, operator, second) {
@@ -452,10 +491,10 @@ export default class Select extends Query {
   
   /**
    * 
-   * @param {String} table
-   * @param {String} first
+   * @param {Any} table
+   * @param {Any} first
    * @param {String} operator
-   * @param {String} second
+   * @param {Any} second
    * @returns {Select}
    */
   rightJoin(table, first, operator, second) {
@@ -464,10 +503,10 @@ export default class Select extends Query {
   
   /**
    * 
-   * @param {String} table
-   * @param {String} first
+   * @param {Any} table
+   * @param {Any} first
    * @param {String} operator
-   * @param {String} second
+   * @param {Any} second
    * @returns {Select}
    */
   leftJoin(table, first, operator, second) {
@@ -476,11 +515,11 @@ export default class Select extends Query {
   
   /**
    * 
-   * @param {String} table
+   * @param {Any} table
    * @returns {Select}
    */
   crossJoin(table) {
-    return this.join(table, null, null, null, 'cross')
+    return this.addJoin('cross', table)
   }
   
   /**
@@ -626,6 +665,30 @@ export default class Select extends Query {
    */
   orHaving(expr, operator, value) {
     return this.having(expr, operator, value, 'or')
+  }
+  
+  /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @param {String} bool
+   * @returns {Select}
+   */
+  havingNot(expr, operator, value, bool = 'and') {
+    this.getHavingConditions().whereNot(expr, operator, value, bool, true)
+    return this
+  }
+  
+   /**
+   * 
+   * @param {Any} expr
+   * @param {String} operator
+   * @param {Any} value
+   * @returns {Select}
+   */
+  orHavingNot(expr, operator, value) {
+    return this.havingNot(expr, operator, value, 'or')
   }
 
   /**

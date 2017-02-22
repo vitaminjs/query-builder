@@ -22,7 +22,7 @@ export default class Order extends Expression {
    * @returns {String}
    */
   getName() {
-    return this.column
+    return this.column.getName()
   }
 
   /**
@@ -76,11 +76,19 @@ export default class Order extends Expression {
    */
   isEqual(expr) {
     if ( isString(expr) )
-      return expr === this.column.getName()
+      return expr === this.getName()
 
     return super.isEqual() || (
       expr instanceof Order && expr.getName() === this.getName() 
     )
+  }
+
+  /**
+   * 
+   * @returns {String}
+   */
+  toString() {
+    return this.getName()
   }
   
 }

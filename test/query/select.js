@@ -9,6 +9,8 @@ var EXISTS  = fn.EXISTS
 var COUNT   = fn.COUNT
 var RAW     = fn.RAW
 var MAX     = fn.MAX
+var MIN     = fn.MIN
+var SUM     = fn.SUM
 var SQ      = fn.SQ
 var IN      = fn.IN
 var T       = fn.T
@@ -26,7 +28,6 @@ describe("test building select queries:", () => {
         mysql:  '',
         mssql:  '',
         sqlite: '',
-        oracle: '',
       }
     )
     
@@ -38,7 +39,6 @@ describe("test building select queries:", () => {
         mysql:  'select 123, xXx from dual',
         mssql:  'select 123, xXx',
         sqlite: 'select 123, xXx',
-        oracle: 'select 123, xXx from dual',
       }
     )
     
@@ -50,7 +50,6 @@ describe("test building select queries:", () => {
         mysql:  'select (1 + ?) as `operation` from dual',
         mssql:  'select (1 + @1) as [operation]',
         sqlite: 'select (1 + $1) as "operation"',
-        oracle: 'select (1 + :1) "operation" from dual',
       },
       [2]
     )
@@ -63,7 +62,6 @@ describe("test building select queries:", () => {
         mysql:  'select count(distinct foo) as `foo_count` from dual',
         mssql:  'select count(distinct foo) as [foo_count]',
         sqlite: 'select count(distinct foo) as "foo_count"',
-        oracle: 'select count(distinct foo) "foo_count" from dual',
       }
     )
     
@@ -75,7 +73,6 @@ describe("test building select queries:", () => {
         mysql:  'select (select count(*) from table) as `column` from dual',
         mssql:  'select (select count(*) from table) as [column]',
         sqlite: 'select (select count(*) from table) as "column"',
-        oracle: 'select (select count(*) from table) "column" from dual',
       }
     )
 
@@ -87,7 +84,6 @@ describe("test building select queries:", () => {
         mysql:  'select `foo` as `bar`, max(`baz`) as `dummy` from dual',
         mssql:  'select [foo] as [bar], max([baz]) as [dummy]',
         sqlite: 'select "foo" as "bar", max("baz") as "dummy"',
-        oracle: 'select "foo" "bar", max("baz") "dummy" from dual',
       }
     )
 
@@ -99,7 +95,6 @@ describe("test building select queries:", () => {
         mysql:  'select distinct foo, `bar` from dual',
         mssql:  'select distinct foo, [bar]',
         sqlite: 'select distinct foo, "bar"',
-        oracle: 'select distinct foo, "bar" from dual',
       }
     )
     
@@ -115,7 +110,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from table',
         mssql:  'select * from table',
         sqlite: 'select * from table',
-        oracle: 'select * from table',
       }
     )
 
@@ -127,7 +121,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from `schema`.`table` as `alias`',
         mssql:  'select * from [schema].[table] as [alias]',
         sqlite: 'select * from "schema"."table" as "alias"',
-        oracle: 'select * from "schema"."table" "alias"',
       }
     )
 
@@ -139,7 +132,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from foo, bar',
         mssql:  'select * from foo, bar',
         sqlite: 'select * from foo, bar',
-        oracle: 'select * from foo, bar',
       }
     )
     
@@ -151,7 +143,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from foo, bar',
         mssql:  'select * from foo, bar',
         sqlite: 'select * from foo, bar',
-        oracle: 'select * from foo, bar',
       }
     )
 
@@ -163,7 +154,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from schema.table as `t`',
         mssql:  'select * from schema.table as [t]',
         sqlite: 'select * from schema.table as "t"',
-        oracle: 'select * from schema.table "t"',
       }
     )
 
@@ -175,7 +165,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from (select * from a_table) as `t`',
         mssql:  'select * from (select * from a_table) as [t]',
         sqlite: 'select * from (select * from a_table) as "t"',
-        oracle: 'select * from (select * from a_table) "t"',
       }
     )
 
@@ -191,7 +180,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from `posts` as `p` inner join `users` as `a` on `p`.`author_id` = `a`.`id`',
         mssql:  'select * from [posts] as [p] inner join [users] as [a] on [p].[author_id] = [a].[id]',
         sqlite: 'select * from "posts" as "p" inner join "users" as "a" on "p"."author_id" = "a"."id"',
-        oracle: 'select * from "posts" "p" inner join "users" "a" on "p"."author_id" = "a"."id"',
       }
     )
 
@@ -203,7 +191,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from `table1` natural full join `table2`',
         mssql:  'select * from [table1] natural full join [table2]',
         sqlite: 'select * from "table1" natural full join "table2"',
-        oracle: 'select * from "table1" natural full join "table2"',
       }
     )
 
@@ -215,7 +202,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > ?)',
         mssql:  'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > @1)',
         sqlite: 'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > $1)',
-        oracle: 'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > :1)',
       },
       [2500]
     )
@@ -228,7 +214,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from people p inner join category c on (p.salary >= c.min_salary and p.salary <= c.max_salary)',
         mssql:  'select * from people p inner join category c on (p.salary >= c.min_salary and p.salary <= c.max_salary)',
         sqlite: 'select * from people p inner join category c on (p.salary >= c.min_salary and p.salary <= c.max_salary)',
-        oracle: 'select * from people p inner join category c on (p.salary >= c.min_salary and p.salary <= c.max_salary)',
       }
     )
 
@@ -240,7 +225,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from table1 cross join (select * from table2)',
         mssql:  'select * from table1 cross join (select * from table2)',
         sqlite: 'select * from table1 cross join (select * from table2)',
-        oracle: 'select * from table1 cross join (select * from table2)',
       }
     )
 
@@ -256,7 +240,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from table where id = ?',
         mssql:  'select * from table where id = @1',
         sqlite: 'select * from table where id = $1',
-        oracle: 'select * from table where id = :1',
       },
       [123]
     )
@@ -269,7 +252,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from table where a = ? and b >= ? or c like ?',
         mssql:  'select * from table where a = @1 and b >= @2 or c like @3',
         sqlite: 'select * from table where a = $1 and b >= $2 or c like $3',
-        oracle: 'select * from table where a = :1 and b >= :2 or c like :3',
       },
       ['x', 300, 'zoo%']
     )
@@ -282,7 +264,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from table where a = ? or b != ?',
         mssql:  'select * from table where a = @1 or b != @2',
         sqlite: 'select * from table where a = $1 or b != $2',
-        oracle: 'select * from table where a = :1 or b != :2',
       },
       ['x', 'y']
     )
@@ -295,7 +276,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from table where (a = ? and b in (?, ?) and c is null)',
         mssql:  'select * from table where (a = @1 and b in (@2, @3) and c is null)',
         sqlite: 'select * from table where (a = $1 and b in ($2, $3) and c is null)',
-        oracle: 'select * from table where (a = :1 and b in (:2, :3) and c is null)',
       },
       [123, 'foo', 'bar']
     )
@@ -308,7 +288,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from table where not (a is null or b between ? and ?)',
         mssql:  'select * from table where not (a is null or b between @1 and @2)',
         sqlite: 'select * from table where not (a is null or b between $1 and $2)',
-        oracle: 'select * from table where not (a is null or b between :1 and :2)',
       },
       [10, 20]
     )
@@ -321,7 +300,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from table where key in (select id from foo where status = ?)',
         mssql:  'select * from table where key in (select id from foo where status = @1)',
         sqlite: 'select * from table where key in (select id from foo where status = $1)',
-        oracle: 'select * from table where key in (select id from foo where status = :1)',
       },
       ['active']
     )
@@ -334,7 +312,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from table where exists (select id from foo where status = ?)',
         mssql:  'select * from table where exists (select id from foo where status = @1)',
         sqlite: 'select * from table where exists (select id from foo where status = $1)',
-        oracle: 'select * from table where exists (select id from foo where status = :1)',
       },
       ['active']
     )
@@ -351,7 +328,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from table order by 1, col1, col2 desc',
         mssql:  'select * from table order by 1, col1, col2 desc',
         sqlite: 'select * from table order by 1, col1, col2 desc',
-        oracle: 'select * from table order by 1, col1, col2 desc',
       }
     )
     
@@ -363,7 +339,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from table order by 1, col1, col2 desc',
         mssql:  'select * from table order by 1, col1, col2 desc',
         sqlite: 'select * from table order by 1, col1, col2 desc',
-        oracle: 'select * from table order by 1, col1, col2 desc',
       }
     )
     
@@ -375,7 +350,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from `table` order by `col1` asc, `col2` desc',
         mssql:  'select * from [table] order by [col1] asc, [col2] desc',
         sqlite: 'select * from "table" order by "col1" asc, "col2" desc',
-        oracle: 'select * from "table" order by "col1" asc, "col2" desc',
       }
     )
     
@@ -391,7 +365,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from table limit ?',
         mssql:  'select top(@1) * from table',
         sqlite: 'select * from table limit $1',
-        oracle: 'select * from table fetch first :1 rows only',
       },
       [5]
     )
@@ -404,7 +377,6 @@ describe("test building select queries:", () => {
         mysql:  'select * from table limit 18446744073709551615 offset ?',
         mssql:  'select * from table order by (select 0) offset @1 rows',
         sqlite: 'select * from table limit -1 offset $1',
-        oracle: 'select * from table offset :1 rows',
       },
       [30]
     )
@@ -420,12 +392,74 @@ describe("test building select queries:", () => {
           sql: 'select * from table order by pk offset @1 rows fetch next @2 rows only',
           params: [6, 3]
         },
-        oracle: {
-          sql: 'select * from table order by pk offset :1 rows fetch next :2 rows only',
-          params: [6, 3]
-        },
       },
       [3, 6]
+    )
+    
+  })
+  
+  describe("test groupBy():", () => {
+    
+    support.test(
+      "adds group by columns",
+      qb.select().from('table').groupBy('col1', C('col2')),
+      {
+        pg:     'select * from table group by col1, "col2"',
+        mysql:  'select * from table group by col1, `col2`',
+        mssql:  'select * from table group by col1, [col2]',
+        sqlite: 'select * from table group by col1, "col2"',
+      }
+    )
+    
+    support.test(
+      "appends more groups when called multiple times",
+      qb.select().from('table').groupBy('col1').groupBy(C('col2')),
+      {
+        pg:     'select * from table group by col1, "col2"',
+        mysql:  'select * from table group by col1, `col2`',
+        mssql:  'select * from table group by col1, [col2]',
+        sqlite: 'select * from table group by col1, "col2"',
+      }
+    )
+    
+  })
+  
+  describe("test having():", () => {
+    
+    support.test(
+      "adds a basic having condition",
+      qb.select('name', COUNT()).from('table').groupBy('name').having(COUNT(), '>', 5),
+      {
+        pg:     'select name, count(*) from table group by name having count(*) > $1',
+        mysql:  'select name, count(*) from table group by name having count(*) > ?',
+        mssql:  'select name, count(*) from table group by name having count(*) > @1',
+        sqlite: 'select name, count(*) from table group by name having count(*) > $1',
+      },
+      [5]
+    )
+    
+    support.test(
+      "adds a raw having condition",
+      qb.select('name', COUNT().as('count')).from('table').groupBy('name').having(RAW`count > ${5}`),
+      {
+        pg:     'select name, count(*) as "count" from table group by name having count > $1',
+        mysql:  'select name, count(*) as `count` from table group by name having count > ?',
+        mssql:  'select name, count(*) as [count] from table group by name having count > @1',
+        sqlite: 'select name, count(*) as "count" from table group by name having count > $1',
+      },
+      [5]
+    )
+    
+    support.test(
+      "adds a complex having condition",
+      qb.select('name', MIN("age"), SUM('wallet')).from('guys').groupBy('name').havingNot(MIN('age'), 'between', [14, 21]).orHaving('sum(wallet)', [300, 400, 500]),
+      {
+        pg:     'select name, min(age), sum(wallet) from guys group by name having min(age) not between $1 and $2 or sum(wallet) in ($3, $4, $5)',
+        mysql:  'select name, min(age), sum(wallet) from guys group by name having min(age) not between ? and ? or sum(wallet) in (?, ?, ?)',
+        mssql:  'select name, min(age), sum(wallet) from guys group by name having min(age) not between @1 and @2 or sum(wallet) in (@3, @4, @5)',
+        sqlite: 'select name, min(age), sum(wallet) from guys group by name having min(age) not between $1 and $2 or sum(wallet) in ($3, $4, $5)',
+      },
+      [14, 21, 300, 400, 500]
     )
     
   })

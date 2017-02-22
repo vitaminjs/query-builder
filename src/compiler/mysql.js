@@ -38,5 +38,14 @@ export default class extends Compiler {
     
     return super.compileLimit(query)
   }
+
+  /**
+   * 
+   * @param {Insert} query
+   * @returns {String}
+   */
+  compileInsertDefaultValues(query) {
+    return `insert into ${this.escape(query.getTable())} () values ()`
+  }
   
 }
