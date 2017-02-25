@@ -8,26 +8,6 @@ import Compiler from './base'
 export default class extends Compiler {
   
   /**
-   * 
-   * @param {Object} options
-   * @constructor
-   */
-  constructor(options = {}) {
-    super(options)
-
-    this.paramCount = 1
-  }
-  
-  /**
-   * Default parameter placeholder
-   * 
-   * @type {String}
-   */
-  get placeholder() {
-    return '@' + this.paramCount++
-  }
-  
-  /**
    * Quotes a string so it can be safely used as a table or column name
    * 
    * @param {String} value

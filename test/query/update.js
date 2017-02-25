@@ -28,7 +28,7 @@ describe("test building update queries:", () => {
     {
       pg:     'update books set status = $1 where publish_date < $2',
       mysql:  'update books set status = ? where publish_date < ?',
-      mssql:  'update books set status = @1 where publish_date < @2',
+      mssql:  'update books set status = ? where publish_date < ?',
       sqlite: 'update books set status = $1 where publish_date < $2',
     },
     ['archived', 2000]
@@ -40,7 +40,7 @@ describe("test building update queries:", () => {
     {
       pg:     'update books set status = $1 where publish_date < $2',
       mysql:  'update books set status = ? where publish_date < ?',
-      mssql:  'update books set status = @1 where publish_date < @2',
+      mssql:  'update books set status = ? where publish_date < ?',
       sqlite: 'update books set status = $1 where publish_date < $2',
     },
     ['archived', 2000]
@@ -52,7 +52,7 @@ describe("test building update queries:", () => {
     {
       pg:     'update table set name = $1, b = $2, c = default',
       mysql:  'update table set name = ?, b = ?, c = default',
-      mssql:  'update table set name = @1, b = @2, c = default',
+      mssql:  'update table set name = ?, b = ?, c = default',
       sqlite: 'update table set name = $1, b = $2, c = null',
     },
     [ 'Foo', null ]
@@ -64,7 +64,7 @@ describe("test building update queries:", () => {
     {
       pg:     'update players set level = (select max(level) from levels) where id = $1',
       mysql:  'update players set level = (select max(level) from levels) where id = ?',
-      mssql:  'update players set level = (select max(level) from levels) where id = @1',
+      mssql:  'update players set level = (select max(level) from levels) where id = ?',
       sqlite: 'update players set level = (select max(level) from levels) where id = $1',
     },
     [ 123 ]
@@ -76,7 +76,7 @@ describe("test building update queries:", () => {
     {
       pg:     'update foo set a = a + 1 where a < $1 returning *',
       mysql:  'update foo set a = a + 1 where a < ?',
-      mssql:  'update foo set a = a + 1 output inserted.* where a < @1',
+      mssql:  'update foo set a = a + 1 output inserted.* where a < ?',
       sqlite: 'update foo set a = a + 1 where a < $1',
     },
     [ 3 ]
