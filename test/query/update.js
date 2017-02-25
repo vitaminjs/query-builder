@@ -2,7 +2,7 @@
 
 var qb      = require('../../lib').default
 var fn      = require('../../lib/helpers')
-var support = require('./support')
+var support = require('../support')
 var RAW     = fn.RAW
 var MAX     = fn.MAX
 var SQ      = fn.SQ
