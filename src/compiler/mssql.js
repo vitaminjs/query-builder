@@ -14,7 +14,7 @@ export default class extends Compiler {
    * @returns {String}
    */
   quote(value) {
-    return (value === '*') ? value : `[${value.trim()}]`
+    return (value === '*') ? value : `[${value.trim().replace(/\]/g, ']]')}]`
   }
 
   /**
