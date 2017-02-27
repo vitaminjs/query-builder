@@ -1,5 +1,5 @@
 
-import { isEmpty } from 'lodash'
+import { isEmpty, toArray, reverse } from 'lodash'
 import Compiler from './base'
 
 /**
@@ -154,6 +154,49 @@ export default class extends Compiler {
     })
     
     return `${sql} output ${columns.join(', ')}`
+  }
+  
+  /**
+   * Escape function name
+   * 
+   * @param {String} name
+   * @param {Array} args
+   * @returns {String}
+   */
+  compileFunction(name, args = []) {
+    switch ( name ) {
+      case 'trim':
+        return `rtrim(ltrim(${this.escape(args[0])}))`
+      
+      case 'substr':
+        return this.compileSubstringFunction(...args)
+      
+      case 'length':
+        return super.compileFunction('len', args)
+        
+      case 'strpos':
+        return super.compileFunction('charindex', reverse(args.slice()))
+      
+      default:
+        return super.compileFunction(name, args)
+    }
+  }
+  
+  /**
+   * 
+   * @param {Expression} expr
+   * @param {Integer} start
+   * @param {Integer} length
+   * @returns {String}
+   */
+  compileSubstringFunction(expr, start, length) {
+    if ( null == length ) {
+      length = super.compileFunction('len', [expr])
+      
+      return `substring(${this.escape(expr)}, ${this.escape(start)}, ${length})`
+    }
+    
+    return super.compileFunction('substring', toArray(arguments))
   }
   
 }

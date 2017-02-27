@@ -298,7 +298,7 @@ export default class Compiler {
    * @returns {String}
    */
   compileFunction(name, args = []) {
-    return name + this.parameterize(args)
+    return `${name}(${args.map(value => this.escape(value)).join(', ')})`
   }
   
   /**
