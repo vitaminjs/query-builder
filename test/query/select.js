@@ -49,7 +49,7 @@ describe("test building select queries:", () => {
         pg:     'select (1 + $1) as "operation"',
         mysql:  'select (1 + ?) as `operation` from dual',
         mssql:  'select (1 + ?) as [operation]',
-        sqlite: 'select (1 + $1) as "operation"',
+        sqlite: 'select (1 + ?) as "operation"',
       },
       [2]
     )
@@ -201,7 +201,7 @@ describe("test building select queries:", () => {
         pg:     'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > $1)',
         mysql:  'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > ?)',
         mssql:  'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > ?)',
-        sqlite: 'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > $1)',
+        sqlite: 'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > ?)',
       },
       [2500]
     )
@@ -239,7 +239,7 @@ describe("test building select queries:", () => {
         pg:     'select * from table where id = $1',
         mysql:  'select * from table where id = ?',
         mssql:  'select * from table where id = ?',
-        sqlite: 'select * from table where id = $1',
+        sqlite: 'select * from table where id = ?',
       },
       [123]
     )
@@ -251,7 +251,7 @@ describe("test building select queries:", () => {
         pg:     'select * from table where a = $1 and b >= $2 or c like $3',
         mysql:  'select * from table where a = ? and b >= ? or c like ?',
         mssql:  'select * from table where a = ? and b >= ? or c like ?',
-        sqlite: 'select * from table where a = $1 and b >= $2 or c like $3',
+        sqlite: 'select * from table where a = ? and b >= ? or c like ?',
       },
       ['x', 300, 'zoo%']
     )
@@ -263,7 +263,7 @@ describe("test building select queries:", () => {
         pg:     'select * from table where a = $1 or b != $2',
         mysql:  'select * from table where a = ? or b != ?',
         mssql:  'select * from table where a = ? or b != ?',
-        sqlite: 'select * from table where a = $1 or b != $2',
+        sqlite: 'select * from table where a = ? or b != ?',
       },
       ['x', 'y']
     )
@@ -275,7 +275,7 @@ describe("test building select queries:", () => {
         pg:     'select * from table where (a = $1 and b in ($2, $3) and c is null)',
         mysql:  'select * from table where (a = ? and b in (?, ?) and c is null)',
         mssql:  'select * from table where (a = ? and b in (?, ?) and c is null)',
-        sqlite: 'select * from table where (a = $1 and b in ($2, $3) and c is null)',
+        sqlite: 'select * from table where (a = ? and b in (?, ?) and c is null)',
       },
       [123, 'foo', 'bar']
     )
@@ -287,7 +287,7 @@ describe("test building select queries:", () => {
         pg:     'select * from table where not (a is null or b between $1 and $2)',
         mysql:  'select * from table where not (a is null or b between ? and ?)',
         mssql:  'select * from table where not (a is null or b between ? and ?)',
-        sqlite: 'select * from table where not (a is null or b between $1 and $2)',
+        sqlite: 'select * from table where not (a is null or b between ? and ?)',
       },
       [10, 20]
     )
@@ -299,7 +299,7 @@ describe("test building select queries:", () => {
         pg:     'select * from table where key in (select id from foo where status = $1)',
         mysql:  'select * from table where key in (select id from foo where status = ?)',
         mssql:  'select * from table where key in (select id from foo where status = ?)',
-        sqlite: 'select * from table where key in (select id from foo where status = $1)',
+        sqlite: 'select * from table where key in (select id from foo where status = ?)',
       },
       ['active']
     )
@@ -311,7 +311,7 @@ describe("test building select queries:", () => {
         pg:     'select * from table where exists (select id from foo where status = $1)',
         mysql:  'select * from table where exists (select id from foo where status = ?)',
         mssql:  'select * from table where exists (select id from foo where status = ?)',
-        sqlite: 'select * from table where exists (select id from foo where status = $1)',
+        sqlite: 'select * from table where exists (select id from foo where status = ?)',
       },
       ['active']
     )
@@ -364,7 +364,7 @@ describe("test building select queries:", () => {
         pg:     'select * from table limit $1',
         mysql:  'select * from table limit ?',
         mssql:  'select top(?) * from table',
-        sqlite: 'select * from table limit $1',
+        sqlite: 'select * from table limit ?',
       },
       [5]
     )
@@ -376,7 +376,7 @@ describe("test building select queries:", () => {
         pg:     'select * from table offset $1',
         mysql:  'select * from table limit 18446744073709551615 offset ?',
         mssql:  'select * from table order by (select 0) offset ? rows',
-        sqlite: 'select * from table limit -1 offset $1',
+        sqlite: 'select * from table limit -1 offset ?',
       },
       [30]
     )
@@ -387,7 +387,7 @@ describe("test building select queries:", () => {
       {
         pg:     'select * from table order by pk limit $1 offset $2',
         mysql:  'select * from table order by pk limit ? offset ?',
-        sqlite: 'select * from table order by pk limit $1 offset $2',
+        sqlite: 'select * from table order by pk limit ? offset ?',
         mssql:  {
           sql: 'select * from table order by pk offset ? rows fetch next ? rows only',
           params: [6, 3]
@@ -433,7 +433,7 @@ describe("test building select queries:", () => {
         pg:     'select name, count(*) from table group by name having count(*) > $1',
         mysql:  'select name, count(*) from table group by name having count(*) > ?',
         mssql:  'select name, count(*) from table group by name having count(*) > ?',
-        sqlite: 'select name, count(*) from table group by name having count(*) > $1',
+        sqlite: 'select name, count(*) from table group by name having count(*) > ?',
       },
       [5]
     )
@@ -445,7 +445,7 @@ describe("test building select queries:", () => {
         pg:     'select name, count(*) as "count" from table group by name having count > $1',
         mysql:  'select name, count(*) as `count` from table group by name having count > ?',
         mssql:  'select name, count(*) as [count] from table group by name having count > ?',
-        sqlite: 'select name, count(*) as "count" from table group by name having count > $1',
+        sqlite: 'select name, count(*) as "count" from table group by name having count > ?',
       },
       [5]
     )
@@ -457,7 +457,7 @@ describe("test building select queries:", () => {
         pg:     'select name, min(age), sum(wallet) from guys group by name having min(age) not between $1 and $2 or sum(wallet) in ($3, $4, $5)',
         mysql:  'select name, min(age), sum(wallet) from guys group by name having min(age) not between ? and ? or sum(wallet) in (?, ?, ?)',
         mssql:  'select name, min(age), sum(wallet) from guys group by name having min(age) not between ? and ? or sum(wallet) in (?, ?, ?)',
-        sqlite: 'select name, min(age), sum(wallet) from guys group by name having min(age) not between $1 and $2 or sum(wallet) in ($3, $4, $5)',
+        sqlite: 'select name, min(age), sum(wallet) from guys group by name having min(age) not between ? and ? or sum(wallet) in (?, ?, ?)',
       },
       [14, 21, 300, 400, 500]
     )
