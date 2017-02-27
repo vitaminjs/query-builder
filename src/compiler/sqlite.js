@@ -59,12 +59,23 @@ export default class extends Compiler {
       case 'space':
         return this.compileRepeatFunction(' ', args[0])
       
+      case 'rand':
+        return this.compileRandFunction(...args)
+      
       case 'strpos':
         return super.compileFunction('instr', args)
       
       default:
         return super.compileFunction(name, args)
     }
+  }
+
+  /**
+   * 
+   * @returns {String}
+   */
+  compileRandFunction() {
+    return '(random() / 18446744073709551616 + 0.5)'
   }
 
   /**
