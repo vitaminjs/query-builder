@@ -39,7 +39,7 @@ assert.deepEqual(query3.params, [ 'archived', 2000 ])
 // => Delete query
 
 let query4 = qb.deleteFrom(T('accounts')).where(C('activated'), false).toSQL('sqlite')
-assert.equal(query4.sql, 'delete from "accounts" where "activated" = $1')
+assert.equal(query4.sql, 'delete from "accounts" where "activated" = ?')
 assert.deepEqual(query4.params, [ false ])
 ```
 
