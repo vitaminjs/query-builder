@@ -16,8 +16,8 @@ export function UPPER(expr) {
  * 
  * @see `UPPER`
  */
-export function UCASE(expr) {
-  return UPPER(expr)
+export function UCASE() {
+  return UPPER(...arguments)
 }
 
 /**
@@ -33,8 +33,8 @@ export function LOWER(expr) {
  * 
  * @see `LOWER`
  */
-export function LCASE(expr) {
-  return LOWER(expr)
+export function LCASE() {
+  return LOWER(...arguments)
 }
 
 /**
@@ -59,8 +59,8 @@ export function LENGTH(expr) {
  * 
  * @see `LENGTH`
  */
-export function LEN(expr) {
-  return LENGTH(expr)
+export function LEN() {
+  return LENGTH(...arguments)
 }
 
 /**
@@ -151,4 +151,31 @@ export function RTRIM(expr) {
  */
 export function STRPOS(str, substr) {
   return new Func('strpos', str, substr)
+}
+
+/**
+ * 
+ * @see `STRPOS`
+ */
+export function POSITION() {
+  return STRPOS(...arguments)
+}
+
+/**
+ * 
+ * @param {String|Expression} expr
+ * @param {Integer} count
+ * @returns {Func}
+ */
+export function REPEAT(expr, count) {
+  return new Func('repeat', expr, count)
+}
+
+/**
+ * 
+ * @param {Integer} length
+ * @returns {Func}
+ */
+export function SPACE(length) {
+  return Func('space', length)
 }
