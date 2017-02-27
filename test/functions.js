@@ -149,4 +149,28 @@ describe("test SQL functions:", () => {
     }
   )
   
+  support.test(
+    "test repeat()",
+    fn.REPEAT('sql', 3),
+    {
+      pg:     "repeat('sql', 3)",
+      mysql:  "repeat('sql', 3)",
+      mssql:  "replicate('sql', 3)",
+      sqlite: "replace(substr(quote(zeroblob((3 + 1) / 2)), 3, 3), '0', 'sql')",
+    }
+  )
+  
+  support.test(
+    "test space()",
+    fn.REPEAT(5),
+    {
+      pg:     "repeat(' ', 5)",
+      mysql:  "space(5)",
+      mssql:  "space(5)",
+      sqlite: "replace(substr(quote(zeroblob((5 + 1) / 2)), 3, 5), '0', ' ')",
+    }
+  )
+
+  
+  
 })
