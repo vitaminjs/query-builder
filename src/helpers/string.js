@@ -1,7 +1,5 @@
 
 import { Literal, Func } from '../expression'
-import { RAW } from './expression'
-import { isString } from 'lodash'
 
 /**
  * 
