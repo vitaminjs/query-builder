@@ -70,6 +70,23 @@ export default class extends Compiler {
 
     return this.appendReturningClause(sql, query.getReturning())
   }
+  
+  /**
+   * Escape function name
+   * 
+   * @param {String} name
+   * @param {Array} args
+   * @returns {String}
+   */
+  compileFunction(name, args = []) {
+    switch ( name ) {
+      case 'space':
+        return super.compileFunction('repeat', [' ', args[0]])
+      
+      default:
+        return super.compileFunction(name, args)
+    }
+  }
 
   /**
    * 

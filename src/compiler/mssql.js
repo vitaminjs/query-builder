@@ -177,6 +177,9 @@ export default class extends Compiler {
       case 'strpos':
         return super.compileFunction('charindex', reverse(args.slice()))
       
+      case 'repeat':
+        return super.compileFunction('replicate', args)
+      
       default:
         return super.compileFunction(name, args)
     }

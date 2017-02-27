@@ -53,12 +53,31 @@ export default class extends Compiler {
       case 'right':
         return this.compileRightFunction(...args)
       
+      case 'repeat':
+        return this.compileRepeatFunction(...args)
+      
+      case 'space':
+        return this.compileRepeatFunction(' ', args[0])
+      
       case 'strpos':
         return super.compileFunction('instr', args)
       
       default:
         return super.compileFunction(name, args)
     }
+  }
+
+  /**
+   * 
+   * @param {String|Expression} expr
+   * @param {Integer} count
+   * @returns {String}
+   */
+  compileRepeatFunction(expr, count) {
+    var s = this.escape(expr)
+    var n = this.escape(count)
+
+    return `replace(substr(quote(zeroblob((${n} + 1) / 2)), 3, ${n}), '0', ${s})`
   }
   
   /**
