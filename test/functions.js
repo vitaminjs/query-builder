@@ -171,6 +171,37 @@ describe("test SQL functions:", () => {
     }
   )
 
-  
+  support.test(
+    "test rand()",
+    fn.RAND(),
+    {
+      pg:     "rand()",
+      mysql:  "rand()",
+      mssql:  "rand()",
+      sqlite: "(random() / 18446744073709551616 + 0.5)",
+    }
+  )
+
+  support.test(
+    "test abs()",
+    fn.ABS(-9),
+    {
+      pg:     "abs(-9)",
+      mysql:  "abs(-9)",
+      mssql:  "abs(-9)",
+      sqlite: "abs(-9)",
+    }
+  )
+
+  support.test(
+    "test round()",
+    fn.ROUND(123.4545, 2),
+    {
+      pg:     "round(123.4545, 2)",
+      mysql:  "round(123.4545, 2)",
+      mssql:  "round(123.4545, 2)",
+      sqlite: "round(123.4545, 2)",
+    }
+  )
   
 })
