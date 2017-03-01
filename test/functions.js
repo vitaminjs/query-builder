@@ -171,6 +171,8 @@ describe("test SQL functions:", () => {
     }
   )
 
+  // mathematical functions
+
   support.test(
     "test rand()",
     fn.RAND(),
@@ -201,6 +203,52 @@ describe("test SQL functions:", () => {
       mysql:  "round(123.4545, 2)",
       mssql:  "round(123.4545, 2)",
       sqlite: "round(123.4545, 2)",
+    }
+  )
+
+  // date and time functions
+
+  support.test(
+    "test now()",
+    fn.NOW(),
+    {
+      pg:     "localtimestamp(0)",
+      mysql:  "now()",
+      mssql:  "convert(datetime2(0), getdate())",
+      sqlite: "datetime('now', 'localtime')",
+    }
+  )
+
+  support.test(
+    "test utc()",
+    fn.UTC(),
+    {
+      pg:     "current_timestamp(0) at time zone 'UTC'",
+      mysql:  "utc_timestamp()",
+      mssql:  "convert(datetime2(0), getutcdate())",
+      sqlite: "datetime('now', 'utc')",
+    }
+  )
+
+  support.test(
+    "test today()",
+    fn.TODAY(),
+    {
+      pg:     "current_date",
+      mysql:  "current_date()",
+      mssql:  "convert(date, getdate())",
+      sqlite: "date('now', 'localtime')",
+    }
+  )
+
+  support.test(
+    "test current_time()",
+    fn.CURRENT_TIME(),
+    {
+      pg:     "current_time(0)",
+      mysql:  "current_time()",
+      mssql:  "convert(time(0), getdate())",
+      sqlite: "time('now', 'localtime')",
     }
   )
   
