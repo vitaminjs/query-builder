@@ -13,6 +13,8 @@ $ npm install --save vitamin-query
 
 ## Getting started
 
+### Query builder
+
 ```js
 // import the query builder and some helpers
 import qb, { COUNT, RAW, T, C } from 'vitamin-query'
@@ -48,18 +50,22 @@ assert.deepEqual(query4.params, [ false ])
 If you may use a custom query compiler instead of the built-in ones, you can pass its instance to `toSQL()`
 
 ```js
+// in path/to/maria-compiler.js
 import MysqlCompiler from 'vitamin-query/compiler/mysql'
 
-// in path/to/maria-compiler.js
 class MariaCompiler extends MysqlCompiler {
   
-  // ...
+  ...
   
 }
 
 // later, you can use its instance with any query instance
 let query = qb.selectFrom('table').toSQL(new MariaCompiler())
 ```
+
+### Functions
+
+> @TODO
 
 ## Testing
 
