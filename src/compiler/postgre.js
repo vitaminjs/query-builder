@@ -80,6 +80,18 @@ export default class extends Compiler {
    */
   compileFunction(name, args = []) {
     switch ( name ) {
+      case 'now':
+        return "localtimestamp(0)"
+      
+      case 'current_date':
+        return "current_date"
+      
+      case 'utc':
+        return "current_timestamp(0) at time zone 'UTC'"
+      
+      case 'current_time':
+        return super.compileFunction('current_time', [0])
+      
       case 'space':
         return super.compileFunction('repeat', [' ', args[0]])
       

@@ -47,6 +47,18 @@ export default class extends Compiler {
       case 'concat':
         return this.compileConcatFunction(args)
       
+      case 'now':
+        return "datetime('now', 'localtime')"
+      
+      case 'utc':
+        return "datetime('now', 'utc')"
+      
+      case 'current_date':
+        return "date('now', 'localtime')"
+      
+      case 'current_time':
+        return "time('now', 'localtime')"
+      
       case 'left':
         return this.compileLeftFunction(...args)
       
@@ -60,7 +72,7 @@ export default class extends Compiler {
         return this.compileRepeatFunction(' ', args[0])
       
       case 'rand':
-        return this.compileRandFunction(...args)
+        return '(random() / 18446744073709551616 + 0.5)'
       
       case 'strpos':
         return super.compileFunction('instr', args)
@@ -68,14 +80,6 @@ export default class extends Compiler {
       default:
         return super.compileFunction(name, args)
     }
-  }
-
-  /**
-   * 
-   * @returns {String}
-   */
-  compileRandFunction() {
-    return '(random() / 18446744073709551616 + 0.5)'
   }
 
   /**

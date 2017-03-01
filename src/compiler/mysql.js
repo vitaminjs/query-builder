@@ -61,6 +61,9 @@ export default class extends Compiler {
       case 'concat':
         return this.compileConcatFunction(args)
       
+      case 'utc':
+        return super.compileFunction('utc_timestamp', args)
+      
       case 'strpos':
         return super.compileFunction('instr', args)
       

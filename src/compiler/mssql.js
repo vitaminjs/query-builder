@@ -171,6 +171,30 @@ export default class extends Compiler {
       case 'substr':
         return this.compileSubstringFunction(...args)
       
+      case 'now':
+        // return this.compileConvertFunction('datetime2(0)', Literal.from('getdate()'))
+        return 'convert(datetime2(0), getdate())'
+      
+      case 'current_date':
+        // return this.compileConvertFunction('date', Literal.from('getdate()'))
+        return 'convert(date, getdate())'
+      
+      case 'date':
+        // return this.compileConvertFunction('date', ...args)
+        return 'convert(date, args[0])'
+      
+      case 'current_time':
+        // return this.compileConvertFunction('time(0)', Literal.from('getdate()'))
+        return 'convert(time(0), getdate())'
+      
+      case 'time':
+        // return this.compileConvertFunction('time(0)', ...args)
+        return 'convert(time(0), args[0])'
+      
+      case 'utc':
+        // return this.compileConvertFunction('datetime2(0)', Literal.from('getutcdate()'))
+        return 'convert(datetime2(0), getutcdate())'
+      
       case 'length':
         return super.compileFunction('len', args)
         
