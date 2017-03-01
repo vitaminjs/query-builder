@@ -1,5 +1,5 @@
 
-import { Literal, SubQuery, Column, Table } from '../expression'
+import { Literal, SubQuery, Column, Table, Escaped } from '../expression'
 import { isFunction, isArray, isString, trim } from 'lodash'
 import { Select } from '../query'
 
@@ -75,4 +75,13 @@ export function T(value) {
   }
   
   return new Table(value).as(alias)
+}
+
+/**
+ * 
+ * @param {Any} value
+ * @returns {Escaped}
+ */
+export function ESC(value) {
+  return new Escaped(value)
 }

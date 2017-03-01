@@ -45,16 +45,7 @@ export default class Literal extends Expression {
   
   /**
    * 
-   * @param {String} name
-   * @returns {Literal}
-   */
-  as(name) {
-    return super.as(name)
-  }
-  
-  /**
-   * 
-   * @param {String|Compiler} compiler
+   * @param {Compiler} compiler
    * @returns {String}
    */
   compile(compiler) {
