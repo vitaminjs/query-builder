@@ -121,7 +121,7 @@ export default class Criteria extends Criterion {
   where(expr, operator, value, bool = 'and', not = false) {
     // supports `.where(true|false)`
     if ( isBoolean(expr) )
-      expr = new Literal(`1 = ${expr ? 1 : 0}`)
+      expr = new Literal(`1 = ${expr && !not ? 1 : 0}`)
     
     // supports `.where(new Literal(...))`
     if ( expr instanceof Literal )
