@@ -7,7 +7,7 @@ import { Func } from '../expression'
  * @returns {Func}
  */
 export function NOW() {
-  return Func('now')
+  return new Func('now')
 }
 
 /**
@@ -24,7 +24,7 @@ export function DATETIME() {
  * @returns {Func}
  */
 export function UTC() {
-  return Func('utc')
+  return new Func('utc')
 }
 
 /**
@@ -41,7 +41,7 @@ export function UTC_DATETIME() {
  * @returns {Func}
  */
 export function DATE(expr) {
-  return Func('date', expr)
+  return new Func('date', expr)
 }
 
 /**
@@ -50,7 +50,7 @@ export function DATE(expr) {
  * @returns {Func}
  */
 export function TODAY() {
-  return Func('current_date')
+  return new Func('current_date')
 }
 
 /**
@@ -67,7 +67,7 @@ export function CURRENT_DATE() {
  * @returns {Func}
  */
 export function TIME(expr) {
-  return Func('time', expr)
+  return new Func('time', expr)
 }
 
 /**
@@ -75,7 +75,7 @@ export function TIME(expr) {
  * @returns {Func}
  */
 export function CLOCK() {
-  return Func('current_time')
+  return new Func('current_time')
 }
 
 /**

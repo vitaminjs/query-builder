@@ -93,7 +93,7 @@ export default class extends Compiler {
         return super.compileFunction('current_time', [0])
       
       case 'space':
-        return super.compileFunction('repeat', [' ', args[0]])
+        return super.compileFunction('repeat', [' ', ...args])
       
       default:
         return super.compileFunction(name, args)

@@ -162,7 +162,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test space()",
-    fn.REPEAT(5),
+    fn.SPACE(5),
     {
       pg:     "repeat(' ', 5)",
       mysql:  "space(5)",

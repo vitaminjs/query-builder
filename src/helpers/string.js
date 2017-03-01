@@ -175,5 +175,5 @@ export function REPEAT(expr, count) {
  * @returns {Func}
  */
 export function SPACE(length) {
-  return Func('space', length)
+  return new Func('space', length)
 }
