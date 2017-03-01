@@ -24,7 +24,7 @@ export default class Escaped extends Expression {
    * @returns {String}
    */
   compile(compiler) {
-    return compiler.escape(this.value)
+    return compiler.alias(compiler.escape(this.value), this.alias)
   }
   
   /**
@@ -33,7 +33,7 @@ export default class Escaped extends Expression {
    * @returns {Boolean}
    */
   isEqual(value) {
-    return this.value === value
+    return this.value === value || value === this.alias
   }
 
   /**
