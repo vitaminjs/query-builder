@@ -88,6 +88,33 @@ export function CURRENT_TIME() {
 
 /**
  * 
+ * @param {String|Expression} expr
+ * @returns {Func}
+ */
+export function DAY(expr) {
+  return new Func('day', ensureExpression(expr))
+}
+
+/**
+ * 
+ * @param {String|Expression} expr
+ * @returns {Func}
+ */
+export function MONTH(expr) {
+  return new Func('month', ensureExpression(expr))
+}
+
+/**
+ * 
+ * @param {String|Expression} expr
+ * @returns {Func}
+ */
+export function YEAR(expr) {
+  return new Func('year', ensureExpression(expr))
+}
+
+/**
+ * 
  * @param {String|Expresion} expr
  * @returns {Expresion}
  * @private
