@@ -2,13 +2,14 @@
 
 var fn      = require('../lib/helpers')
 var support = require('./support')
+var ESC     = fn.ESC
 var C       = fn.C
 
 describe("test SQL functions:", () => {
   
   support.test(
     "test upper()",
-    fn.UPPER('foo'),
+    fn.UPPER(ESC('foo')),
     {
       pg:     "upper('foo')",
       mysql:  "upper('foo')",
@@ -43,44 +44,47 @@ describe("test SQL functions:", () => {
     "test length()",
     fn.LENGTH('foo'),
     {
-      pg:     "length('foo')",
-      mysql:  "length('foo')",
-      mssql:  "len('foo')",
-      sqlite: "length('foo')",
+      pg:     "length(foo)",
+      mysql:  "length(foo)",
+      mssql:  "len(foo)",
+      sqlite: "length(foo)",
     }
   )
   
   support.test(
     "test replace()",
-    fn.REPLACE(C('column'), 'foo', 'bar'),
+    fn.REPLACE(C('column'), ESC('foo'), 'bar'),
     {
-      pg:     "replace(\"column\", 'foo', 'bar')",
-      mysql:  "replace(`column`, 'foo', 'bar')",
-      mssql:  "replace([column], 'foo', 'bar')",
-      sqlite: "replace(\"column\", 'foo', 'bar')",
-    }
+      pg:     "replace(\"column\", 'foo', $1)",
+      mysql:  "replace(`column`, 'foo', ?)",
+      mssql:  "replace([column], 'foo', ?)",
+      sqlite: "replace(\"column\", 'foo', ?)",
+    },
+    [ 'bar' ]
   )
   
   support.test(
     "test substr()",
     fn.SUBSTR(C('first_name'), 1, 1),
     {
-      pg:     'substr("first_name", 1, 1)',
-      mysql:  'substr(`first_name`, 1, 1)',
-      mssql:  'substring([first_name], 1, 1)',
-      sqlite: 'substr("first_name", 1, 1)',
-    }
+      pg:     'substr("first_name", $1, $2)',
+      mysql:  'substr(`first_name`, ?, ?)',
+      mssql:  'substring([first_name], ?, ?)',
+      sqlite: 'substr("first_name", ?, ?)',
+    },
+    [ 1, 1 ]
   )
   
   support.test(
     "test substr()",
-    fn.SUBSTR('abcdefgh', 4),
+    fn.SUBSTR(ESC('abcdefgh'), 4),
     {
-      pg:     "substr('abcdefgh', 4)",
-      mysql:  "substr('abcdefgh', 4)",
-      mssql:  "substring('abcdefgh', 4, len('abcdefgh'))",
-      sqlite: "substr('abcdefgh', 4)",
-    }
+      pg:     "substr('abcdefgh', ?)",
+      mysql:  "substr('abcdefgh', ?)",
+      mssql:  "substring('abcdefgh', ?, len('abcdefgh'))",
+      sqlite: "substr('abcdefgh', ?)",
+    },
+    [ 4 ]
   )
   
   support.test(
@@ -96,7 +100,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test rtrim()",
-    fn.RTRIM('foo  '),
+    fn.RTRIM(ESC('foo  ')),
     {
       pg:     "rtrim('foo  ')",
       mysql:  "rtrim('foo  ')",
@@ -120,55 +124,60 @@ describe("test SQL functions:", () => {
     "test left()",
     fn.LEFT(C('first_name'), 3),
     {
-      pg:     'left("first_name", 3)',
-      mysql:  'left(`first_name`, 3)',
-      mssql:  'left([first_name], 3)',
-      sqlite: 'substr("first_name", 1, 3)',
-    }
+      pg:     'left("first_name", $1)',
+      mysql:  'left(`first_name`, ?)',
+      mssql:  'left([first_name], ?)',
+      sqlite: 'substr("first_name", 1, ?)',
+    },
+    [ 3 ]
   )
   
   support.test(
     "test right()",
-    fn.RIGHT('foobar', 3),
+    fn.RIGHT(ESC('foobar'), 3),
     {
-      pg:     "right('foobar', 3)",
-      mysql:  "right('foobar', 3)",
-      mssql:  "right('foobar', 3)",
-      sqlite: "substr('foobar', -3)",
-    }
+      pg:     "right('foobar', $1)",
+      mysql:  "right('foobar', ?)",
+      mssql:  "right('foobar', ?)",
+      sqlite: "substr('foobar', -?)",
+    },
+    [ 3 ]
   )
   
   support.test(
     "test strpos()",
     fn.STRPOS(C('full_name'), 'foo'),
     {
-      pg:     'strpos("full_name", \'foo\')',
-      mysql:  'instr(`full_name`, \'foo\')',
-      mssql:  'charindex(\'foo\', [full_name])',
-      sqlite: 'instr("full_name", \'foo\')',
-    }
+      pg:     'strpos("full_name", $1)',
+      mysql:  'instr(`full_name`, ?)',
+      mssql:  'charindex(?, [full_name])',
+      sqlite: 'instr("full_name", ?)',
+    },
+    [ 'foo' ]
   )
   
   support.test(
     "test repeat()",
-    fn.REPEAT('sql', 3),
+    fn.REPEAT(ESC('sql'), 3),
     {
-      pg:     "repeat('sql', 3)",
-      mysql:  "repeat('sql', 3)",
-      mssql:  "replicate('sql', 3)",
-      sqlite: "replace(substr(quote(zeroblob((3 + 1) / 2)), 3, 3), '0', 'sql')",
-    }
+      pg:     "repeat('sql', $1)",
+      mysql:  "repeat('sql', ?)",
+      mssql:  "replicate('sql', ?)",
+      sqlite: "replace(substr(quote(zeroblob((? + 1) / 2)), 3, ?), '0', 'sql')",
+    },
+    [ 3 ]
   )
   
   support.test(
     "test space()",
     fn.SPACE(5),
     {
-      pg:     "repeat(' ', 5)",
-      mysql:  "space(5)",
-      mssql:  "space(5)",
-      sqlite: "replace(substr(quote(zeroblob((5 + 1) / 2)), 3, 5), '0', ' ')",
-    }
+      pg:     "repeat(' ', $1)",
+      mysql:  "space(?)",
+      mssql:  "space(?)",
+      sqlite: "replace(substr(quote(zeroblob((? + 1) / 2)), 3, ?), '0', ' ')",
+    },
+    [ 5 ]
   )
 
   // mathematical functions
@@ -188,22 +197,24 @@ describe("test SQL functions:", () => {
     "test abs()",
     fn.ABS(-9),
     {
-      pg:     "abs(-9)",
-      mysql:  "abs(-9)",
-      mssql:  "abs(-9)",
-      sqlite: "abs(-9)",
-    }
+      pg:     "abs($1)",
+      mysql:  "abs(?)",
+      mssql:  "abs(?)",
+      sqlite: "abs(?)",
+    },
+    [ -9 ]
   )
 
   support.test(
     "test round()",
     fn.ROUND(123.4545, 2),
     {
-      pg:     "round(123.4545, 2)",
-      mysql:  "round(123.4545, 2)",
-      mssql:  "round(123.4545, 2)",
-      sqlite: "round(123.4545, 2)",
-    }
+      pg:     "round($1, $2)",
+      mysql:  "round(?, ?)",
+      mssql:  "round(?, ?)",
+      sqlite: "round(?, ?)",
+    },
+    [ 123.4545, 2 ]
   )
 
   // date and time functions
@@ -214,7 +225,7 @@ describe("test SQL functions:", () => {
     {
       pg:     "localtimestamp(0)",
       mysql:  "now()",
-      mssql:  "convert(datetime2(0), getdate())",
+      mssql:  "cast(getdate() as datetime2(0))",
       sqlite: "datetime('now', 'localtime')",
     }
   )
@@ -225,7 +236,7 @@ describe("test SQL functions:", () => {
     {
       pg:     "current_timestamp(0) at time zone 'UTC'",
       mysql:  "utc_timestamp()",
-      mssql:  "convert(datetime2(0), getutcdate())",
+      mssql:  "cast(getutcdate() as datetime2(0))",
       sqlite: "datetime('now', 'utc')",
     }
   )
@@ -236,7 +247,7 @@ describe("test SQL functions:", () => {
     {
       pg:     "current_date",
       mysql:  "current_date()",
-      mssql:  "convert(date, getdate())",
+      mssql:  "cast(getdate() as date)",
       sqlite: "date('now', 'localtime')",
     }
   )
@@ -247,8 +258,30 @@ describe("test SQL functions:", () => {
     {
       pg:     "current_time(0)",
       mysql:  "current_time()",
-      mssql:  "convert(time(0), getdate())",
+      mssql:  "cast(getdate() as time(0))",
       sqlite: "time('now', 'localtime')",
+    }
+  )
+
+  support.test(
+    "test date()",
+    fn.DATE(ESC('2017-03-02 09:20:25')),
+    {
+      pg:     "cast('2017-03-02 09:20:25' as date)",
+      mysql:  "date('2017-03-02 09:20:25')",
+      mssql:  "cast('2017-03-02 09:20:25' as date)",
+      sqlite: "date('2017-03-02 09:20:25')",
+    }
+  )
+  
+  support.test(
+    "test time()",
+    fn.TIME(C('created_at')),
+    {
+      pg:     'cast("created_at" as time(0))',
+      mysql:  "time(`created_at`)",
+      mssql:  "cast([created_at] as time(0))",
+      sqlite: 'time("created_at")',
     }
   )
   
