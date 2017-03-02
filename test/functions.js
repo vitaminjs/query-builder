@@ -285,4 +285,37 @@ describe("test SQL functions:", () => {
     }
   )
   
+  support.test(
+    "test day()",
+    fn.DAY(ESC('2017-03-02 09:20:25')),
+    {
+      pg:     "extract(day from timestamp '2017-03-02 09:20:25')",
+      mysql:  "day('2017-03-02 09:20:25')",
+      mssql:  "day('2017-03-02 09:20:25')",
+      sqlite: "cast(strftime('%d', '2017-03-02 09:20:25') as integer)",
+    }
+  )
+  
+  support.test(
+    "test month()",
+    fn.MONTH(ESC('2017-03-02 09:20:25')),
+    {
+      pg:     "extract(day from timestamp '2017-03-02 09:20:25')",
+      mysql:  "day('2017-03-02 09:20:25')",
+      mssql:  "day('2017-03-02 09:20:25')",
+      sqlite: "cast(strftime('%m', '2017-03-02 09:20:25') as integer)",
+    }
+  )
+  
+  support.test(
+    "test year()",
+    fn.YEAR(C('purchased_at')),
+    {
+      pg:     "extract(day from timestamp \"purchased_at\")",
+      mysql:  "day(`purchased_at`)",
+      mssql:  "day([purchased_at])",
+      sqlite: "cast(strftime('%Y', \"purchased_at\") as integer)",
+    }
+  )
+  
 })
