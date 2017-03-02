@@ -1,5 +1,5 @@
 
-import { Func } from '../expression'
+import Expression, { Func, Literal } from '../expression'
 
 /**
  * Returns the current local date and time in 'YYYY-MM-DD HH:MM:SS' format
@@ -41,7 +41,7 @@ export function UTC_DATETIME() {
  * @returns {Func}
  */
 export function DATE(expr) {
-  return new Func('date', expr)
+  return new Func('date', ensureExpression(expr))
 }
 
 /**
@@ -67,7 +67,7 @@ export function CURRENT_DATE() {
  * @returns {Func}
  */
 export function TIME(expr) {
-  return new Func('time', expr)
+  return new Func('time', ensureExpression(expr))
 }
 
 /**
@@ -86,3 +86,12 @@ export function CURRENT_TIME() {
   return CLOCK()
 }
 
+/**
+ * 
+ * @param {String|Expresion} expr
+ * @returns {Expresion}
+ * @private
+ */
+function ensureExpression(expr) {
+  return expr instanceof Expression ? expr : Literal.from(expr)
+}

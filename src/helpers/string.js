@@ -1,5 +1,5 @@
 
-import { Literal, Func } from '../expression'
+import Expression, { Literal, Func } from '../expression'
 
 /**
  * 
@@ -7,7 +7,7 @@ import { Literal, Func } from '../expression'
  * @return {Func}
  */
 export function UPPER(expr) {
-  return new Func('upper', expr)
+  return new Func('upper', ensureExpression(expr))
 }
 
 /**
@@ -24,7 +24,7 @@ export function UCASE() {
  * @return {Func}
  */
 export function LOWER(expr) {
-  return new Func('lower', expr)
+  return new Func('lower', ensureExpression(expr))
 }
 
 /**
@@ -50,7 +50,7 @@ export function CONCAT(...args) {
  * @returns {Func}
  */
 export function LENGTH(expr) {
-  return new Func('length', expr)
+  return new Func('length', ensureExpression(expr))
 }
 
 /**
@@ -69,7 +69,7 @@ export function LEN() {
  * @returns {Func}
  */
 export function REPLACE(expr, pattern, replacement) {
-  return new Func('replace', expr, pattern, replacement)
+  return new Func('replace', ensureExpression(expr), pattern, replacement)
 }
 
 /**
@@ -81,9 +81,9 @@ export function REPLACE(expr, pattern, replacement) {
  */
 export function SUBSTR(expr, start, length) {
   if ( length == null )
-    return new Func('substr', expr, start)
+    return new Func('substr', ensureExpression(expr), start)
   else
-    return new Func('substr', expr, start, length)
+    return new Func('substr', ensureExpression(expr), start, length)
 }
 
 /**
@@ -101,7 +101,7 @@ export function SUBSTRING() {
  * @returns {Func}
  */
 export function LEFT(expr, length) {
-  return new Func('left', expr, length)
+  return new Func('left', ensureExpression(expr), length)
 }
 
 /**
@@ -111,7 +111,7 @@ export function LEFT(expr, length) {
  * @returns {Func}
  */
 export function RIGHT(expr, length) {
-  return new Func('right', expr, length)
+  return new Func('right', ensureExpression(expr), length)
 }
 
 /**
@@ -120,7 +120,7 @@ export function RIGHT(expr, length) {
  * @returns {Func}
  */
 export function TRIM(expr) {
-  return new Func('trim', expr)
+  return new Func('trim', ensureExpression(expr))
 }
 
 /**
@@ -129,7 +129,7 @@ export function TRIM(expr) {
  * @returns {Func}
  */
 export function LTRIM(expr) {
-  return new Func('ltrim', expr)
+  return new Func('ltrim', ensureExpression(expr))
 }
 
 /**
@@ -138,7 +138,7 @@ export function LTRIM(expr) {
  * @returns {Func}
  */
 export function RTRIM(expr) {
-  return new Func('rtrim', expr)
+  return new Func('rtrim', ensureExpression(expr))
 }
 
 /**
@@ -148,7 +148,7 @@ export function RTRIM(expr) {
  * @returns {Func}
  */
 export function STRPOS(str, substr) {
-  return new Func('strpos', str, substr)
+  return new Func('strpos', ensureExpression(str), substr)
 }
 
 /**
@@ -166,7 +166,7 @@ export function POSITION() {
  * @returns {Func}
  */
 export function REPEAT(expr, count) {
-  return new Func('repeat', expr, count)
+  return new Func('repeat', ensureExpression(expr), count)
 }
 
 /**
@@ -176,4 +176,14 @@ export function REPEAT(expr, count) {
  */
 export function SPACE(length) {
   return new Func('space', length)
+}
+
+/**
+ * 
+ * @param {String|Expresion} expr
+ * @returns {Expresion}
+ * @private
+ */
+function ensureExpression(expr) {
+  return expr instanceof Expression ? expr : Literal.from(expr)
 }
