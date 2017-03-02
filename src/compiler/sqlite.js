@@ -98,7 +98,7 @@ export default class extends Compiler {
    * @returns {String}
    */
   compileExtractFunction(part, expr) {
-    return this.cast(`strftime(${part}, ${this.parameter(expr)})`, 'integer', true)
+    return this.cast(`strftime('${part}', ${this.parameter(expr)})`, 'integer', true)
   }
 
   /**

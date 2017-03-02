@@ -79,7 +79,7 @@ describe("test SQL functions:", () => {
     "test substr()",
     fn.SUBSTR(ESC('abcdefgh'), 4),
     {
-      pg:     "substr('abcdefgh', ?)",
+      pg:     "substr('abcdefgh', $1)",
       mysql:  "substr('abcdefgh', ?)",
       mssql:  "substring('abcdefgh', ?, len('abcdefgh'))",
       sqlite: "substr('abcdefgh', ?)",
@@ -300,9 +300,9 @@ describe("test SQL functions:", () => {
     "test month()",
     fn.MONTH(ESC('2017-03-02 09:20:25')),
     {
-      pg:     "extract(day from timestamp '2017-03-02 09:20:25')",
-      mysql:  "day('2017-03-02 09:20:25')",
-      mssql:  "day('2017-03-02 09:20:25')",
+      pg:     "extract(month from timestamp '2017-03-02 09:20:25')",
+      mysql:  "month('2017-03-02 09:20:25')",
+      mssql:  "month('2017-03-02 09:20:25')",
       sqlite: "cast(strftime('%m', '2017-03-02 09:20:25') as integer)",
     }
   )
@@ -311,9 +311,9 @@ describe("test SQL functions:", () => {
     "test year()",
     fn.YEAR(C('purchased_at')),
     {
-      pg:     "extract(day from timestamp \"purchased_at\")",
-      mysql:  "day(`purchased_at`)",
-      mssql:  "day([purchased_at])",
+      pg:     "extract(year from timestamp \"purchased_at\")",
+      mysql:  "year(`purchased_at`)",
+      mssql:  "year([purchased_at])",
       sqlite: "cast(strftime('%Y', \"purchased_at\") as integer)",
     }
   )

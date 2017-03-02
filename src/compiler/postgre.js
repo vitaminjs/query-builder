@@ -86,8 +86,14 @@ export default class extends Compiler {
       case 'current_date':
         return "current_date"
       
+      case 'current_time':
+        return `current_time(0)`
+      
       case 'utc':
         return "current_timestamp(0) at time zone 'UTC'"
+      
+      case 'space':
+        return `repeat(' ', ${this.parameter(first(args))})`
       
       case 'date':
         return this.cast(first(args), 'date')
@@ -99,12 +105,6 @@ export default class extends Compiler {
       case 'year':
       case 'month':
         return this.compileExtractFunction(name, first(args))
-      
-      case 'current_time':
-        return super.compileFunction('current_time', [0])
-      
-      case 'space':
-        return super.compileFunction('repeat', [' ', first(args)])
       
       default:
         return super.compileFunction(name, args)
