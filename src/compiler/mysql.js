@@ -50,7 +50,7 @@ export default class extends Compiler {
   }
   
   /**
-   * Escape function name
+   * Compile the function name and its arguments
    * 
    * @param {String} name
    * @param {Array} args

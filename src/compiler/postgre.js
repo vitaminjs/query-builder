@@ -1,5 +1,5 @@
 
-import { isEmpty } from 'lodash'
+import { isEmpty, first } from 'lodash'
 import Compiler from './base'
 
 /**
@@ -72,7 +72,7 @@ export default class extends Compiler {
   }
   
   /**
-   * Escape function name
+   * Compile the function name and its arguments
    * 
    * @param {String} name
    * @param {Array} args
@@ -89,11 +89,17 @@ export default class extends Compiler {
       case 'utc':
         return "current_timestamp(0) at time zone 'UTC'"
       
+      case 'date':
+        return this.cast(first(args), 'date')
+      
+      case 'time':
+        return this.cast(first(args), 'time(0)')
+      
       case 'current_time':
         return super.compileFunction('current_time', [0])
       
       case 'space':
-        return super.compileFunction('repeat', [' ', ...args])
+        return super.compileFunction('repeat', [' ', first(args)])
       
       default:
         return super.compileFunction(name, args)

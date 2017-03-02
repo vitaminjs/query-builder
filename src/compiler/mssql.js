@@ -157,7 +157,7 @@ export default class extends Compiler {
   }
   
   /**
-   * Escape function name
+   * Compile the function name and its arguments
    * 
    * @param {String} name
    * @param {Array} args
@@ -166,34 +166,28 @@ export default class extends Compiler {
   compileFunction(name, args = []) {
     switch ( name ) {
       case 'trim':
-        return `rtrim(ltrim(${this.escape(args[0])}))`
+        return `rtrim(ltrim(${this.parameter(args[0])}))`
       
       case 'substr':
         return this.compileSubstringFunction(...args)
       
       case 'now':
-        // return this.compileConvertFunction('datetime2(0)', Literal.from('getdate()'))
-        return 'convert(datetime2(0), getdate())'
+        return this.cast('getdate()', 'datetime2(0)', true)
       
       case 'current_date':
-        // return this.compileConvertFunction('date', Literal.from('getdate()'))
-        return 'convert(date, getdate())'
+        return this.cast('getdate()', 'date', true)
       
       case 'date':
-        // return this.compileConvertFunction('date', ...args)
-        return 'convert(date, args[0])'
+        return this.cast(args[0], 'date')
       
       case 'current_time':
-        // return this.compileConvertFunction('time(0)', Literal.from('getdate()'))
-        return 'convert(time(0), getdate())'
+        return this.cast('getdate()', 'time(0)', true)
       
       case 'time':
-        // return this.compileConvertFunction('time(0)', ...args)
-        return 'convert(time(0), args[0])'
+        return this.cast(args[0], 'time(0)')
       
       case 'utc':
-        // return this.compileConvertFunction('datetime2(0)', Literal.from('getutcdate()'))
-        return 'convert(datetime2(0), getutcdate())'
+        return this.cast('getutcdate()', 'datetime2(0)', true)
       
       case 'length':
         return super.compileFunction('len', args)
@@ -220,10 +214,10 @@ export default class extends Compiler {
     if ( null == length ) {
       length = super.compileFunction('len', [expr])
       
-      return `substring(${this.escape(expr)}, ${this.escape(start)}, ${length})`
+      return `substring(${this.parameter(expr)}, ${this.parameter(start)}, ${length})`
     }
     
-    return super.compileFunction('substring', toArray(arguments))
+    return super.compileFunction('substring', [expr, start, length])
   }
   
 }

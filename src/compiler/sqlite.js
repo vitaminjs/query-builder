@@ -36,7 +36,7 @@ export default class extends Compiler {
   }
   
   /**
-   * Escape function name
+   * Compile the function name and its arguments
    * 
    * @param {String} name
    * @param {Array} args
@@ -89,8 +89,8 @@ export default class extends Compiler {
    * @returns {String}
    */
   compileRepeatFunction(expr, count) {
-    var s = this.escape(expr)
-    var n = this.escape(count)
+    var s = this.parameter(expr)
+    var n = this.parameter(count)
 
     return `replace(substr(quote(zeroblob((${n} + 1) / 2)), 3, ${n}), '0', ${s})`
   }
@@ -102,7 +102,7 @@ export default class extends Compiler {
    * @returns {String}
    */
   compileLeftFunction(expr, length) {
-    return `substr(${this.escape(expr)}, 1, ${this.escape(length)})`
+    return `substr(${this.parameter(expr)}, 1, ${this.parameter(length)})`
   }
   
   /**
@@ -112,7 +112,7 @@ export default class extends Compiler {
    * @returns {String}
    */
   compileRightFunction(expr, length) {
-    return `substr(${this.escape(expr)}, -${this.escape(length)})`
+    return `substr(${this.parameter(expr)}, -${this.parameter(length)})`
   }
   
   /**
