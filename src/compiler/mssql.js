@@ -1,5 +1,5 @@
 
-import { isEmpty, toArray, reverse } from 'lodash'
+import { isEmpty, toArray, reverse, first } from 'lodash'
 import Compiler from './base'
 
 /**
@@ -166,7 +166,7 @@ export default class extends Compiler {
   compileFunction(name, args = []) {
     switch ( name ) {
       case 'trim':
-        return `rtrim(ltrim(${this.parameter(args[0])}))`
+        return `rtrim(ltrim(${this.parameter(first(args))}))`
       
       case 'substr':
         return this.compileSubstringFunction(...args)
@@ -178,13 +178,13 @@ export default class extends Compiler {
         return this.cast('getdate()', 'date', true)
       
       case 'date':
-        return this.cast(args[0], 'date')
+        return this.cast(first(args), 'date')
       
       case 'current_time':
         return this.cast('getdate()', 'time(0)', true)
       
       case 'time':
-        return this.cast(args[0], 'time(0)')
+        return this.cast(first(args), 'time(0)')
       
       case 'utc':
         return this.cast('getutcdate()', 'datetime2(0)', true)

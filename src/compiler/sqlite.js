@@ -1,6 +1,6 @@
 
+import { isUndefined, first } from 'lodash'
 import Expression from '../expression'
-import { isUndefined } from 'lodash'
 import Compiler from './base'
 
 /**
@@ -59,6 +59,15 @@ export default class extends Compiler {
       case 'current_time':
         return "time('now', 'localtime')"
       
+      case 'day':
+        return this.compileExtractFunction('%d', first(args))
+
+      case 'year':
+        return this.compileExtractFunction('%Y', first(args))
+
+      case 'month':
+        return this.compileExtractFunction('%m', first(args))
+      
       case 'left':
         return this.compileLeftFunction(...args)
       
@@ -69,7 +78,7 @@ export default class extends Compiler {
         return this.compileRepeatFunction(...args)
       
       case 'space':
-        return this.compileRepeatFunction(' ', args[0])
+        return this.compileRepeatFunction(' ', first(args))
       
       case 'rand':
         return '(random() / 18446744073709551616 + 0.5)'
@@ -80,6 +89,16 @@ export default class extends Compiler {
       default:
         return super.compileFunction(name, args)
     }
+  }
+
+  /**
+   * 
+   * @param {String} part
+   * @param {Any} expr
+   * @returns {String}
+   */
+  compileExtractFunction(part, expr) {
+    return this.cast(`strftime(${part}, ${this.parameter(expr)})`, 'integer', true)
   }
 
   /**

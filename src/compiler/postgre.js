@@ -95,6 +95,11 @@ export default class extends Compiler {
       case 'time':
         return this.cast(first(args), 'time(0)')
       
+      case 'day':
+      case 'year':
+      case 'month':
+        return this.compileExtractFunction(name, first(args))
+      
       case 'current_time':
         return super.compileFunction('current_time', [0])
       
@@ -104,6 +109,16 @@ export default class extends Compiler {
       default:
         return super.compileFunction(name, args)
     }
+  }
+
+  /**
+   * 
+   * @param {String} part
+   * @param {Any} expr
+   * @returns {String}
+   */
+  compileExtractFunction(part, expr) {
+    return `extract(${part} from timestamp ${this.parameter(expr)})`
   }
 
   /**
