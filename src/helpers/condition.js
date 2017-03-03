@@ -1,5 +1,5 @@
 
-import { Basic, IsNull, IsIn, Between, Exists, Like } from '../criterion'
+import { Basic, IsNull, IsIn, Between, Exists, Like, Raw } from '../criterion'
 import Expression, { Literal } from '../expression'
 import { isArray, isString, uniq } from 'lodash'
 import { RAW, SQ } from './expression'
@@ -78,7 +78,7 @@ export function ISNULL(expr) {
  * @returns {Criterion}
  */
 export function ISTRUE() {
-  return RAW`1 = 1`
+  return new Raw(RAW`1 = 1`)
 }
 
 /**
@@ -86,7 +86,7 @@ export function ISTRUE() {
  * @returns {Criterion}
  */
 export function ISFALSE() {
-  return RAW`1 = 0`
+  return new Raw(RAW`1 = 0`)
 }
 
 /**
