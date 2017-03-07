@@ -5,6 +5,7 @@ import Criterion from './basic'
 
 /**
  * @class IsInCriterion
+ * @deprecated
  */
 export default class IsIn extends Criterion {
   

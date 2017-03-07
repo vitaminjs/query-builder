@@ -4,6 +4,7 @@ import Criterion from './base'
 
 /**
  * @class IsNullCriterion
+ * @deprecated
  */
 export default class IsNull extends Criterion {
   

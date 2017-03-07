@@ -1,11 +1,9 @@
 
-import { each, isPlainObject, isArray, isFunction, isString, isBoolean, isNumber } from 'lodash'
+import { each, isPlainObject, isFunction, isString, isBoolean, isNumber } from 'lodash'
 import Expression, { Literal } from '../expression'
 import Between from './between'
 import Criterion from './base'
-import IsNull from './is-null'
 import Basic from './basic'
-import IsIn from './is-in'
 import Raw from './raw'
 
 /**
@@ -139,7 +137,7 @@ export default class Criteria extends Criterion {
     if ( isPlainObject(expr) ) {
       let obj = expr
       
-      expr = cr => each(obj, (v, k) => cr.where(k, '=', v))
+      expr = cr => each(obj, (v, k) => cr.where(k, v))
     }
     
     // supports `.where(cr => { ... })`
@@ -158,22 +156,8 @@ export default class Criteria extends Criterion {
       operator = '='
     }
 
-    // format the operator
-    operator = operator.toLowerCase().trim()
-
-    // supports `.where('column', null)`
-    if ( value === null )
-      return this.add(new IsNull(expr), bool, not)
-    
-    // supports `.where('column', [...])`
-    if ( isArray(value) && operator === '=' ) operator = 'in'
-
-    // supports `.where('column', 'in', ...)`
-    if ( operator.indexOf('in') > -1 )
-      return this.add(new IsIn(expr, value), bool, not)
-    
     // supports `.where('column', 'between', [val1, val2])`
-    if ( operator.indexOf('between') > -1 )
+    if ( ~operator.toLowerCase().trim().indexOf('between') )
       return this.add(new Between(expr, value), bool, not)
 
     return this.add(new Basic(expr, operator, value), bool, not)
