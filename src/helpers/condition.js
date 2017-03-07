@@ -2,7 +2,7 @@
 import { Basic, IsNull, IsIn, Between, Exists, Like, Raw } from '../criterion'
 import Expression, { Literal } from '../expression'
 import { isArray, isString, uniq } from 'lodash'
-import { RAW, SQ } from './expression'
+import { SQ } from './expression'
 
 /**
  * 
@@ -11,7 +11,7 @@ import { RAW, SQ } from './expression'
  * @return {Criterion}
  */
 export function EQ(expr, value) {
-  return new Basic(ensureExpression(expr), '=', value)
+  return createBasicCriterion(expr, '=', value)
 }
 
 /**
@@ -21,7 +21,7 @@ export function EQ(expr, value) {
  * @return {Criterion}
  */
 export function NE(expr, value) {
-  return new Basic(ensureExpression(expr), '!=', value)
+  return createBasicCriterion(expr, '!=', value)
 }
 
 /**
@@ -31,7 +31,7 @@ export function NE(expr, value) {
  * @return {Criterion}
  */
 export function GT(expr, value) {
-  return new Basic(ensureExpression(expr), '>', value)
+  return createBasicCriterion(expr, '>', value)
 }
 
 /**
@@ -41,7 +41,7 @@ export function GT(expr, value) {
  * @return {Criterion}
  */
 export function LT(expr, value) {
-  return new Basic(ensureExpression(expr), '<', value)
+  return createBasicCriterion(expr, '<', value)
 }
 
 /**
@@ -51,7 +51,7 @@ export function LT(expr, value) {
  * @return {Criterion}
  */
 export function GTE(expr, value) {
-  return new Basic(ensureExpression(expr), '>=', value)
+  return createBasicCriterion(expr, '>=', value)
 }
 
 /**
@@ -61,7 +61,7 @@ export function GTE(expr, value) {
  * @return {Criterion}
  */
 export function LTE(expr, value) {
-  return new Basic(ensureExpression(expr), '<=', value)
+  return createBasicCriterion(expr, '<=', value)
 }
 
 /**
@@ -78,7 +78,7 @@ export function ISNULL(expr) {
  * @returns {Criterion}
  */
 export function ISTRUE() {
-  return new Raw(RAW`1 = 1`)
+  return new Raw(Literal.from('1 = 1'))
 }
 
 /**
@@ -86,7 +86,7 @@ export function ISTRUE() {
  * @returns {Criterion}
  */
 export function ISFALSE() {
-  return new Raw(RAW`1 = 0`)
+  return new Raw(Literal.from('1 = 0'))
 }
 
 /**
@@ -147,6 +147,17 @@ export function STARTSWITH(expr, value) {
  */
 export function ENDSWITH(expr, value) {
   return LIKE(expr, '%' + value.replace(/(_|%)/g, '\\$1'))
+}
+
+/**
+ * 
+ * @param {String|Expression} expr
+ * @param {String} operator
+ * @param {Any} value
+ * @returns {Basic}
+ */
+function createBasicCriterion(expr, operator, value) {
+  return new Basic(ensureExpression(expr), operator, value)
 }
 
 /**
