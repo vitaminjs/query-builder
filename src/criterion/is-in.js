@@ -15,10 +15,7 @@ export default class IsIn extends Criterion {
    * @constructor
    */
   constructor(expr, values) {
-    if (!
-      (expr instanceof Expression &&
-      (isArray(values) || values instanceof SubQuery))
-    )
+    if (! (isArray(values) || values instanceof SubQuery) )
       throw new TypeError("Invalid `in` condition")
     
     super(expr, 'in', values)
@@ -39,7 +36,7 @@ export default class IsIn extends Criterion {
    * @returns {String}
    */
   compile(compiler) {
-    if ( isArray(this.values) && isEmpty(this.values) )
+    if ( isArray(this.value) && isEmpty(this.value) )
       return `1 = ${(this.op === 'in') ? 0 : 1}`
 
     return super.compile(compiler)
