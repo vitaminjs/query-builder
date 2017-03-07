@@ -1,5 +1,5 @@
 
-import { Basic, IsNull, IsIn, Between, Exists, Raw } from '../criterion'
+import { Basic, Between, Exists, Raw } from '../criterion'
 import Expression, { Literal } from '../expression'
 import { isArray, isString, uniq } from 'lodash'
 import { SQ } from './expression'
@@ -70,12 +70,13 @@ export function LTE(expr, value) {
  * @returns {Criterion}
  */
 export function ISNULL(expr) {
-  return new IsNull(ensureExpression(expr))
+  return createBasicCriterion(expr, 'is', null)
 }
 
 /**
  * 
  * @returns {Criterion}
+ * @deprecated
  */
 export function ISTRUE() {
   return new Raw(Literal.from('1 = 1'))
@@ -84,6 +85,7 @@ export function ISTRUE() {
 /**
  * 
  * @returns {Criterion}
+ * @deprecated
  */
 export function ISFALSE() {
   return new Raw(Literal.from('1 = 0'))
@@ -96,7 +98,7 @@ export function ISFALSE() {
  * @returns {Criterion}
  */
 export function IN(expr, values) {
-  return new IsIn(ensureExpression(expr), isArray(values) ? uniq(values) : SQ(values))
+  return createBasicCriterion(expr, 'in', isArray(values) ? uniq(values) : SQ(values))
 }
 
 /**
