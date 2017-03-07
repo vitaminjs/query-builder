@@ -1,5 +1,5 @@
 
-import { Basic, IsNull, IsIn, Between, Exists, Like, Raw } from '../criterion'
+import { Basic, IsNull, IsIn, Between, Exists, Raw } from '../criterion'
 import Expression, { Literal } from '../expression'
 import { isArray, isString, uniq } from 'lodash'
 import { SQ } from './expression'
@@ -122,11 +122,11 @@ export function EXISTS(query) {
 /**
  * 
  * @param {String|Expression} expr
- * @param {String} patern
+ * @param {String} pattern
  * @returns {Criterion}
  */
-export function LIKE(expr, patern) {
-  return new Like(ensureExpression(expr), patern)
+export function LIKE(expr, pattern) {
+  return createBasicCriterion(expr, 'like', pattern)
 }
 
 /**
