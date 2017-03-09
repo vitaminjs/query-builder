@@ -7,7 +7,7 @@ import Expression, { Func, Literal } from '../expression'
  * @returns {Func}
  */
 export function NOW() {
-  return new Func('now')
+  return createFunction('now')
 }
 
 /**
@@ -24,7 +24,7 @@ export function DATETIME() {
  * @returns {Func}
  */
 export function UTC() {
-  return new Func('utc')
+  return createFunction('utc')
 }
 
 /**
@@ -41,7 +41,7 @@ export function UTC_DATETIME() {
  * @returns {Func}
  */
 export function DATE(expr) {
-  return new Func('date', ensureExpression(expr))
+  return createFunction('date', ensureExpression(expr))
 }
 
 /**
@@ -50,7 +50,7 @@ export function DATE(expr) {
  * @returns {Func}
  */
 export function TODAY() {
-  return new Func('current_date')
+  return createFunction('current_date')
 }
 
 /**
@@ -67,7 +67,7 @@ export function CURRENT_DATE() {
  * @returns {Func}
  */
 export function TIME(expr) {
-  return new Func('time', ensureExpression(expr))
+  return createFunction('time', ensureExpression(expr))
 }
 
 /**
@@ -75,7 +75,7 @@ export function TIME(expr) {
  * @returns {Func}
  */
 export function CLOCK() {
-  return new Func('current_time')
+  return createFunction('current_time')
 }
 
 /**
@@ -92,7 +92,7 @@ export function CURRENT_TIME() {
  * @returns {Func}
  */
 export function DAY(expr) {
-  return new Func('day', ensureExpression(expr))
+  return createFunction('day', ensureExpression(expr))
 }
 
 /**
@@ -101,7 +101,7 @@ export function DAY(expr) {
  * @returns {Func}
  */
 export function MONTH(expr) {
-  return new Func('month', ensureExpression(expr))
+  return createFunction('month', ensureExpression(expr))
 }
 
 /**
@@ -110,7 +110,17 @@ export function MONTH(expr) {
  * @returns {Func}
  */
 export function YEAR(expr) {
-  return new Func('year', ensureExpression(expr))
+  return createFunction('year', ensureExpression(expr))
+}
+
+/**
+ * 
+ * @param {String} name
+ * @param {Array} args
+ * @returns {Func}
+ */
+function createFunction(name, ...args) {
+  return new Func(name, ...args)
 }
 
 /**

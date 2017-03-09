@@ -7,7 +7,7 @@ import { Func } from '../expression'
  * @returns {Func}
  */
 export function ABS(expr) {
-  return new Func('abs', expr)
+  return createFunction('abs', expr)
 }
 
 /**
@@ -17,7 +17,7 @@ export function ABS(expr) {
  * @returns {Func}
  */
 export function ROUND(x, y) {
-  return new Func('round', x, y)
+  return createFunction('round', x, y)
 }
 
 /**
@@ -26,7 +26,7 @@ export function ROUND(x, y) {
  * @returns {Func}
  */
 export function RAND() {
-  return new Func('rand')
+  return createFunction('rand')
 }
 
 /**
@@ -35,4 +35,15 @@ export function RAND() {
  */
 export function RANDOM() {
   return RAND(...arguments)
+}
+
+/**
+ * 
+ * @param {String} name
+ * @param {Array} args
+ * @returns {Func}
+ * @private
+ */
+function createFunction(name, ...args) {
+  return new Func(name, ...args)
 }
