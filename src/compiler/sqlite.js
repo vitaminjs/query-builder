@@ -108,10 +108,16 @@ export default class extends Compiler {
    * @returns {String}
    */
   compileRepeatFunction(expr, count) {
-    var s = this.parameter(expr)
     var n = this.parameter(count)
 
-    return `replace(substr(quote(zeroblob((${n} + 1) / 2)), 3, ${n}), '0', ${s})`
+    // we use an indexed placeholder instead of a new parameter
+    // will not be appended in case of expressions
+    var i = isNaN(count) ? '' : this.bindings.length
+
+    // escape spaces to support also the missing function `space(n)`
+    var s = (expr === ' ') ? this.escape(expr) : this.parameter(expr)
+    
+    return `replace(substr(quote(zeroblob((${n} + 1) / 2)), 3, ${n+i}), '0', ${s})`
   }
   
   /**
