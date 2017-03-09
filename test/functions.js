@@ -163,7 +163,19 @@ describe("test SQL functions:", () => {
       pg:     "repeat('sql', $1)",
       mysql:  "repeat('sql', ?)",
       mssql:  "replicate('sql', ?)",
-      sqlite: "replace(substr(quote(zeroblob((? + 1) / 2)), 3, ?), '0', 'sql')",
+      sqlite: "replace(substr(quote(zeroblob((? + 1) / 2)), 3, ?1), '0', 'sql')",
+    },
+    [ 3 ]
+  )
+  
+  support.test(
+    "test repeat()",
+    fn.REPEAT('sql', 3),
+    {
+      pg:     "repeat(sql, $1)",
+      mysql:  "repeat(sql, ?)",
+      mssql:  "replicate(sql, ?)",
+      sqlite: "replace(substr(quote(zeroblob((? + 1) / 2)), 3, ?1), '0', sql)",
     },
     [ 3 ]
   )
@@ -175,7 +187,7 @@ describe("test SQL functions:", () => {
       pg:     "repeat(' ', $1)",
       mysql:  "space(?)",
       mssql:  "space(?)",
-      sqlite: "replace(substr(quote(zeroblob((? + 1) / 2)), 3, ?), '0', ' ')",
+      sqlite: "replace(substr(quote(zeroblob((? + 1) / 2)), 3, ?1), '0', ' ')",
     },
     [ 5 ]
   )
