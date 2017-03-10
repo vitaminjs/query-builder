@@ -11,6 +11,12 @@ It provides support for:
 $ npm install --save vitamin-query
 ```
 
+## Testing
+
+```bash
+$ npm test
+```
+
 ## Getting started
 
 ### Query builder
@@ -63,12 +69,38 @@ class MariaCompiler extends MysqlCompiler {
 let query = qb.selectFrom('table').toSQL(new MariaCompiler())
 ```
 
-### Functions
+### Helpers
 
-> @TODO
+Helpers are useful functions to create expressions or criteria, simulate SQL functions, etc...
 
-## Testing
+For examples of usage, please refer to the tests.
 
-```bash
-$ npm test
-```
+Expression  | Aggregates  | Conditional | Functions
+----------  | ----------  | ----------- | ---------
+C           | SUM         | EQ          | UPPER, UCASE
+T           | AVG         | NE          | LOWER, LCASE
+SQ          | MAX         | GT          | REPLACE
+RAW         | MIN         | LT          | SUBSTR, SUBSTRING
+ESC         | COUNT       | GTE         | CONCAT
+            |             | LTE         | LENGTH, LEN
+            |             | ISNULL      | REPEAT
+            |             | IN          | SPACE
+            |             | BETWEEN     | STRPOS, POSITION
+            |             | STARTSWITH  | LEFT
+            |             | ENDSWITH    | RIGHT
+            |             | EXISTS      | TRIM
+            |             | LIKE        | LTRIM
+            |             |             | RTRIM
+            |             |             | ABS
+            |             |             | ROUND
+            |             |             | RAND, RANDOM
+            |             |             | NOW, DATETIME
+            |             |             | UTC, UTC_DATETIME
+            |             |             | TODAY, CURRENT_DATE
+            |             |             | CLOCK, CURRENT_TIME
+            |             |             | DATE
+            |             |             | TIME
+            |             |             | DAY
+            |             |             | MONTH
+            |             |             | YEAR
+            |             |             | 
