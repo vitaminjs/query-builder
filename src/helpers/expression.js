@@ -27,7 +27,7 @@ export function RAW(expr, ...args) {
 export function SQ(query) {
   // accept a raw query string
   if ( isString(query) )
-    return RAW(query).wrap()
+    return Literal.from(query).wrap()
   
   // accept a function as a parameter
   if ( isFunction(query) ) {
@@ -84,4 +84,14 @@ export function T(value) {
  */
 export function ESC(value) {
   return new Escaped(value)
+}
+
+/**
+ * 
+ * @param {Any} value
+ * @param {String} type
+ * @returns {Expression}
+ */
+export function CAST(value, type) {
+  return RAW(`cast(? as ${type})`, value)
 }
