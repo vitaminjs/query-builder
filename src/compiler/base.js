@@ -291,14 +291,28 @@ export default class Compiler {
   }
   
   /**
-   * Escape function name
+   * Compile the function name and its arguments
    * 
    * @param {String} name
    * @param {Array} args
    * @returns {String}
    */
   compileFunction(name, args = []) {
+    if ( name === 'concat' )
+      return `concat(${args.map(value => this.escape(value)).join(', ')})`
+
     return name + this.parameterize(args)
+  }
+
+  /**
+   * 
+   * @param {Any} value
+   * @param {String} type
+   * @param {Boolean} isLiteral
+   * @returns {String}
+   */
+  cast(value, type, isLiteral = false) {
+    return `cast(${isLiteral ? value : this.parameter(value)} as ${type})`
   }
   
   /**

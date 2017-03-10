@@ -1,5 +1,5 @@
 
-import { isEmpty } from 'lodash'
+import { isEmpty, first } from 'lodash'
 import Compiler from './base'
 
 /**
@@ -69,6 +69,56 @@ export default class extends Compiler {
     var sql = super.compileInsertDefaultValues(query)
 
     return this.appendReturningClause(sql, query.getReturning())
+  }
+  
+  /**
+   * Compile the function name and its arguments
+   * 
+   * @param {String} name
+   * @param {Array} args
+   * @returns {String}
+   */
+  compileFunction(name, args = []) {
+    switch ( name ) {
+      case 'now':
+        return "localtimestamp(0)"
+      
+      case 'current_date':
+        return "current_date"
+      
+      case 'current_time':
+        return `current_time(0)`
+      
+      case 'utc':
+        return "current_timestamp(0) at time zone 'UTC'"
+      
+      case 'space':
+        return `repeat(' ', ${this.parameter(first(args))})`
+      
+      case 'date':
+        return this.cast(first(args), 'date')
+      
+      case 'time':
+        return this.cast(first(args), 'time(0)')
+      
+      case 'day':
+      case 'year':
+      case 'month':
+        return this.compileExtractFunction(name, first(args))
+      
+      default:
+        return super.compileFunction(name, args)
+    }
+  }
+
+  /**
+   * 
+   * @param {String} part
+   * @param {Any} expr
+   * @returns {String}
+   */
+  compileExtractFunction(part, expr) {
+    return `extract(${part} from timestamp ${this.parameter(expr)})`
   }
 
   /**

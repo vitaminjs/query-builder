@@ -9,7 +9,7 @@ export default class Raw extends Criterion {
   
   /**
    * 
-   * @param {Raw} expr
+   * @param {Literal} expr
    * @constructor
    */
   constructor(expr) {
@@ -19,6 +19,16 @@ export default class Raw extends Criterion {
       throw new TypeError("Invalid `raw` condition")
     
     this.expr = expr
+    this.not = false
+  }
+
+  /**
+   * 
+   * @returns {Raw}
+   */
+  negate() {
+    this.not = !this.not
+    return this
   }
   
   /**
@@ -27,7 +37,9 @@ export default class Raw extends Criterion {
    * @returns {String}
    */
   compile(compiler) {
-    return `${this.bool} ${this.expr.compile(compiler)}`
+    var expr = this.expr.compile(compiler)
+
+    return `${this.bool} ${this.not ? `not (${expr})` : expr}`
   }
   
 }

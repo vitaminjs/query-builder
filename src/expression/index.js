@@ -7,9 +7,10 @@ import Column from './column'
 import Func from './function'
 import Literal from './literal'
 import Expression from './base'
+import Escaped from './escaped'
 import SubQuery from './sub-query'
 import Aggregate from './aggregate'
 
 export default Expression
 
-export { Literal, Order, Join, Table, Union, Column, Func, SubQuery, Aggregate }
+export { Literal, Order, Join, Table, Union, Column, Func, Escaped, SubQuery, Aggregate }

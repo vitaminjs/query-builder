@@ -2,7 +2,7 @@
 
 var qb      = require('../../lib').default
 var fn      = require('../../lib/helpers')
-var support = require('./support')
+var support = require('../support')
 var C       = fn.C
 var T       = fn.T
 
@@ -25,8 +25,8 @@ describe("test building delete queries:", () => {
     {
       pg:     'delete from "accounts" where "activated" = $1',
       mysql:  'delete from `accounts` where `activated` = ?',
-      mssql:  'delete from [accounts] where [activated] = @1',
-      sqlite: 'delete from "accounts" where "activated" = $1',
+      mssql:  'delete from [accounts] where [activated] = ?',
+      sqlite: 'delete from "accounts" where "activated" = ?',
     },
     [ false ]
   )
@@ -37,8 +37,8 @@ describe("test building delete queries:", () => {
     {
       pg:     'delete from table where (id = $1) returning *',
       mysql:  'delete from table where (id = ?)',
-      mssql:  'delete from table output deleted.* where (id = @1)',
-      sqlite: 'delete from table where (id = $1)',
+      mssql:  'delete from table output deleted.* where (id = ?)',
+      sqlite: 'delete from table where (id = ?)',
     },
     [1]
   )

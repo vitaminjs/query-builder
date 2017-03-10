@@ -1,4 +1,5 @@
 
+import Expression from '../expression'
 import Compiler from './base'
 
 /**
@@ -46,6 +47,45 @@ export default class extends Compiler {
    */
   compileInsertDefaultValues(query) {
     return `insert into ${this.escape(query.getTable())} () values ()`
+  }
+  
+  /**
+   * Compile the function name and its arguments
+   * 
+   * @param {String} name
+   * @param {Array} args
+   * @returns {String}
+   */
+  compileFunction(name, args = []) {
+    switch ( name ) {
+      case 'concat':
+        return this.compileConcatFunction(args)
+      
+      case 'utc':
+        return super.compileFunction('utc_timestamp', args)
+      
+      case 'strpos':
+        return super.compileFunction('instr', args)
+      
+      default:
+        return super.compileFunction(name, args)
+    }
+  }
+  
+  /**
+   * 
+   * @param {Array} args
+   * @returns {String}
+   */
+  compileConcatFunction(args) {
+    args = args.map(value => {
+      if ( value instanceof Expression )
+        return `coalesce(${value.compile(this)}, '')`
+      
+      return this.escape(value)
+    })
+    
+    return `concat(${args.join(', ')})`
   }
   
 }

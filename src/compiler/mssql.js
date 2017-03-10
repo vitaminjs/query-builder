@@ -1,5 +1,5 @@
 
-import { isEmpty } from 'lodash'
+import { isEmpty, toArray, reverse, first } from 'lodash'
 import Compiler from './base'
 
 /**
@@ -8,33 +8,13 @@ import Compiler from './base'
 export default class extends Compiler {
   
   /**
-   * 
-   * @param {Object} options
-   * @constructor
-   */
-  constructor(options = {}) {
-    super(options)
-
-    this.paramCount = 1
-  }
-  
-  /**
-   * Default parameter placeholder
-   * 
-   * @type {String}
-   */
-  get placeholder() {
-    return '@' + this.paramCount++
-  }
-  
-  /**
    * Quotes a string so it can be safely used as a table or column name
    * 
    * @param {String} value
    * @returns {String}
    */
   quote(value) {
-    return (value === '*') ? value : `[${value.trim()}]`
+    return (value === '*') ? value : `[${value.trim().replace(/\]/g, ']]')}]`
   }
 
   /**
@@ -174,6 +154,70 @@ export default class extends Compiler {
     })
     
     return `${sql} output ${columns.join(', ')}`
+  }
+  
+  /**
+   * Compile the function name and its arguments
+   * 
+   * @param {String} name
+   * @param {Array} args
+   * @returns {String}
+   */
+  compileFunction(name, args = []) {
+    switch ( name ) {
+      case 'trim':
+        return `rtrim(ltrim(${this.parameter(first(args))}))`
+      
+      case 'substr':
+        return this.compileSubstringFunction(...args)
+      
+      case 'now':
+        return this.cast('getdate()', 'datetime2(0)', true)
+      
+      case 'current_date':
+        return this.cast('getdate()', 'date', true)
+      
+      case 'date':
+        return this.cast(first(args), 'date')
+      
+      case 'current_time':
+        return this.cast('getdate()', 'time(0)', true)
+      
+      case 'time':
+        return this.cast(first(args), 'time(0)')
+      
+      case 'utc':
+        return this.cast('getutcdate()', 'datetime2(0)', true)
+      
+      case 'length':
+        return super.compileFunction('len', args)
+        
+      case 'strpos':
+        return super.compileFunction('charindex', reverse(args.slice()))
+      
+      case 'repeat':
+        return super.compileFunction('replicate', args)
+      
+      default:
+        return super.compileFunction(name, args)
+    }
+  }
+  
+  /**
+   * 
+   * @param {Expression} expr
+   * @param {Integer} start
+   * @param {Integer} length
+   * @returns {String}
+   */
+  compileSubstringFunction(expr, start, length) {
+    if ( null == length ) {
+      length = super.compileFunction('len', [expr])
+      
+      return `substring(${this.parameter(expr)}, ${this.parameter(start)}, ${length})`
+    }
+    
+    return super.compileFunction('substring', [expr, start, length])
   }
   
 }

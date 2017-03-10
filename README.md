@@ -1,5 +1,9 @@
 A fluent SQL query builder for Node.
-It provides support for **SQLite**, **MySQL**, **PostgreSQL** and **MSSQL**.
+It provides support for:
+- **SQLite** (v3.15.0+)
+- **MySQL** (v5.7+)
+- **PostgreSQL** (v9.5+)
+- **MSSQL** (2012+)
 
 ## Installing
 
@@ -7,57 +11,44 @@ It provides support for **SQLite**, **MySQL**, **PostgreSQL** and **MSSQL**.
 $ npm install --save vitamin-query
 ```
 
+## Testing
+
+```bash
+$ npm test
+```
+
 ## Getting started
 
-### Select query
+### Query builder
 
 ```js
 // import the query builder and some helpers
-import qb, { COUNT, RAW } from 'vitamin-query'
+import qb, { COUNT, RAW, T, C } from 'vitamin-query'
 
-// build a basic select query
-// use PostgreSQL dialect for SQL compilation
-let query = qb.select(COUNT()).from('employees').where(RAW`salary > ${1500}`).toSQL('pg')
+// => Select query
 
-// assertions
-assert.equal(query.sql, 'select count(*) from employees where salary > $1')
-assert.deepEqual(query.params, [ 1500 ])
-```
+let query1 = qb.select(COUNT()).from('employees').where(RAW`salary > ${1500}`).toSQL('pg')
+assert.equal(query1.sql, 'select count(*) from employees where salary > $1')
+assert.deepEqual(query1.params, [ 1500 ])
 
-### Insert query
-
-```js
-// import the query builder and the `T` helper
-import qb, { T } from 'vitamin-query'
+// => Insert query
 
 let data = { name: "Fred", score: 30 }
-let query = qb.insert(data).into(T('players')).returning('*').toSQL('mssql')
+let query2 = qb.insert(data).into(T('players')).returning('*').toSQL('mssql')
+assert.equal(query2.sql, 'insert into [players] (name, score) output inserted.* values (?, ?)')
+assert.deepEqual(query2.params, [ 'Fred', 30 ])
 
-// assertions
-assert.equal(query.sql, 'insert into [players] (name, score) output inserted.* values (@1, @2)')
-assert.deepEqual(query.params, [ 'Fred', 30 ])
-```
+// => Update query
 
-### Update query
+let query3 = qb.update('books').set('status', 'archived').where('publish_date', '<', 2000).toSQL('mysql')
+assert.equal(query3.sql, 'update books set status = ? where publish_date < ?')
+assert.deepEqual(query3.params, [ 'archived', 2000 ])
 
-```js
-import qb from 'vitamin-query'
+// => Delete query
 
-let query = qb.update('books').set('status', 'archived').where('publish_date', '<', 2000).toSQL('mysql')
-
-assert.equal(query.sql, 'update books set status = ? where publish_date < ?')
-assert.deepEqual(query.params, [ 'archived', 2000 ])
-```
-
-### Delete query
-
-```js
-import qb, { T, C } from 'vitamin-query'
-
-let query = qb.deleteFrom(T('accounts')).where(C('activated'), false).toSQL('sqlite')
-
-assert.equal(query.sql, 'delete from "accounts" where "activated" = $1')
-assert.deepEqual(query.params, [ false ])
+let query4 = qb.deleteFrom(T('accounts')).where(C('activated'), false).toSQL('sqlite')
+assert.equal(query4.sql, 'delete from "accounts" where "activated" = ?')
+assert.deepEqual(query4.params, [ false ])
 ```
 
 ### Custom compiler
@@ -65,22 +56,50 @@ assert.deepEqual(query.params, [ false ])
 If you may use a custom query compiler instead of the built-in ones, you can pass its instance to `toSQL()`
 
 ```js
-import BaseCompiler from 'vitamin-query/compiler'
+// in path/to/maria-compiler.js
+import MysqlCompiler from 'vitamin-query/compiler/mysql'
 
-class CustomCompiler extends BaseCompiler {
+class MariaCompiler extends MysqlCompiler {
   
-  // ...
+  ...
   
 }
 
-// ...
-
-// later with any query instance
-let query = qb.selectFrom('table').toSQL(new CustomCompiler())
+// later, you can use its instance with any query instance
+let query = qb.selectFrom('table').toSQL(new MariaCompiler())
 ```
 
-## Testing
+### Helpers
 
-```bash
-$ npm test
-```
+Helpers are useful functions to create expressions or criteria, simulate SQL functions, etc...
+
+For examples of usage, please refer to the tests.
+
+Expression  | Aggregates  | Conditional | Functions
+----------  | ----------  | ----------- | ---------
+C           | SUM         | EQ          | UPPER, UCASE
+T           | AVG         | NE          | LOWER, LCASE
+SQ          | MAX         | GT          | REPLACE
+RAW         | MIN         | LT          | SUBSTR, SUBSTRING
+ESC         | COUNT       | GTE         | CONCAT
+            |             | LTE         | LENGTH, LEN
+            |             | ISNULL      | REPEAT
+            |             | IN          | SPACE
+            |             | BETWEEN     | STRPOS, POSITION
+            |             | STARTSWITH  | LEFT
+            |             | ENDSWITH    | RIGHT
+            |             | EXISTS      | TRIM
+            |             | LIKE        | LTRIM
+            |             |             | RTRIM
+            |             |             | ABS
+            |             |             | ROUND
+            |             |             | RAND, RANDOM
+            |             |             | NOW, DATETIME
+            |             |             | UTC, UTC_DATETIME
+            |             |             | TODAY, CURRENT_DATE
+            |             |             | CLOCK, CURRENT_TIME
+            |             |             | DATE
+            |             |             | TIME
+            |             |             | DAY
+            |             |             | MONTH
+            |             |             | YEAR
