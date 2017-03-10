@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/vitaminjs/query-builder.svg?branch=master)](https://travis-ci.org/vitaminjs/query-builder)
+
 A fluent SQL query builder for Node.
 It provides support for:
 - **SQLite** (v3.15.0+)
