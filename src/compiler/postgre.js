@@ -118,7 +118,7 @@ export default class extends Compiler {
    * @returns {String}
    */
   compileExtractFunction(part, expr) {
-    return `extract(${part} from timestamp ${this.parameter(expr)})`
+    return `extract(${part} from ${this.parameter(expr)})`
   }
 
   /**
