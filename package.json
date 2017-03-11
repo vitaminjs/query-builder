@@ -1,6 +1,6 @@
 {
   "name": "vitamin-query",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A fluent SQL query builder for node.js applications",
   "main": "lib/index.js",
   "scripts": {
