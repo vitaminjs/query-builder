@@ -330,4 +330,37 @@ describe("test SQL functions:", () => {
     }
   )
   
+  support.test(
+    "test hour()",
+    fn.HOUR(ESC('2017-03-02 09:20:25')),
+    {
+      pg:     "extract(hour from '2017-03-02 09:20:25')",
+      mysql:  "hour('2017-03-02 09:20:25')",
+      mssql:  "datepart(hour, '2017-03-02 09:20:25')",
+      sqlite: "cast(strftime('%H', '2017-03-02 09:20:25') as integer)",
+    }
+  )
+  
+  support.test(
+    "test minute()",
+    fn.MINUTE(ESC('2017-03-02 09:20:25')),
+    {
+      pg:     "extract(minute from '2017-03-02 09:20:25')",
+      mysql:  "minute('2017-03-02 09:20:25')",
+      mssql:  "datepart(minute, '2017-03-02 09:20:25')",
+      sqlite: "cast(strftime('%M', '2017-03-02 09:20:25') as integer)",
+    }
+  )
+  
+  support.test(
+    "test second()",
+    fn.SECOND(ESC('2017-03-02 09:20:25')),
+    {
+      pg:     "extract(second from '2017-03-02 09:20:25')",
+      mysql:  "second('2017-03-02 09:20:25')",
+      mssql:  "datepart(second, '2017-03-02 09:20:25')",
+      sqlite: "cast(strftime('%S', '2017-03-02 09:20:25') as integer)",
+    }
+  )
+  
 })

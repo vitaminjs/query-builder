@@ -102,8 +102,11 @@ export default class extends Compiler {
         return this.cast(first(args), 'time(0)')
       
       case 'day':
+      case 'hour':
       case 'year':
       case 'month':
+      case 'minute':
+      case 'second':
         return this.compileExtractFunction(name, first(args))
       
       default:

@@ -115,6 +115,33 @@ export function YEAR(expr) {
 
 /**
  * 
+ * @param {String|Expression} expr
+ * @returns {Func}
+ */
+export function HOUR(expr) {
+  return createFunction('hour', ensureExpression(expr))
+}
+
+/**
+ * 
+ * @param {String|Expression} expr
+ * @returns {Func}
+ */
+export function MINUTE(expr) {
+  return createFunction('minute', ensureExpression(expr))
+}
+
+/**
+ * 
+ * @param {String|Expression} expr
+ * @returns {Func}
+ */
+export function SECOND(expr) {
+  return createFunction('second', ensureExpression(expr))
+}
+
+/**
+ * 
  * @param {String} name
  * @param {Array} args
  * @returns {Func}
