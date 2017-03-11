@@ -105,3 +105,6 @@ CAST        |             | LTE         | LENGTH, LEN
             |             |             | DAY
             |             |             | MONTH
             |             |             | YEAR
+            |             |             | HOUR
+            |             |             | MINUTE
+            |             |             | SECOND
