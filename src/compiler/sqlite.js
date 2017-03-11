@@ -61,13 +61,22 @@ export default class extends Compiler {
       
       case 'day':
         return this.compileExtractFunction('%d', first(args))
+      
+      case 'hour':
+        return this.compileExtractFunction('%H', first(args))
 
       case 'year':
         return this.compileExtractFunction('%Y', first(args))
 
       case 'month':
         return this.compileExtractFunction('%m', first(args))
-      
+
+      case 'minute':
+        return this.compileExtractFunction('%M', first(args))
+
+      case 'second':
+        return this.compileExtractFunction('%S', first(args))
+        
       case 'left':
         return this.compileLeftFunction(...args)
       

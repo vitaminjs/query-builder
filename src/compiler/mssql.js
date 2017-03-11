@@ -186,6 +186,11 @@ export default class extends Compiler {
       case 'time':
         return this.cast(first(args), 'time(0)')
       
+      case 'hour':
+      case 'minute':
+      case 'second':
+        return this.compileDatepartFunction(name, first(args))
+      
       case 'utc':
         return this.cast('getutcdate()', 'datetime2(0)', true)
       
@@ -201,6 +206,16 @@ export default class extends Compiler {
       default:
         return super.compileFunction(name, args)
     }
+  }
+  
+  /**
+   * 
+   * @param {String} part
+   * @param {Expression} expr
+   * @returns {String}
+   */
+  compileDatepartFunction(part, expr) {
+    return `datepart(${part}, ${this.parameter(expr)})`
   }
   
   /**
