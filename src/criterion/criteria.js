@@ -27,7 +27,7 @@ export default class Criteria extends Criterion {
    * @returns {Criteria}
    */
   clone() {
-    return new Criteria().setComponents(this.getComponents())
+    return new Criteria().setComponents(this.getComponents().slice())
   }
   
   /**
