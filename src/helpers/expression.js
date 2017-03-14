@@ -64,6 +64,14 @@ export function C(value) {
 
 /**
  * 
+ * @see `C()`
+ */
+export function COLUMN() {
+  return C(...arguments)
+}
+
+/**
+ * 
  * @param {String} value
  * @returns {Table}
  */
@@ -75,6 +83,14 @@ export function T(value) {
   }
   
   return new Table(value).as(alias)
+}
+
+/**
+ * 
+ * @see `T()`
+ */
+export function TABLE() {
+  return T(...arguments)
 }
 
 /**
