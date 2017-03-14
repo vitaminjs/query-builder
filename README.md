@@ -79,8 +79,8 @@ For examples of usage, please refer to the tests.
 
 Expression  | Aggregates  | Conditional | Functions
 ----------  | ----------  | ----------- | ---------
-C           | SUM         | EQ          | UPPER, UCASE
-T           | AVG         | NE          | LOWER, LCASE
+C, COLUMN   | SUM         | EQ          | UPPER, UCASE
+T, TABLE    | AVG         | NE          | LOWER, LCASE
 SQ          | MAX         | GT          | REPLACE
 RAW         | MIN         | LT          | SUBSTR, SUBSTRING
 ESC         | COUNT       | GTE         | CONCAT
