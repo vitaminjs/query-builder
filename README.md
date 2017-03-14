@@ -79,12 +79,12 @@ For examples of usage, please refer to the tests.
 
 Expression  | Aggregates  | Conditional | Functions
 ----------  | ----------  | ----------- | ---------
-C, COLUMN   | SUM         | EQ          | UPPER, UCASE
-T, TABLE    | AVG         | NE          | LOWER, LCASE
+C           | SUM         | EQ          | UPPER, UCASE
+T           | AVG         | NE          | LOWER, LCASE
 SQ          | MAX         | GT          | REPLACE
 RAW         | MIN         | LT          | SUBSTR, SUBSTRING
 ESC         | COUNT       | GTE         | CONCAT
-CAST        |             | LTE         | LEN, LENGTH
+CAST        |             | LTE         | LENGTH, LEN
             |             | ISNULL      | REPEAT
             |             | IN          | SPACE
             |             | BETWEEN     | STRPOS, POSITION
