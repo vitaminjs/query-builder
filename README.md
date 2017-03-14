@@ -13,44 +13,36 @@ It provides support for:
 $ npm install --save vitamin-query
 ```
 
-## Testing
-
-```bash
-$ npm test
-```
-
 ## Getting started
 
-### Query builder
+`vitamin-query` is composed of a set of useful functions to build SQL queries easily
+
+### building queries
 
 ```js
-// import the query builder and some helpers
-import qb, { COUNT, RAW, T, C } from 'vitamin-query'
+// import the query builder
+import * as qb from 'vitamin-query'
 
-// => Select query
 
-let query1 = qb.select(COUNT()).from('employees').where(RAW`salary > ${1500}`).toSQL('pg')
-assert.equal(query1.sql, 'select count(*) from employees where salary > $1')
-assert.deepEqual(query1.params, [ 1500 ])
+let select = qb.select().from('employees').where('salary > ?', 1500).toSQL('pg')
+assert.equal(select.sql, 'select * from employees where salary > $1')
+assert.deepEqual(select.params, [ 1500 ])
 
-// => Insert query
 
 let data = { name: "Fred", score: 30 }
-let query2 = qb.insert(data).into(T('players')).returning('*').toSQL('mssql')
-assert.equal(query2.sql, 'insert into [players] (name, score) output inserted.* values (?, ?)')
-assert.deepEqual(query2.params, [ 'Fred', 30 ])
+let insert = qb.insert(data).into('players').returning('*').toSQL('mssql')
+assert.equal(insert.sql, 'insert into players (name, score) output inserted.* values (?, ?)')
+assert.deepEqual(insert.params, [ 'Fred', 30 ])
 
-// => Update query
 
-let query3 = qb.update('books').set('status', 'archived').where('publish_date', '<', 2000).toSQL('mysql')
+let update = qb.update('books').set('status', 'archived').where('publish_date', '<', 2000).toSQL('mysql')
 assert.equal(query3.sql, 'update books set status = ? where publish_date < ?')
 assert.deepEqual(query3.params, [ 'archived', 2000 ])
 
-// => Delete query
 
-let query4 = qb.deleteFrom(T('accounts')).where(C('activated'), false).toSQL('sqlite')
-assert.equal(query4.sql, 'delete from "accounts" where "activated" = ?')
-assert.deepEqual(query4.params, [ false ])
+let del = qb.deleteFrom(T('accounts')).where(C('activated'), false).toSQL('sqlite')
+assert.equal(del.sql, 'delete from "accounts" where "activated" = ?')
+assert.deepEqual(del.params, [ false ])
 ```
 
 ### Custom compiler
@@ -71,9 +63,7 @@ class MariaCompiler extends MysqlCompiler {
 let query = qb.selectFrom('table').toSQL(new MariaCompiler())
 ```
 
-### Helpers
-
-Helpers are useful functions to create expressions or criteria, simulate SQL functions, etc...
+### API
 
 For examples of usage, please refer to the tests.
 
@@ -108,3 +98,9 @@ CAST        |             | LTE         | LENGTH, LEN
             |             |             | HOUR
             |             |             | MINUTE
             |             |             | SECOND
+
+## Testing
+
+```bash
+$ npm test
+```
