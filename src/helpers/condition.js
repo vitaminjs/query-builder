@@ -67,33 +67,6 @@ export function LTE(expr, value) {
 /**
  * 
  * @param {String|Expression} expr
- * @returns {Criterion}
- */
-export function ISNULL(expr) {
-  return createBasicCriterion(expr, 'is', null)
-}
-
-/**
- * 
- * @returns {Criterion}
- * @deprecated
- */
-export function ISTRUE() {
-  return new Raw(Literal.from('1 = 1'))
-}
-
-/**
- * 
- * @returns {Criterion}
- * @deprecated
- */
-export function ISFALSE() {
-  return new Raw(Literal.from('1 = 0'))
-}
-
-/**
- * 
- * @param {String|Expression} expr
  * @param {Any} values
  * @returns {Criterion}
  */
