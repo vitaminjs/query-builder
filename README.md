@@ -84,7 +84,7 @@ T, TABLE    | AVG         | NE          | LOWER, LCASE
 SQ          | MAX         | GT          | REPLACE
 RAW         | MIN         | LT          | SUBSTR, SUBSTRING
 ESC         | COUNT       | GTE         | CONCAT
-CAST        |             | LTE         | LENGTH, LEN
+CAST        |             | LTE         | LEN, LENGTH
             |             | ISNULL      | REPEAT
             |             | IN          | SPACE
             |             | BETWEEN     | STRPOS, POSITION
