@@ -1,6 +1,7 @@
 
-import Compiler, { createCompiler } from '../compiler'
 import { has, extend, isString, isPlainObject } from 'lodash'
+import Compiler, { createCompiler } from '../compiler'
+import Expression, { Literal } from '../expression'
 
 /**
  * @class BaseQuery
@@ -20,7 +21,7 @@ export default class Query {
    * 
    * @param {String} name
    * @param {Any} value
-   * @returns {Any|Query}
+   * @returns {Query}
    */
   option(name, value = undefined) {
     if ( isPlainObject(name) ) {
@@ -59,7 +60,7 @@ export default class Query {
    * @returns {Query}
    */
   setOptions(value) {
-    this._options = extend({}, value)
+    this._options = value
     return this
   }
   
@@ -90,6 +91,16 @@ export default class Query {
     }
     
     throw new TypeError("Invalid query compiler")
+  }
+
+  /**
+   * 
+   * @param {Any} expr
+   * @return {Expression}
+   * @private
+   */
+  ensureExpression(value) {
+    return value instanceof Expression ? value : Literal.from(value)
   }
   
 }

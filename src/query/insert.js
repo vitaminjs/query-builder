@@ -1,13 +1,13 @@
 
-import { isString, isEmpty, isFunction, isArray, chain, keys } from 'lodash'
-import Expression, { Literal } from '../expression'
+import { isEmpty, isFunction, isArray, chain, keys, clone } from 'lodash'
+import { UseTable, UseReturning } from './mixins'
 import Select from './select'
 import Query from './base'
 
 /**
  * @class InsertQuery
  */
-export default class Insert extends Query {
+export default class Insert extends UseTable(UseReturning(Query)) {
   
   /**
    * 
@@ -16,11 +16,9 @@ export default class Insert extends Query {
   constructor() {
     super()
     
-    this._data      = []
-    this._table     = null
-    this._select    = null
-    this._columns   = []
-    this._returning = []
+    this._values  = []
+    this._columns = []
+    this._select  = null
   }
 
   /**
@@ -37,7 +35,7 @@ export default class Insert extends Query {
    * @returns {Array}
    */
   getValues() {
-    return this._data
+    return this._values
   }
 
   /**
@@ -51,7 +49,8 @@ export default class Insert extends Query {
     if (! this.hasColumns() )
       this.setColumns(chain(data).map(keys).flatten().uniq().value())
 
-    this._data = data
+    this._values = data
+    
     return this
   }
 
@@ -68,7 +67,7 @@ export default class Insert extends Query {
    * @returns {Boolean}
    */
   hasValues() {
-    return !isEmpty(this._data)
+    return !isEmpty(this._values)
   }
 
   /**
@@ -135,54 +134,10 @@ export default class Insert extends Query {
    * @returns {Insert}
    */
   into(table, ...columns) {
-    if (! isEmpty(columns) ) {
-      this._columnsAlreadyDefined = true
+    if (! isEmpty(columns) )
       this.setColumns(columns)
-    }
     
     return this.setTable(table)
-  }
-
-  /**
-   * 
-   * @returns {String|Expression}
-   */
-  getTable() {
-    return this._table
-  }
-
-  /**
-   * 
-   * @param {String|Expression} value
-   * @returns {Insert}
-   */
-  setTable(value) {
-    if ( isString(value) )
-      value = Literal.from(value)
-    
-    // ensure the table expression
-    if (! (value instanceof Expression) )
-      throw new TypeError("Invalid insert expression")
-    
-    this._table = value
-    return this
-  }
-
-  /**
-   * 
-   * @returns {Insert}
-   */
-  resetTable() {
-    this._table = null
-    return this
-  }
-
-  /**
-   * 
-   * @returns {Boolean}
-   */
-  hasTable() {
-    return this._table != null
   }
 
   /**
@@ -199,9 +154,7 @@ export default class Insert extends Query {
    * @returns {Insert}
    */
   setColumns(columns) {
-    var mapper = value => isString(value) ? Literal.from(value) : value
-    
-    this._columns = columns.map(mapper)
+    this._columns = columns.map(this.ensureExpression)
     return this
   }
 
@@ -219,52 +172,6 @@ export default class Insert extends Query {
    */
   hasColumns() {
     return !isEmpty(this._columns)
-  }
-
-  /**
-   * 
-   * @param {String[]} columns
-   * @returns {Insert}
-   */
-  returning(...columns) {
-    return this.setReturning(columns)
-  }
-
-  /**
-   * 
-   * @returns {Boolean}
-   */
-  hasReturning() {
-    return !isEmpty(this._returning)
-  }
-
-  /**
-   * 
-   * @returns {Array}
-   */
-  getReturning() {
-    return this._returning
-  }
-
-  /**
-   * 
-   * @param {Array} columns
-   * @returns {Insert}
-   */
-  setReturning(columns) {
-    var mapper = value => isString(value) ? Literal.from(value) : value
-    
-    this._returning = columns.map(mapper)
-
-    return this
-  }
-
-  /**
-   * 
-   * @returns {Insert}
-   */
-  resetReturning() {
-    return this.setReturning([])
   }
 
   /**
@@ -291,9 +198,7 @@ export default class Insert extends Query {
    * @returns {String}
    */
   compile(compiler) {
-    if (! this.hasTable() ) return ''
-
-    return compiler.compileInsertQuery(this)
+    return this.hasTable() ? compiler.compileInsertQuery(this) : ''
   }
 
   /**
@@ -304,12 +209,13 @@ export default class Insert extends Query {
     var query = new Insert()
 
     this.hasTable() && query.getTable()
+    query.setOptions(clone(this.getOptions()))
     this.hasSelect() && query.setSelect(this.getSelect())
     this.hasValues() && query.setValues(this.getValues().slice())
     this.hasColumns() && query.setColumns(this.getColumns().slice())
     this.hasReturning() && query.setReturning(this.getReturning().slice())
 
-    return query.setOptions(this.getOptions())
+    return query
   }
   
 }
