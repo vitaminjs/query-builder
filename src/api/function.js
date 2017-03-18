@@ -6,7 +6,7 @@ import Expression, { Literal, Func } from '../expression'
  * @param {Any} expr
  * @returns {Func}
  */
-export function ABS(expr) {
+export function abs(expr) {
   return createFunction('abs', expr)
 }
 
@@ -16,7 +16,7 @@ export function ABS(expr) {
  * @param {Integer} y
  * @returns {Func}
  */
-export function ROUND(x, y) {
+export function round(x, y) {
   return createFunction('round', x, y)
 }
 
@@ -25,7 +25,7 @@ export function ROUND(x, y) {
  * 
  * @returns {Func}
  */
-export function RAND() {
+export function rand() {
   return createFunction('rand')
 }
 
@@ -33,8 +33,8 @@ export function RAND() {
  * 
  * @see `RAND`
  */
-export function RANDOM() {
-  return RAND(...arguments)
+export function random() {
+  return rand(...arguments)
 }
 
 /**
@@ -42,7 +42,7 @@ export function RANDOM() {
  * @param {String|Expression} expr
  * @return {Func}
  */
-export function UPPER(expr) {
+export function upper(expr) {
   return createFunction('upper', ensureExpression(expr))
 }
 
@@ -50,8 +50,8 @@ export function UPPER(expr) {
  * 
  * @see `UPPER`
  */
-export function UCASE() {
-  return UPPER(...arguments)
+export function ucase() {
+  return upper(...arguments)
 }
 
 /**
@@ -59,7 +59,7 @@ export function UCASE() {
  * @param {String|Expression} expr
  * @return {Func}
  */
-export function LOWER(expr) {
+export function lower(expr) {
   return createFunction('lower', ensureExpression(expr))
 }
 
@@ -67,8 +67,8 @@ export function LOWER(expr) {
  * 
  * @see `LOWER`
  */
-export function LCASE() {
-  return LOWER(...arguments)
+export function lcase() {
+  return lower(...arguments)
 }
 
 /**
@@ -76,7 +76,7 @@ export function LCASE() {
  * @param {String|Expression} args
  * @returns {Func}
  */
-export function CONCAT(...args) {
+export function concat(...args) {
   return createFunction('concat', ...args)
 }
 
@@ -85,7 +85,7 @@ export function CONCAT(...args) {
  * @param {String|Expression} expr
  * @returns {Func}
  */
-export function LENGTH(expr) {
+export function length(expr) {
   return createFunction('length', ensureExpression(expr))
 }
 
@@ -93,8 +93,8 @@ export function LENGTH(expr) {
  * 
  * @see `LENGTH`
  */
-export function LEN() {
-  return LENGTH(...arguments)
+export function len() {
+  return langth(...arguments)
 }
 
 /**
@@ -104,7 +104,7 @@ export function LEN() {
  * @param {Any} replacement
  * @returns {Func}
  */
-export function REPLACE(expr, pattern, replacement) {
+export function replace(expr, pattern, replacement) {
   return createFunction('replace', ensureExpression(expr), pattern, replacement)
 }
 
@@ -115,7 +115,7 @@ export function REPLACE(expr, pattern, replacement) {
  * @param {Integer} length
  * @returns {Func}
  */
-export function SUBSTR(expr, start, length) {
+export function substr(expr, start, length) {
   if ( length == null )
     return createFunction('substr', ensureExpression(expr), start)
   else
@@ -126,8 +126,8 @@ export function SUBSTR(expr, start, length) {
  * 
  * @see `SUBSTR`
  */
-export function SUBSTRING() {
-  return SUBSTR(...arguments)
+export function substring() {
+  return substr(...arguments)
 }
 
 /**
@@ -136,7 +136,7 @@ export function SUBSTRING() {
  * @param {Integer} length
  * @returns {Func}
  */
-export function LEFT(expr, length) {
+export function left(expr, length) {
   return createFunction('left', ensureExpression(expr), length)
 }
 
@@ -146,7 +146,7 @@ export function LEFT(expr, length) {
  * @param {Integer} length
  * @returns {Func}
  */
-export function RIGHT(expr, length) {
+export function right(expr, length) {
   return createFunction('right', ensureExpression(expr), length)
 }
 
@@ -155,7 +155,7 @@ export function RIGHT(expr, length) {
  * @param {String|Expresion} expr
  * @returns {Func}
  */
-export function TRIM(expr) {
+export function trim(expr) {
   return createFunction('trim', ensureExpression(expr))
 }
 
@@ -164,7 +164,7 @@ export function TRIM(expr) {
  * @param {String|Expresion} expr
  * @returns {Func}
  */
-export function LTRIM(expr) {
+export function ltrim(expr) {
   return createFunction('ltrim', ensureExpression(expr))
 }
 
@@ -173,7 +173,7 @@ export function LTRIM(expr) {
  * @param {String|Expresion} expr
  * @returns {Func}
  */
-export function RTRIM(expr) {
+export function rtrim(expr) {
   return createFunction('rtrim', ensureExpression(expr))
 }
 
@@ -183,7 +183,7 @@ export function RTRIM(expr) {
  * @param {String|Expresion} substr
  * @returns {Func}
  */
-export function STRPOS(str, substr) {
+export function strpos(str, substr) {
   return createFunction('strpos', ensureExpression(str), substr)
 }
 
@@ -191,8 +191,8 @@ export function STRPOS(str, substr) {
  * 
  * @see `STRPOS`
  */
-export function POSITION() {
-  return STRPOS(...arguments)
+export function position() {
+  return strpos(...arguments)
 }
 
 /**
@@ -201,7 +201,7 @@ export function POSITION() {
  * @param {Integer} count
  * @returns {Func}
  */
-export function REPEAT(expr, count) {
+export function repeat(expr, count) {
   return createFunction('repeat', ensureExpression(expr), count)
 }
 
@@ -210,7 +210,7 @@ export function REPEAT(expr, count) {
  * @param {Integer} length
  * @returns {Func}
  */
-export function SPACE(length) {
+export function space(length) {
   return createFunction('space', length)
 }
 
@@ -219,7 +219,7 @@ export function SPACE(length) {
  * 
  * @returns {Func}
  */
-export function NOW() {
+export function now() {
   return createFunction('now')
 }
 
@@ -227,8 +227,8 @@ export function NOW() {
  * 
  * @see `NOW`
  */
-export function DATETIME() {
-  return NOW()
+export function datetime() {
+  return now()
 }
 
 /**
@@ -236,16 +236,8 @@ export function DATETIME() {
  * 
  * @returns {Func}
  */
-export function UTC() {
+export function utc() {
   return createFunction('utc')
-}
-
-/**
- * 
- * @see `UTC`
- */
-export function UTC_DATETIME() {
-  return UTC()
 }
 
 /**
@@ -253,7 +245,7 @@ export function UTC_DATETIME() {
  * @param {Any} expr
  * @returns {Func}
  */
-export function DATE(expr) {
+export function date(expr) {
   return createFunction('date', ensureExpression(expr))
 }
 
@@ -262,7 +254,7 @@ export function DATE(expr) {
  * 
  * @returns {Func}
  */
-export function TODAY() {
+export function today() {
   return createFunction('current_date')
 }
 
@@ -270,8 +262,8 @@ export function TODAY() {
  * 
  * @see `TODAY`
  */
-export function CURRENT_DATE() {
-  return TODAY()
+export function curdate() {
+  return today()
 }
 
 /**
@@ -279,7 +271,7 @@ export function CURRENT_DATE() {
  * @param {Any} expr
  * @returns {Func}
  */
-export function TIME(expr) {
+export function time(expr) {
   return createFunction('time', ensureExpression(expr))
 }
 
@@ -287,7 +279,7 @@ export function TIME(expr) {
  * 
  * @returns {Func}
  */
-export function CLOCK() {
+export function clock() {
   return createFunction('current_time')
 }
 
@@ -295,8 +287,8 @@ export function CLOCK() {
  * 
  * @returns {Func}
  */
-export function CURRENT_TIME() {
-  return CLOCK()
+export function curtime() {
+  return clock()
 }
 
 /**
@@ -304,7 +296,7 @@ export function CURRENT_TIME() {
  * @param {String|Expression} expr
  * @returns {Func}
  */
-export function DAY(expr) {
+export function day(expr) {
   return createFunction('day', ensureExpression(expr))
 }
 
@@ -313,7 +305,7 @@ export function DAY(expr) {
  * @param {String|Expression} expr
  * @returns {Func}
  */
-export function MONTH(expr) {
+export function month(expr) {
   return createFunction('month', ensureExpression(expr))
 }
 
@@ -322,7 +314,7 @@ export function MONTH(expr) {
  * @param {String|Expression} expr
  * @returns {Func}
  */
-export function YEAR(expr) {
+export function year(expr) {
   return createFunction('year', ensureExpression(expr))
 }
 
@@ -331,7 +323,7 @@ export function YEAR(expr) {
  * @param {String|Expression} expr
  * @returns {Func}
  */
-export function HOUR(expr) {
+export function hour(expr) {
   return createFunction('hour', ensureExpression(expr))
 }
 
@@ -340,7 +332,7 @@ export function HOUR(expr) {
  * @param {String|Expression} expr
  * @returns {Func}
  */
-export function MINUTE(expr) {
+export function minute(expr) {
   return createFunction('minute', ensureExpression(expr))
 }
 
@@ -349,7 +341,7 @@ export function MINUTE(expr) {
  * @param {String|Expression} expr
  * @returns {Func}
  */
-export function SECOND(expr) {
+export function second(expr) {
   return createFunction('second', ensureExpression(expr))
 }
 

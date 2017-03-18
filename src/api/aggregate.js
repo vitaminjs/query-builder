@@ -7,7 +7,7 @@ import { isString, isEmpty } from 'lodash'
  * @param {String|Expression} expr
  * @return {Count}
  */
-export function COUNT(...expr) {
+export function count(...expr) {
   if ( isEmpty(expr) ) expr = ['*']
 
   return createAggregate('count', expr)
@@ -18,7 +18,7 @@ export function COUNT(...expr) {
  * @param {String|Expression} expr
  * @return {Aggregate}
  */
-export function SUM(...expr) {
+export function sum(...expr) {
   return createAggregate('sum', expr)
 }
 
@@ -27,7 +27,7 @@ export function SUM(...expr) {
  * @param {String|Expression} expr
  * @return {Aggregate}
  */
-export function AVG(...expr) {
+export function avg(...expr) {
   return createAggregate('avg', expr)
 }
 
@@ -36,7 +36,7 @@ export function AVG(...expr) {
  * @param {String|Expression} expr
  * @return {Aggregate}
  */
-export function MIN(...expr) {
+export function min(...expr) {
   return createAggregate('min', expr)
 }
 
@@ -45,7 +45,7 @@ export function MIN(...expr) {
  * @param {String|Expression} expr
  * @return {Aggregate}
  */
-export function MAX(...expr) {
+export function max(...expr) {
   return createAggregate('max', expr)
 }
 

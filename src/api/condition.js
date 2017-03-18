@@ -2,7 +2,7 @@
 import { Basic, Between, Exists, Raw } from '../criterion'
 import Expression, { Literal } from '../expression'
 import { isArray, isString, uniq } from 'lodash'
-import { SQ } from './expression'
+import { sq } from './expression'
 
 /**
  * 
@@ -10,7 +10,7 @@ import { SQ } from './expression'
  * @param {Any} value
  * @return {Criterion}
  */
-export function EQ(expr, value) {
+export function eq(expr, value) {
   return createBasicCriterion(expr, '=', value)
 }
 
@@ -20,7 +20,7 @@ export function EQ(expr, value) {
  * @param {Any} value
  * @return {Criterion}
  */
-export function NE(expr, value) {
+export function ne(expr, value) {
   return createBasicCriterion(expr, '!=', value)
 }
 
@@ -30,7 +30,7 @@ export function NE(expr, value) {
  * @param {Any} value
  * @return {Criterion}
  */
-export function GT(expr, value) {
+export function gt(expr, value) {
   return createBasicCriterion(expr, '>', value)
 }
 
@@ -40,7 +40,7 @@ export function GT(expr, value) {
  * @param {Any} value
  * @return {Criterion}
  */
-export function LT(expr, value) {
+export function lt(expr, value) {
   return createBasicCriterion(expr, '<', value)
 }
 
@@ -50,7 +50,7 @@ export function LT(expr, value) {
  * @param {Any} value
  * @return {Criterion}
  */
-export function GTE(expr, value) {
+export function gte(expr, value) {
   return createBasicCriterion(expr, '>=', value)
 }
 
@@ -60,17 +60,8 @@ export function GTE(expr, value) {
  * @param {Any} value
  * @return {Criterion}
  */
-export function LTE(expr, value) {
+export function lte(expr, value) {
   return createBasicCriterion(expr, '<=', value)
-}
-
-/**
- * 
- * @param {String|Expression} expr
- * @returns {Criterion}
- */
-export function ISNULL(expr) {
-  return createBasicCriterion(expr, 'is', null)
 }
 
 /**
@@ -79,8 +70,8 @@ export function ISNULL(expr) {
  * @param {Any} values
  * @returns {Criterion}
  */
-export function IN(expr, values) {
-  return createBasicCriterion(expr, 'in', isArray(values) ? uniq(values) : SQ(values))
+export function $in(expr, values) {
+  return createBasicCriterion(expr, 'in', isArray(values) ? uniq(values) : sq(values))
 }
 
 /**
@@ -90,7 +81,7 @@ export function IN(expr, values) {
  * @param {Any} higher
  * @returns {Criterion}
  */
-export function BETWEEN(expr, lower, higher) {
+export function between(expr, lower, higher) {
   return new Between(ensureExpression(expr), [lower, higher])
 }
 
@@ -99,8 +90,8 @@ export function BETWEEN(expr, lower, higher) {
  * @param {Any} query
  * @returns {Criterion}
  */
-export function EXISTS(query) {
-  return new Exists(SQ(query))
+export function exists(query) {
+  return new Exists(sq(query))
 }
 
 /**
@@ -109,7 +100,7 @@ export function EXISTS(query) {
  * @param {String} pattern
  * @returns {Criterion}
  */
-export function LIKE(expr, pattern) {
+export function like(expr, pattern) {
   return createBasicCriterion(expr, 'like', pattern)
 }
 
@@ -119,8 +110,8 @@ export function LIKE(expr, pattern) {
  * @param {String} value
  * @returns {Criterion}
  */
-export function STARTSWITH(expr, value) {
-  return LIKE(expr, value.replace(/(_|%)/g, '\\$1') + '%')
+export function startsWith(expr, value) {
+  return like(expr, value.replace(/(_|%)/g, '\\$1') + '%')
 }
 
 /**
@@ -129,8 +120,8 @@ export function STARTSWITH(expr, value) {
  * @param {String} value
  * @returns {Criterion}
  */
-export function ENDSWITH(expr, value) {
-  return LIKE(expr, '%' + value.replace(/(_|%)/g, '\\$1'))
+export function endsWith(expr, value) {
+  return like(expr, '%' + value.replace(/(_|%)/g, '\\$1'))
 }
 
 /**
@@ -151,11 +142,5 @@ function createBasicCriterion(expr, operator, value) {
  * @throws {TypeError}
  */
 function ensureExpression(value) {
-  if ( isString(value) )
-    value = new Literal(value)
-  
-  if ( value instanceof Expression )
-    return value
-  
-  throw new TypeError("Invalid condition operand")
+  return value instanceof Expression ? value : Literal.from(value)
 }
