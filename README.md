@@ -21,28 +21,28 @@ $ npm install --save vitamin-query
 
 ```js
 // import the query builder
-import * as qb from 'vitamin-query'
+import { select, insert, update, deleteFrom, raw, not, lt, table, column } from 'vitamin-query'
 
 
-let select = qb.select().from('employees').where('salary > ?', 1500).toSQL('pg')
-assert.equal(select.sql, 'select * from employees where salary > $1')
-assert.deepEqual(select.params, [ 1500 ])
+let selectQuery = select().from('employees').where(raw('salary > ?', 1500)).toSQL('pg')
+assert.equal(selectQuery.sql, 'select * from employees where salary > $1')
+assert.deepEqual(selectQuery.params, [ 1500 ])
 
 
-let data = { name: "Fred", score: 30 }
-let insert = qb.insert(data).into('players').returning('*').toSQL('mssql')
-assert.equal(insert.sql, 'insert into players (name, score) output inserted.* values (?, ?)')
-assert.deepEqual(insert.params, [ 'Fred', 30 ])
+let fred = { name: "Fred", score: 30 }
+let insertQuery = insert(fred).into('players').returning('*').toSQL('mssql')
+assert.equal(insertQuery.sql, 'insert into players (name, score) output inserted.* values (?, ?)')
+assert.deepEqual(insertQuery.params, [ 'Fred', 30 ])
 
 
-let update = qb.update('books').set('status', 'archived').where('publish_date', '<', 2000).toSQL('mysql')
-assert.equal(query3.sql, 'update books set status = ? where publish_date < ?')
-assert.deepEqual(query3.params, [ 'archived', 2000 ])
+let updateQuery = update('books').set('status', 'archived').where({ publish_date: not(lt(2000)) }).toSQL('mysql')
+assert.equal(updateQuery.sql, 'update books set status = ? where (publish_date >= ?)')
+assert.deepEqual(updateQuery.params, [ 'archived', 2000 ])
 
 
-let del = qb.deleteFrom(T('accounts')).where(C('activated'), false).toSQL('sqlite')
-assert.equal(del.sql, 'delete from "accounts" where "activated" = ?')
-assert.deepEqual(del.params, [ false ])
+let deleteQuery = deleteFrom(table('accounts')).where(column('activated'), false).toSQL('sqlite')
+assert.equal(deleteQuery.sql, 'delete from "accounts" where "activated" = ?')
+assert.deepEqual(deleteQuery.params, [ false ])
 ```
 
 ### Custom compiler
@@ -60,6 +60,8 @@ class MariaCompiler extends MysqlCompiler {
 }
 
 // later, you can use its instance with any query instance
+import * as qb from 'vitamin-query'
+
 let query = qb.selectFrom('table').toSQL(new MariaCompiler())
 ```
 
@@ -67,37 +69,37 @@ let query = qb.selectFrom('table').toSQL(new MariaCompiler())
 
 For examples of usage, please refer to the tests.
 
-Expression  | Aggregates  | Conditional | Functions
-----------  | ----------  | ----------- | ---------
-C, COLUMN   | SUM         | EQ          | UPPER, UCASE
-T, TABLE    | AVG         | NE          | LOWER, LCASE
-SQ          | MAX         | GT          | REPLACE
-RAW         | MIN         | LT          | SUBSTR, SUBSTRING
-ESC         | COUNT       | GTE         | CONCAT
-CAST        |             | LTE         | LENGTH, LEN
-            |             | ISNULL      | REPEAT
-            |             | IN          | SPACE
-            |             | BETWEEN     | STRPOS, POSITION
-            |             | STARTSWITH  | LEFT
-            |             | ENDSWITH    | RIGHT
-            |             | EXISTS      | TRIM
-            |             | LIKE        | LTRIM
-            |             |             | RTRIM
-            |             |             | ABS
-            |             |             | ROUND
-            |             |             | RAND, RANDOM
-            |             |             | NOW, DATETIME
-            |             |             | UTC, UTC_DATETIME
-            |             |             | TODAY, CURRENT_DATE
-            |             |             | CLOCK, CURRENT_TIME
-            |             |             | DATE
-            |             |             | TIME
-            |             |             | DAY
-            |             |             | MONTH
-            |             |             | YEAR
-            |             |             | HOUR
-            |             |             | MINUTE
-            |             |             | SECOND
+query | Expression | Aggregates | Conditional | Functions
+----- | ---------- | ---------- | ----------- | ---------
+select | column | sum | eq | upper, ucase
+selectFrom | table | avg | ne | lower, lcase
+insert | sq | max | gt | replace
+insertInto | raw | min | lt | substr, substring
+update | esc | count | gte | concat
+deleteFrom | cast | | lte | len, length
+ | | | like | repeat
+ | | | in, $in | space
+ | | | between | strpos, position
+ | | | startsWith | left
+ | | | endsWith | right
+ | | | exists | trim
+ | | | not | ltrim
+ | | | and | rtrim
+ | | | or | abs
+ | | | | round
+ | | | | rand, random
+ | | | | now, datetime
+ | | | | utc
+ | | | | today, curdate
+ | | | | clock, curtime
+ | | | | date
+ | | | | time
+ | | | | day
+ | | | | month
+ | | | | year
+ | | | | hour
+ | | | | minute
+ | | | | second
 
 ## Testing
 
