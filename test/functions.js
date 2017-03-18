@@ -1,15 +1,13 @@
 /* global describe */
 
-var fn      = require('../lib/helpers')
 var support = require('./support')
-var ESC     = fn.ESC
-var C       = fn.C
+var __      = require('../lib')
 
 describe("test SQL functions:", () => {
   
   support.test(
     "test upper()",
-    fn.UPPER(ESC('foo')),
+    __.UPPER(__.ESC('foo')),
     {
       pg:     "upper('foo')",
       mysql:  "upper('foo')",
@@ -20,7 +18,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test lower()",
-    fn.LOWER(C('bar')),
+    __.LOWER(__.C('bar')),
     {
       pg:     'lower("bar")',
       mysql:  'lower(`bar`)',
@@ -31,7 +29,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test concat()",
-    fn.CONCAT(C('first_name'), ' ', C('last_name')),
+    __.CONCAT(__.C('first_name'), ' ', __.C('last_name')),
     {
       pg:     'concat("first_name", \' \', "last_name")',
       mysql:  'concat(coalesce(`first_name`, \'\'), \' \', coalesce(`last_name`, \'\'))',
@@ -42,7 +40,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test length()",
-    fn.LENGTH('foo'),
+    __.LENGTH('foo'),
     {
       pg:     "length(foo)",
       mysql:  "length(foo)",
@@ -53,7 +51,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test replace()",
-    fn.REPLACE(C('column'), ESC('foo'), 'bar'),
+    __.REPLACE(__.C('column'), __.ESC('foo'), 'bar'),
     {
       pg:     "replace(\"column\", 'foo', $1)",
       mysql:  "replace(`column`, 'foo', ?)",
@@ -65,7 +63,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test substr()",
-    fn.SUBSTR(C('first_name'), 1, 1),
+    __.SUBSTR(__.C('first_name'), 1, 1),
     {
       pg:     'substr("first_name", $1, $2)',
       mysql:  'substr(`first_name`, ?, ?)',
@@ -77,7 +75,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test substr()",
-    fn.SUBSTR(ESC('abcdefgh'), 4),
+    __.SUBSTR(__.ESC('abcdefgh'), 4),
     {
       pg:     "substr('abcdefgh', $1)",
       mysql:  "substr('abcdefgh', ?)",
@@ -89,7 +87,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test trim()",
-    fn.TRIM(C('name')),
+    __.TRIM(__.C('name')),
     {
       pg:     'trim("name")',
       mysql:  'trim(`name`)',
@@ -100,7 +98,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test rtrim()",
-    fn.RTRIM(ESC('foo  ')),
+    __.RTRIM(__.ESC('foo  ')),
     {
       pg:     "rtrim('foo  ')",
       mysql:  "rtrim('foo  ')",
@@ -111,7 +109,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test ltrim()",
-    fn.LTRIM(C('name')),
+    __.LTRIM(__.C('name')),
     {
       pg:     'ltrim("name")',
       mysql:  'ltrim(`name`)',
@@ -122,7 +120,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test left()",
-    fn.LEFT(C('first_name'), 3),
+    __.LEFT(__.C('first_name'), 3),
     {
       pg:     'left("first_name", $1)',
       mysql:  'left(`first_name`, ?)',
@@ -134,7 +132,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test right()",
-    fn.RIGHT(ESC('foobar'), 3),
+    __.RIGHT(__.ESC('foobar'), 3),
     {
       pg:     "right('foobar', $1)",
       mysql:  "right('foobar', ?)",
@@ -146,7 +144,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test strpos()",
-    fn.STRPOS(C('full_name'), 'foo'),
+    __.STRPOS(__.C('full_name'), 'foo'),
     {
       pg:     'strpos("full_name", $1)',
       mysql:  'instr(`full_name`, ?)',
@@ -158,7 +156,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test repeat()",
-    fn.REPEAT(ESC('sql'), 3),
+    __.REPEAT(__.ESC('sql'), 3),
     {
       pg:     "repeat('sql', $1)",
       mysql:  "repeat('sql', ?)",
@@ -170,7 +168,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test repeat()",
-    fn.REPEAT('sql', 3),
+    __.REPEAT('sql', 3),
     {
       pg:     "repeat(sql, $1)",
       mysql:  "repeat(sql, ?)",
@@ -182,7 +180,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test space()",
-    fn.SPACE(5),
+    __.SPACE(5),
     {
       pg:     "repeat(' ', $1)",
       mysql:  "space(?)",
@@ -196,7 +194,7 @@ describe("test SQL functions:", () => {
 
   support.test(
     "test rand()",
-    fn.RAND(),
+    __.RAND(),
     {
       pg:     "rand()",
       mysql:  "rand()",
@@ -207,7 +205,7 @@ describe("test SQL functions:", () => {
 
   support.test(
     "test abs()",
-    fn.ABS(-9),
+    __.ABS(-9),
     {
       pg:     "abs($1)",
       mysql:  "abs(?)",
@@ -219,7 +217,7 @@ describe("test SQL functions:", () => {
 
   support.test(
     "test round()",
-    fn.ROUND(123.4545, 2),
+    __.ROUND(123.4545, 2),
     {
       pg:     "round($1, $2)",
       mysql:  "round(?, ?)",
@@ -233,7 +231,7 @@ describe("test SQL functions:", () => {
 
   support.test(
     "test now()",
-    fn.NOW(),
+    __.NOW(),
     {
       pg:     "localtimestamp(0)",
       mysql:  "now()",
@@ -244,7 +242,7 @@ describe("test SQL functions:", () => {
 
   support.test(
     "test utc()",
-    fn.UTC(),
+    __.UTC(),
     {
       pg:     "current_timestamp(0) at time zone 'UTC'",
       mysql:  "utc_timestamp()",
@@ -255,7 +253,7 @@ describe("test SQL functions:", () => {
 
   support.test(
     "test today()",
-    fn.TODAY(),
+    __.TODAY(),
     {
       pg:     "current_date",
       mysql:  "current_date()",
@@ -266,7 +264,7 @@ describe("test SQL functions:", () => {
 
   support.test(
     "test current_time()",
-    fn.CURRENT_TIME(),
+    __.CURRENT_TIME(),
     {
       pg:     "current_time(0)",
       mysql:  "current_time()",
@@ -277,7 +275,7 @@ describe("test SQL functions:", () => {
 
   support.test(
     "test date()",
-    fn.DATE(ESC('2017-03-02 09:20:25')),
+    __.DATE(__.ESC('2017-03-02 09:20:25')),
     {
       pg:     "cast('2017-03-02 09:20:25' as date)",
       mysql:  "date('2017-03-02 09:20:25')",
@@ -288,7 +286,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test time()",
-    fn.TIME(C('created_at')),
+    __.TIME(__.C('created_at')),
     {
       pg:     'cast("created_at" as time(0))',
       mysql:  "time(`created_at`)",
@@ -299,7 +297,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test day()",
-    fn.DAY(ESC('2017-03-02 09:20:25')),
+    __.DAY(__.ESC('2017-03-02 09:20:25')),
     {
       pg:     "extract(day from '2017-03-02 09:20:25')",
       mysql:  "day('2017-03-02 09:20:25')",
@@ -310,7 +308,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test month()",
-    fn.MONTH(ESC('2017-03-02 09:20:25')),
+    __.MONTH(__.ESC('2017-03-02 09:20:25')),
     {
       pg:     "extract(month from '2017-03-02 09:20:25')",
       mysql:  "month('2017-03-02 09:20:25')",
@@ -321,7 +319,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test year()",
-    fn.YEAR(C('purchased_at')),
+    __.YEAR(__.C('purchased_at')),
     {
       pg:     'extract(year from "purchased_at")',
       mysql:  "year(`purchased_at`)",
@@ -332,7 +330,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test hour()",
-    fn.HOUR(ESC('2017-03-02 09:20:25')),
+    __.HOUR(__.ESC('2017-03-02 09:20:25')),
     {
       pg:     "extract(hour from '2017-03-02 09:20:25')",
       mysql:  "hour('2017-03-02 09:20:25')",
@@ -343,7 +341,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test minute()",
-    fn.MINUTE(ESC('2017-03-02 09:20:25')),
+    __.MINUTE(__.ESC('2017-03-02 09:20:25')),
     {
       pg:     "extract(minute from '2017-03-02 09:20:25')",
       mysql:  "minute('2017-03-02 09:20:25')",
@@ -354,7 +352,7 @@ describe("test SQL functions:", () => {
   
   support.test(
     "test second()",
-    fn.SECOND(ESC('2017-03-02 09:20:25')),
+    __.SECOND(__.ESC('2017-03-02 09:20:25')),
     {
       pg:     "extract(second from '2017-03-02 09:20:25')",
       mysql:  "second('2017-03-02 09:20:25')",
