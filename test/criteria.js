@@ -71,6 +71,18 @@ describe("test Criteria object:", () => {
   )
   
   support.test(
+    "using `or` helper and plain objects",
+    where(__.or({ foo: 123, bar: 'baz' })),
+    {
+      pg: '(foo = $1 or bar = $2)',
+      mysql: '(foo = ? or bar = ?)',
+      mssql:  '(foo = ? or bar = ?)',
+      sqlite: '(foo = ? or bar = ?)',
+    },
+    [ 123, 'baz' ]
+  )
+  
+  support.test(
     "using functions",
     where(cr => cr.where('foo', 123).orWhereNot('bar', null)),
     {
@@ -131,6 +143,18 @@ describe("test Criteria object:", () => {
   )
   
   support.test(
+    "using `in` and `not` together",
+    where('foo', __.not(__.in([ 1, 2, 3 ]))),
+    {
+      pg: 'foo not in ($1, $2, $3)',
+      mysql: 'foo not in (?, ?, ?)',
+      mssql:  'foo not in (?, ?, ?)',
+      sqlite: 'foo not in (?, ?, ?)',
+    },
+    [ 1, 2, 3 ]
+  )
+  
+  support.test(
     "using raw expressions",
     where(__.raw('a = ? and (b > ? or c in ?)', 123, 200, [4, 5])),
     {
@@ -143,7 +167,7 @@ describe("test Criteria object:", () => {
   )
   
   support.test(
-    "using raw expressions (case 2)",
+    "using negated raw expressions (case 2)",
     where(true).orWhereNot(__.raw('a = ? and (b > ? or c in ?)', 123, 200, [4, 5])),
     {
       pg: '1 = 1 or not (a = $1 and (b > $2 or c in ($3, $4)))',

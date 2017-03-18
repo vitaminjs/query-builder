@@ -1,7 +1,7 @@
 
+import { isArray, isPlainObject, each, uniq } from 'lodash'
 import { Basic, Between, Exists } from '../criterion'
 import Expression, { Literal } from '../expression'
-import { isArray, uniq } from 'lodash'
 import { sq } from './expression'
 
 /**
@@ -148,6 +148,42 @@ export function endsWith(expr, value) {
   }
   
   return like(expr, '%' + value.replace(/(_|%)/g, '\\$1'))
+}
+
+/**
+ * Noop helper
+ * 
+ * @param {Criterion} value
+ * @returns {Criterion}
+ */
+export function and(value) {
+  return value
+}
+
+/**
+ * Use `or` as separator for a plain object of conditions
+ * 
+ * @param {Object} value
+ * @returns {Function}
+ */
+export function or(value) {
+  if ( isPlainObject(value) ) {
+    let obj = value
+    
+    value = cr => each(obj, (v, k) => cr.orWhere(k, v))
+  }
+  
+  return and(value)
+}
+
+/**
+ * Negate a criterion object, by calling the `negate()` method
+ * 
+ * @param {Criterion} value
+ * @returns {Criterion}
+ */
+export function not(value) {
+  return and(value).negate()
 }
 
 /**
