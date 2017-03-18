@@ -142,4 +142,16 @@ describe("test Criteria object:", () => {
     [ 123, 200, 4, 5 ]
   )
   
+  support.test(
+    "using an expression as operand instead of a plain string",
+    where(__.column('a'), false),
+    {
+      pg: '"a" = $1',
+      mysql: '`a` = ?',
+      mssql:  '"a" = ?',
+      sqlite: '"a" = ?',
+    },
+    [ false ]
+  )
+  
 })

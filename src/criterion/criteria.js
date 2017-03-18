@@ -1,6 +1,6 @@
 
 import { each, isPlainObject, isFunction, isBoolean } from 'lodash'
-import { Literal } from '../expression'
+import Expression, { Literal } from '../expression'
 import Criterion from './base'
 import Basic from './basic'
 import Raw from './raw'
@@ -140,11 +140,14 @@ export default class Criteria extends Criterion {
     if ( expr instanceof Criterion )
       return this.add(expr, bool, not)
     
+    // ensure the operand is an expression
+    expr = expr instanceof Expression ? expr : Literal.from(expr)
+    
     // supports `.where(expr, criterion)` instead of `.where(expr, op, value)`
     if (! (value instanceof Basic) )
       value = new Basic(null, '=', value)
 
-    return this.add(value.setOperand(Literal.from(expr)), bool, not)
+    return this.add(value.setOperand(expr), bool, not)
   }
   
   /**
