@@ -19,27 +19,45 @@ export default (parent) => class extends parent {
   
   /**
    * 
-   * @param {Any} expr
-   * @param {Any} args
+   * @param {Any} condition
    * @returns {Query}
+   * @see `Criteria.where()`
    */
-  where(expr, ...args) {
-    this.getConditions().where(...arguments)
+  where(...condition) {
+    this.getConditions().where(...condition)
     return this
   }
   
   /**
    * 
-   * @param {Any} expr
-   * @param {Any} args
+   * @param {Any} condition
    * @returns {Query}
+   * @see `Criteria.orWhere()`
    */
-  orWhere(expr, ...args) {
-    this.where(...arguments)
-
-    // TODO add or boolean to the last criterion
-    // last(this.getConditions()).setBoolean('or')
-
+  orWhere(...condition) {
+    this.getConditions().orWhere(...condition)
+    return this
+  }
+  
+  /**
+   * 
+   * @param {Any} condition
+   * @returns {Query}
+   * @see `Criteria.whereNot()`
+   */
+  whereNot(expr, value, bool = 'and') {
+    this.getConditions().whereNot(...condition)
+    return this
+  }
+  
+  /**
+   * 
+   * @param {Any} condition
+   * @returns {Query}
+   * @see `Criteria.orWhereNot()`
+   */
+  orWhereNot(...condition) {
+    this.getConditions().orWhereNot(...condition)
     return this
   }
 

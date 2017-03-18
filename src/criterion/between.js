@@ -1,5 +1,4 @@
 
-import { isArray } from 'lodash'
 import Criterion from './basic'
 
 /**
@@ -10,16 +9,14 @@ export default class Between extends Criterion {
   /**
    * 
    * @param {Expression} expr
-   * @param {Array} values
+   * @param {Any} minvalue
+   * @param {Any} maxValue
    * @constructor
    */
-  constructor(expr, values) {
-    if (! (isArray(values) && values.length === 2) )
-      throw new TypeError("Invalid values for `between` condition")
-    
-    super(expr, 'between', values[0])
+  constructor(expr, minValue, maxValue) {
+    super(expr, 'between', minValue)
 
-    this.value2 = values[1]
+    this.maxValue = maxValue
   }
 
   /**
@@ -37,7 +34,7 @@ export default class Between extends Criterion {
    * @returns {String}
    */
   compile(compiler) {
-    return super.compile(compiler) + ` and ${compiler.parameterize(this.value2)}`
+    return super.compile(compiler) + ` and ${compiler.parameterize(this.maxValue)}`
   }
   
 }

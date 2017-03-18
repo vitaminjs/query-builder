@@ -1,7 +1,7 @@
 
-import { Basic, Between, Exists, Raw } from '../criterion'
+import { Basic, Between, Exists } from '../criterion'
 import Expression, { Literal } from '../expression'
-import { isArray, isString, uniq } from 'lodash'
+import { isArray, uniq } from 'lodash'
 import { sq } from './expression'
 
 /**
@@ -11,7 +11,7 @@ import { sq } from './expression'
  * @return {Criterion}
  */
 export function eq(expr, value) {
-  return createBasicCriterion(expr, '=', value)
+  return createBasicCriterion('=', ...arguments)
 }
 
 /**
@@ -21,7 +21,7 @@ export function eq(expr, value) {
  * @return {Criterion}
  */
 export function ne(expr, value) {
-  return createBasicCriterion(expr, '!=', value)
+  return createBasicCriterion('!=', ...arguments)
 }
 
 /**
@@ -31,7 +31,7 @@ export function ne(expr, value) {
  * @return {Criterion}
  */
 export function gt(expr, value) {
-  return createBasicCriterion(expr, '>', value)
+  return createBasicCriterion('>', ...arguments)
 }
 
 /**
@@ -41,7 +41,7 @@ export function gt(expr, value) {
  * @return {Criterion}
  */
 export function lt(expr, value) {
-  return createBasicCriterion(expr, '<', value)
+  return createBasicCriterion('<', ...arguments)
 }
 
 /**
@@ -51,7 +51,7 @@ export function lt(expr, value) {
  * @return {Criterion}
  */
 export function gte(expr, value) {
-  return createBasicCriterion(expr, '>=', value)
+  return createBasicCriterion('>=', ...arguments)
 }
 
 /**
@@ -61,7 +61,7 @@ export function gte(expr, value) {
  * @return {Criterion}
  */
 export function lte(expr, value) {
-  return createBasicCriterion(expr, '<=', value)
+  return createBasicCriterion('<=', ...arguments)
 }
 
 /**
@@ -70,19 +70,35 @@ export function lte(expr, value) {
  * @param {Any} values
  * @returns {Criterion}
  */
-export function $in(expr, values) {
-  return createBasicCriterion(expr, 'in', isArray(values) ? uniq(values) : sq(values))
+exports['in'] = exports.$in = function $in(expr, values) {
+  if ( arguments.length === 1 ) {
+    values = expr
+    expr = null
+  }
+  
+  values = isArray(values) ? uniq(values) : sq(values)
+  
+  return createBasicCriterion('in', expr, values)
 }
 
 /**
  * 
  * @param {String|Expression} expr
- * @param {Any} lower
- * @param {Any} higher
+ * @param {Any} min
+ * @param {Any} max
  * @returns {Criterion}
  */
-export function between(expr, lower, higher) {
-  return new Between(ensureExpression(expr), [lower, higher])
+export function between(expr, min, max) {
+  if ( arguments.length === 2 ) {
+    max = min
+    min = expr
+    expr = null
+  }
+  
+  if ( expr )
+    expr = ensureExpression(expr)
+  
+  return new Between(expr, min, max)
 }
 
 /**
@@ -101,7 +117,7 @@ export function exists(query) {
  * @returns {Criterion}
  */
 export function like(expr, pattern) {
-  return createBasicCriterion(expr, 'like', pattern)
+  return createBasicCriterion('like', ...arguments)
 }
 
 /**
@@ -126,20 +142,27 @@ export function endsWith(expr, value) {
 
 /**
  * 
- * @param {String|Expression} expr
  * @param {String} operator
+ * @param {String|Expression} expr
  * @param {Any} value
  * @returns {Basic}
  */
-function createBasicCriterion(expr, operator, value) {
-  return new Basic(ensureExpression(expr), operator, value)
+function createBasicCriterion(operator, expr, value) {
+  if ( arguments.length === 2 ) {
+    value = expr
+    expr = null
+  }
+  
+  if ( expr )
+    expr = ensureExpression(expr)
+  
+  return new Basic(expr, operator, value)
 }
 
 /**
  * 
  * @param {Any} value
  * @returns {Expression}
- * @throws {TypeError}
  */
 function ensureExpression(value) {
   return value instanceof Expression ? value : Literal.from(value)

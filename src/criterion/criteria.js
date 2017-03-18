@@ -1,13 +1,12 @@
 
-import { each, isPlainObject, isFunction, isString, isBoolean, isNumber } from 'lodash'
-import Expression, { Literal } from '../expression'
-import Between from './between'
+import { each, isPlainObject, isFunction, isBoolean } from 'lodash'
+import { Literal } from '../expression'
 import Criterion from './base'
 import Basic from './basic'
 import Raw from './raw'
 
 /**
- * @class CriteriaExpression
+ * @class Criteria
  */
 export default class Criteria extends Criterion {
   
@@ -109,14 +108,12 @@ export default class Criteria extends Criterion {
   
   /**
    * @param {Any} expr
-   * @param {String} operator
    * @param {Any} value
    * @param {String} bool
    * @param {Boolean} not
    * @returns {Criteria}
-   * @throws {TypeError}
    */
-  where(expr, operator, value, bool = 'and', not = false) {
+  where(expr, value, bool = 'and', not = false) {
     // supports `.where(true|false)`
     if ( isBoolean(expr) )
       expr = new Literal(`1 = ${expr && !not ? 1 : 0}`)
@@ -124,14 +121,6 @@ export default class Criteria extends Criterion {
     // supports `.where(new Literal(...))`
     if ( expr instanceof Literal )
       return this.add(new Raw(expr), bool)
-    
-    // supports scalar conditions
-    if ( isNumber(expr) )
-      expr = String(expr)
-    
-    // each string expression will be wrapped into a Literal
-    if ( isString(expr) )
-      expr = new Literal(expr)
     
     // supports `.where({a: 1, b: 3})`
     if ( isPlainObject(expr) ) {
@@ -151,51 +140,43 @@ export default class Criteria extends Criterion {
     if ( expr instanceof Criterion )
       return this.add(expr, bool, not)
     
-    if ( value === undefined && operator !== undefined ) {
-      value = operator
-      operator = '='
-    }
+    // supports `.where(expr, criterion)` instead of `.where(expr, op, value)`
+    if (! (value instanceof Basic) )
+      value = new Basic(null, '=', value)
 
-    // supports `.where('column', 'between', [val1, val2])`
-    if ( ~operator.toLowerCase().trim().indexOf('between') )
-      return this.add(new Between(expr, value), bool, not)
-
-    return this.add(new Basic(expr, operator, value), bool, not)
+    return this.add(value.setOperand(Literal.from(expr)), bool, not)
   }
   
   /**
    * 
    * @param {Any} expr
-   * @param {String} operator
    * @param {Any} value
    * @returns {Criteria}
    */
-  orWhere(expr, operator, value) {
-    return this.where(expr, operator, value, 'or')
+  orWhere(expr, value) {
+    return this.where(expr, value, 'or')
   }
   
   /**
    * 
    * @param {Any} expr
-   * @param {String} operator
    * @param {Any} value
    * @param {String} bool
    * @returns {Criteria}
    */
-  whereNot(expr, operator, value, bool = 'and') {
-    return this.where(expr, operator, value, bool, true)
+  whereNot(expr, value, bool = 'and') {
+    return this.where(expr, value, bool, true)
   }
   
   /**
    * 
    * @param {Any} expr
-   * @param {String} operator
    * @param {Any} value
    * @param {String} bool
    * @returns {Criteria}
    */
-  orWhereNot(expr, operator, value) {
-    return this.whereNot(expr, operator, value, 'or')
+  orWhereNot(expr, value) {
+    return this.whereNot(expr, value, 'or')
   }
   
 }
