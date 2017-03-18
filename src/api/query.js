@@ -1,5 +1,5 @@
 
-import { Select, Insert, Delete, Update } from './query'
+import { Select, Insert, Delete, Update } from '../query'
 
 /**
  * 

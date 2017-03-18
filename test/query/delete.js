@@ -1,10 +1,9 @@
 /* global describe */
 
-var qb      = require('../../lib').default
-var fn      = require('../../lib/helpers')
+var qb      = require('../../lib')
 var support = require('../support')
-var C       = fn.C
-var T       = fn.T
+var C       = qb.column
+var T       = qb.table
 
 describe("test building delete queries:", () => {
 
@@ -21,7 +20,7 @@ describe("test building delete queries:", () => {
 
   support.test(
     "creates a conditional delete query",
-    qb.delete(T('accounts')).where(C('activated'), false),
+    qb.deleteFrom(T('accounts')).where(T('activated'), false),
     {
       pg:     'delete from "accounts" where "activated" = $1',
       mysql:  'delete from `accounts` where `activated` = ?',

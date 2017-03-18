@@ -148,7 +148,7 @@ describe("test Criteria object:", () => {
     {
       pg: '"a" = $1',
       mysql: '`a` = ?',
-      mssql:  '"a" = ?',
+      mssql:  '[a] = ?',
       sqlite: '"a" = ?',
     },
     [ false ]
