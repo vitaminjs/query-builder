@@ -1,13 +1,14 @@
 /* global describe */
 
-var qb      = require('../../lib').default
-var fn      = require('../../lib/helpers')
 var support = require('../support')
-var RAW     = fn.RAW
-var MAX     = fn.MAX
-var SQ      = fn.SQ
-var C       = fn.C
-var T       = fn.T
+var qb      = require('../../lib')
+var RAW     = qb.raw
+var MAX     = qb.max
+var SQ      = qb.sq
+var C       = qb.column
+var T       = qb.table
+var gt      = qb.gt
+var lte     = qb.lte
 
 describe("test building update queries:", () => {
 
@@ -24,12 +25,12 @@ describe("test building update queries:", () => {
 
   support.test(
     "generates a basic update query using plain object data",
-    qb.update('books').set({ status: 'archived' }).where('publish_date', '<', 2000),
+    qb.update('books').set({ status: 'archived' }).where('publish_date', lte(2000)),
     {
-      pg:     'update books set status = $1 where publish_date < $2',
-      mysql:  'update books set status = ? where publish_date < ?',
-      mssql:  'update books set status = ? where publish_date < ?',
-      sqlite: 'update books set status = ? where publish_date < ?',
+      pg:     'update books set status = $1 where publish_date <= $2',
+      mysql:  'update books set status = ? where publish_date <= ?',
+      mssql:  'update books set status = ? where publish_date <= ?',
+      sqlite: 'update books set status = ? where publish_date <= ?',
     },
     ['archived', 2000]
   )
@@ -72,12 +73,12 @@ describe("test building update queries:", () => {
 
   support.test(
     "adds a returning clause",
-    qb.update('foo').set('a', RAW`a + 1`).where('a', '<', 3).returning('*'),
+    qb.update('foo').set('a', RAW`a + 1`).where('a', gt(3)).returning('*'),
     {
-      pg:     'update foo set a = a + 1 where a < $1 returning *',
-      mysql:  'update foo set a = a + 1 where a < ?',
-      mssql:  'update foo set a = a + 1 output inserted.* where a < ?',
-      sqlite: 'update foo set a = a + 1 where a < ?',
+      pg:     'update foo set a = a + 1 where a > $1 returning *',
+      mysql:  'update foo set a = a + 1 where a > ?',
+      mssql:  'update foo set a = a + 1 output inserted.* where a > ?',
+      sqlite: 'update foo set a = a + 1 where a > ?',
     },
     [ 3 ]
   )

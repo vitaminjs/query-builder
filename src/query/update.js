@@ -1,11 +1,12 @@
 
 import { extend, clone, fromPairs, isString, isEmpty } from 'lodash'
+import { UseTable, UseReturning, UseConditions } from './mixins'
 import Query from './base'
 
 /**
  * @class UpdateQuery
  */
-export default class Update extends Query {
+export default class Update extends UseTable(UseReturning(UseConditions(Query))) {
   
   /**
    * 
@@ -69,7 +70,7 @@ export default class Update extends Query {
    * @returns {String}
    */
   compile(compiler) {
-    return this.hasTable() ? compiler.compileUpdateQuery(this) : ''
+    return this.hasTable() && this.hasValues() ? compiler.compileUpdateQuery(this) : ''
   }
 
   /**
