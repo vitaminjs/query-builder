@@ -1,20 +1,19 @@
 /* global describe */
 
-var Select = require('../../lib/query').Select
-var fn = require('../../lib/helpers')
-var qb = require('../../lib').default
+var Select  = require('../../lib/query').Select
 var support = require('../support')
-var assert = require('assert')
-var EXISTS  = fn.EXISTS
-var COUNT   = fn.COUNT
-var RAW     = fn.RAW
-var MAX     = fn.MAX
-var MIN     = fn.MIN
-var SUM     = fn.SUM
-var SQ      = fn.SQ
-var IN      = fn.IN
-var T       = fn.T
-var C       = fn.C
+var qb      = require('../../lib')
+var assert  = require('assert')
+var EXISTS  = qb.exists
+var COUNT   = qb.count
+var RAW     = qb.raw
+var MAX     = qb.max
+var MIN     = qb.min
+var SUM     = qb.sum
+var SQ      = qb.sq
+var IN      = qb.in
+var T       = qb.table
+var C       = qb.column
 
 describe("test building select queries:", () => {
   
@@ -196,7 +195,7 @@ describe("test building select queries:", () => {
 
     support.test(
       "adds a table join with more than one condition",
-      qb.selectFrom('departments dept').join('employees emp', cr => cr.where(RAW('emp.department_id = dept.id')).where('emp.salary', '>', 2500)),
+      qb.selectFrom('departments dept').join('employees emp', cr => cr.where(RAW('emp.department_id = dept.id')).where('emp.salary', qb.gt(2500))),
       {
         pg:     'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > $1)',
         mysql:  'select * from departments dept inner join employees emp on (emp.department_id = dept.id and emp.salary > ?)',
@@ -246,7 +245,7 @@ describe("test building select queries:", () => {
     
     support.test(
       "adds multiple where conditions",
-      qb.selectFrom('table').where('a', 'x').whereNot('b', '<', 300).orWhere('c', 'like', 'zoo%'),
+      qb.selectFrom('table').where('a', 'x').whereNot('b', qb.lt(300)).orWhere('c', qb.startsWith('zoo')),
       {
         pg:     'select * from table where a = $1 and b >= $2 or c like $3',
         mysql:  'select * from table where a = ? and b >= ? or c like ?',
@@ -282,7 +281,7 @@ describe("test building select queries:", () => {
     
     support.test(
       "accepts nested conditions",
-      qb.selectFrom('table').whereNot(cr => cr.where('a', null).orWhere('b', 'between', [10, 20])),
+      qb.selectFrom('table').whereNot(cr => cr.where('a', null).orWhere('b', qb.between(10, 20))),
       {
         pg:     'select * from table where not (a is null or b between $1 and $2)',
         mysql:  'select * from table where not (a is null or b between ? and ?)',
@@ -428,7 +427,7 @@ describe("test building select queries:", () => {
     
     support.test(
       "adds a basic having condition",
-      qb.select('name', COUNT()).from('table').groupBy('name').having(COUNT(), '>', 5),
+      qb.select('name', COUNT()).from('table').groupBy('name').having(COUNT(), qb.gt(5)),
       {
         pg:     'select name, count(*) from table group by name having count(*) > $1',
         mysql:  'select name, count(*) from table group by name having count(*) > ?',
@@ -452,7 +451,7 @@ describe("test building select queries:", () => {
     
     support.test(
       "adds a complex having condition",
-      qb.select('name', MIN("age"), SUM('wallet')).from('guys').groupBy('name').havingNot(MIN('age'), 'between', [14, 21]).orHaving('sum(wallet)', [300, 400, 500]),
+      qb.select('name', MIN("age"), SUM('wallet')).from('guys').groupBy('name').havingNot(MIN('age'), qb.between(14, 21)).orHaving('sum(wallet)', [300, 400, 500]),
       {
         pg:     'select name, min(age), sum(wallet) from guys group by name having min(age) not between $1 and $2 or sum(wallet) in ($3, $4, $5)',
         mysql:  'select name, min(age), sum(wallet) from guys group by name having min(age) not between ? and ? or sum(wallet) in (?, ?, ?)',

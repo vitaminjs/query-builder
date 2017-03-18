@@ -2,10 +2,22 @@
 import { Criteria } from '../../criterion'
 
 /**
+ * Capitalize only the first character
+ * 
+ * @param {String} value
+ * @returns {String}
+ */
+function capitalize(value) {
+  return value.substr(0, 1).toUpperCase() + value.slice(1)
+}
+
+/**
  * @param {Class} parent
+ * @param {String} field
+ * @param {String} method
  * @returns {Class}
  */
-export default (parent) => class extends parent {
+export default (parent, field = 'conditions', method = 'where') => class extends parent {
 
   /**
    * 
@@ -14,50 +26,54 @@ export default (parent) => class extends parent {
   constructor() {
     super()
 
-    this._conditions = null
+    this['_' + field] = null
   }
   
   /**
    * 
-   * @param {Any} condition
+   * @param {Any} key
+   * @param {Any} value
    * @returns {Query}
    * @see `Criteria.where()`
    */
-  where(...condition) {
-    this.getConditions().where(...condition)
+  [method](key, value) {
+    this['get' + capitalize(field)]().where(key, value)
     return this
   }
   
   /**
    * 
-   * @param {Any} condition
+   * @param {Any} key
+   * @param {Any} value
    * @returns {Query}
    * @see `Criteria.orWhere()`
    */
-  orWhere(...condition) {
-    this.getConditions().orWhere(...condition)
+  ['or' + capitalize(method)](key, value) {
+    this['get' + capitalize(field)]().orWhere(key, value)
     return this
   }
   
   /**
    * 
-   * @param {Any} condition
+   * @param {Any} key
+   * @param {Any} value
    * @returns {Query}
    * @see `Criteria.whereNot()`
    */
-  whereNot(expr, value, bool = 'and') {
-    this.getConditions().whereNot(...condition)
+  [method + 'Not'](key, value) {
+    this['get' + capitalize(field)]().whereNot(key, value)
     return this
   }
   
   /**
    * 
-   * @param {Any} condition
+   * @param {Any} key
+   * @param {Any} value
    * @returns {Query}
    * @see `Criteria.orWhereNot()`
    */
-  orWhereNot(...condition) {
-    this.getConditions().orWhereNot(...condition)
+  [`or${capitalize(method)}Not`](key, value) {
+    this['get' + capitalize(field)]().orWhereNot(key, value)
     return this
   }
 
@@ -65,8 +81,8 @@ export default (parent) => class extends parent {
    * 
    * @returns {Boolean}
    */
-  hasConditions() {
-    return !( this._conditions == null || this._conditions.isEmpty() )
+  ['has' + capitalize(field)]() {
+    return !( this['_' + field] == null || this['_' + field].isEmpty() )
   }
 
   /**
@@ -74,8 +90,8 @@ export default (parent) => class extends parent {
    * @param {Criteria} value
    * @returns {Query}
    */
-  setConditions(value) {
-    this._conditions = value
+  ['set' + capitalize(field)](value) {
+    this['_' + field] = value
     return this
   }
 
@@ -83,19 +99,19 @@ export default (parent) => class extends parent {
    * 
    * @returns {Query}
    */
-  resetConditions() {
-    return this.setConditions(new Criteria())
+  ['reset' + capitalize(field)]() {
+    return this['set' + capitalize(field)](new Criteria())
   }
 
   /**
    * 
    * @returns {Criteria}
    */
-  getConditions() {
-    if ( this._conditions == null )
-      this.resetConditions()
+  ['get' + capitalize(field)]() {
+    if ( this['_' + field] == null )
+      this['reset' + capitalize(field)]()
 
-    return this._conditions
+    return this['_' + field]
   }
 
 }

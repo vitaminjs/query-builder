@@ -127,6 +127,11 @@ export function like(expr, pattern) {
  * @returns {Criterion}
  */
 export function startsWith(expr, value) {
+  if ( arguments.length === 1 ) {
+    value = expr
+    expr = null
+  }
+  
   return like(expr, value.replace(/(_|%)/g, '\\$1') + '%')
 }
 
@@ -137,6 +142,11 @@ export function startsWith(expr, value) {
  * @returns {Criterion}
  */
 export function endsWith(expr, value) {
+  if ( arguments.length === 1 ) {
+    value = expr
+    expr = null
+  }
+  
   return like(expr, '%' + value.replace(/(_|%)/g, '\\$1'))
 }
 

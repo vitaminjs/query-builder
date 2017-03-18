@@ -5,10 +5,13 @@ import { UseConditions } from './mixins'
 import { Criteria } from '../criterion'
 import Query from './base'
 
+// a DRY mixin for select query
+const QueryMixin = UseConditions(UseConditions(Query, 'havingConditions', 'having'))
+
 /**
  * 
  */
-export default class Select extends UseConditions(Query) {
+export default class Select extends QueryMixin {
 
   constructor() {
     super()
@@ -20,7 +23,6 @@ export default class Select extends UseConditions(Query) {
     this._columns           = []
     this._limit             = null
     this._offset            = null
-    this._havingConditions  = null
     this._distinct          = false
   }
 
@@ -405,21 +407,17 @@ export default class Select extends UseConditions(Query) {
   /**
    * 
    * @param {Any} table
-   * @param {Any} condition
+   * @param {Any} key criterion operand
+   * @param {Any} value criterion value
+   * @param {String} type
    * @returns {Select}
    */
-  join(table, ...condition) {
+  join(table, key, value, type = 'inner') {
     var criteria = null
 
-    // handle raw expressions
-    if ( table instanceof Literal ) {
-      this.getJoins().push(table)
-      return this
-    }
-      
     // add the join criteria object
-    if ( first != null )
-      criteria =  new Criteria().where(first, operator, second)
+    if ( key != null )
+      criteria =  new Criteria().where(key, value)
     
     return this.addJoin(table, 'inner', criteria)
   }
@@ -432,6 +430,12 @@ export default class Select extends UseConditions(Query) {
    * @returns {Select}
    */
   addJoin(table, type = null, criteria = null) {
+    // handle raw expressions
+    if ( table instanceof Literal ) {
+      this.getJoins().push(table)
+      return this
+    }
+      
     // handle functions
     if ( isFunction(table) ) {
       let fn = table
@@ -443,9 +447,11 @@ export default class Select extends UseConditions(Query) {
     if ( table instanceof Select )
       table = table.toExpression()
     
-    // TODO handle Join expressions
+    // handle Join expressions
+    if (! (table instanceof Join) )
+      table = new Join(this.ensureExpression(table), type, criteria)
     
-    this.getJoins().push(new Join(this.ensureExpression(table), type, criteria))
+    this.getJoins().push(table)
 
     return this
   }
@@ -453,37 +459,34 @@ export default class Select extends UseConditions(Query) {
   /**
    * 
    * @param {Any} table
-   * @param {Any} first
-   * @param {String} operator
-   * @param {Any} second
+   * @param {Any} key criterion operand
+   * @param {Any} value criterion value
    * @returns {Select}
    */
-  innerJoin(table, first, operator, second) {
-    // return this.join(table, first, operator, second)
+  innerJoin(table, key, value) {
+    return this.join(table, key, value)
   }
   
   /**
    * 
    * @param {Any} table
-   * @param {Any} first
-   * @param {String} operator
-   * @param {Any} second
+   * @param {Any} key criterion operand
+   * @param {Any} value criterion value
    * @returns {Select}
    */
-  rightJoin(table, first, operator, second) {
-    // return this.join(table, first, operator, second, 'right')
+  rightJoin(table, key, value) {
+    return this.join(table, key, value, 'right')
   }
   
   /**
    * 
    * @param {Any} table
-   * @param {Any} first
-   * @param {String} operator
-   * @param {Any} second
+   * @param {Any} key criterion operand
+   * @param {Any} value criterion value
    * @returns {Select}
    */
-  leftJoin(table, first, operator, second) {
-    // return this.join(table, first, operator, second, 'left')
+  leftJoin(table, key, value) {
+    return this.join(table, key, value, 'left')
   }
   
   /**
@@ -492,7 +495,7 @@ export default class Select extends UseConditions(Query) {
    * @returns {Select}
    */
   crossJoin(table) {
-    return this.addJoin(this.ensureExpression(table), 'cross')
+    return this.addJoin(table, 'cross')
   }
   
   /**
@@ -526,64 +529,6 @@ export default class Select extends UseConditions(Query) {
    */
   resetJoins() {
     return this.setJoins([])
-  }
-  
-  /**
-   * 
-   * @param {Any} expr
-   * @param {Any} args
-   * @returns {Select}
-   */
-  having(expr, ...args) {
-    this.getHavingConditions().where(...arguments)
-    return this
-  }
-  
-  /**
-   * 
-   * @param {Any} expr
-   * @param {Any} args
-   * @returns {Select}
-   */
-  orHaving(expr, ...args) {
-    return this.having(...arguments)
-  }
-
-  /**
-   * 
-   * @returns {Boolean}
-   */
-  hasHavingConditions() {
-    return !( this._havingConditions == null || this._havingConditions.isEmpty() )
-  }
-
-  /**
-   * 
-   * @param {Criteria} value
-   * @returns {Select}
-   */
-  setHavingConditions(value) {
-    this._havingConditions = value
-    return this
-  }
-
-   /**
-   * 
-   * @returns {Select}
-   */
-  resetHavingConditions() {
-    return this.setHavingConditions(new Criteria())
-  }
-
-  /**
-   * 
-   * @returns {Criteria}
-   */
-  getHavingConditions() {
-    if ( this._havingConditions == null )
-      this.resetHavingConditions()
-
-    return this._havingConditions
   }
 
 }
