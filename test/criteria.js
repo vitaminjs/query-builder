@@ -143,6 +143,18 @@ describe("test Criteria object:", () => {
   )
   
   support.test(
+    "using raw expressions (case 2)",
+    where(true).orWhereNot(__.raw('a = ? and (b > ? or c in ?)', 123, 200, [4, 5])),
+    {
+      pg: '1 = 1 or not (a = $1 and (b > $2 or c in ($3, $4)))',
+      mysql: '1 = 1 or not (a = ? and (b > ? or c in (?, ?)))',
+      mssql:  '1 = 1 or not (a = ? and (b > ? or c in (?, ?)))',
+      sqlite: '1 = 1 or not (a = ? and (b > ? or c in (?, ?)))',
+    },
+    [ 123, 200, 4, 5 ]
+  )
+  
+  support.test(
     "using an expression as operand instead of a plain string",
     where(__.column('a'), false),
     {

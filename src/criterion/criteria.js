@@ -115,12 +115,19 @@ export default class Criteria extends Criterion {
    */
   where(expr, value, bool = 'and', not = false) {
     // supports `.where(true|false)`
-    if ( isBoolean(expr) )
+    if ( isBoolean(expr) ) {
       expr = new Literal(`1 = ${expr && !not ? 1 : 0}`)
+      
+      // fixes the literal expression compilation
+      // it prevents the wrong compilation when `not` is true
+      not = false
+    }
     
     // supports `.where(new Literal(...))`
-    if ( expr instanceof Literal )
-      return this.add(new Raw(expr), bool)
+    if ( expr instanceof Literal ) {
+      // we use `not` to negate the raw expression
+      return this.add(new Raw(expr), bool, not)
+    }
     
     // supports `.where({a: 1, b: 3})`
     if ( isPlainObject(expr) ) {
