@@ -76,16 +76,16 @@ selectFrom | table | avg | ne | lower, lcase
 insert | sq | max | gt | replace
 insertInto | raw | min | lt | substr, substring
 update | esc | count | gte | concat
-deleteFrom | cast | | lte | len, length
+deleteFrom | cast | | exists | lte | len, length
  | | | like | repeat
  | | | in, $in | space
  | | | between | strpos, position
  | | | startsWith | left
  | | | endsWith | right
- | | | exists | trim
+ | | | and | trim
  | | | not | ltrim
- | | | and | rtrim
- | | | or | abs
+ | | | or | rtrim
+ | | | | abs
  | | | | round
  | | | | rand, random
  | | | | now, datetime
@@ -106,3 +106,21 @@ deleteFrom | cast | | lte | len, length
 ```bash
 $ npm test
 ```
+
+## Change log
+
+- **v0.2.0** - _API breaking changes_
+  - Remove the operator argument from `Criteria.where()` (issue #4)
+  - Lowcase all the helper functions
+  - Use class mixin to keep the code DRY
+  - Fix minor bugs  and typos
+
+- **v0.1.2** - _Add new datetime helpers_
+
+- **v0.1.1** - _Add helpers for SQL functions_
+  - Configure Travis CI
+  - Update README.md
+  - Add helpers for SQL functions
+  - Fix minor bugs
+  
+- **v0.1.0** - _Intial release_
