@@ -1,10 +1,9 @@
 /* global describe */
 
-var qb      = require('../../lib').default
-var fn      = require('../../lib/helpers')
 var support = require('../support')
-var C       = fn.C
-var T       = fn.T
+var qb      = require('../../lib')
+var C       = qb.column
+var T       = qb.table
 
 describe("test building insert queries:", () => {
 

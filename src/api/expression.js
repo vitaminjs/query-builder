@@ -10,7 +10,7 @@ import { Select } from '../query'
  * @param {Array} args
  * @returns {Literal}
  */
-export function RAW(expr, ...args) {
+export function raw(expr, ...args) {
   // handle template strings
   if ( isArray(expr) )
     expr = expr.join('?')
@@ -24,7 +24,7 @@ export function RAW(expr, ...args) {
  * @returns {Expression}
  * @throws {TypeError}
  */
-export function SQ(query) {
+export function sq(query) {
   // accept a raw query string
   if ( isString(query) )
     return Literal.from(query).wrap()
@@ -52,7 +52,7 @@ export function SQ(query) {
  * @param {String} value
  * @returns {Column}
  */
-export function C(value) {
+export function column(value) {
   var alias = ''
   
   if ( value.indexOf(' as ') > 0 ) {
@@ -64,18 +64,10 @@ export function C(value) {
 
 /**
  * 
- * @see `C()`
- */
-export function COLUMN() {
-  return C(...arguments)
-}
-
-/**
- * 
  * @param {String} value
  * @returns {Table}
  */
-export function T(value) {
+export function table(value) {
   var alias = ''
 
   if ( value.indexOf(' as ') > 0 ) {
@@ -87,18 +79,10 @@ export function T(value) {
 
 /**
  * 
- * @see `T()`
- */
-export function TABLE() {
-  return T(...arguments)
-}
-
-/**
- * 
  * @param {Any} value
  * @returns {Escaped}
  */
-export function ESC(value) {
+export function esc(value) {
   return new Escaped(value)
 }
 
@@ -108,6 +92,6 @@ export function ESC(value) {
  * @param {String} type
  * @returns {Expression}
  */
-export function CAST(value, type) {
-  return RAW(`cast(? as ${type})`, value)
+export function cast(value, type) {
+  return raw(`cast(? as ${type})`, value)
 }

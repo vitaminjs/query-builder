@@ -13,44 +13,36 @@ It provides support for:
 $ npm install --save vitamin-query
 ```
 
-## Testing
-
-```bash
-$ npm test
-```
-
 ## Getting started
 
-### Query builder
+`vitamin-query` is composed of a set of useful functions to build SQL queries easily
+
+### building queries
 
 ```js
-// import the query builder and some helpers
-import qb, { COUNT, RAW, T, C } from 'vitamin-query'
+// import the query builder
+import { select, insert, update, deleteFrom, raw, not, lt, table, column } from 'vitamin-query'
 
-// => Select query
 
-let query1 = qb.select(COUNT()).from('employees').where(RAW`salary > ${1500}`).toSQL('pg')
-assert.equal(query1.sql, 'select count(*) from employees where salary > $1')
-assert.deepEqual(query1.params, [ 1500 ])
+let selectQuery = select().from('employees').where(raw('salary > ?', 1500)).toSQL('pg')
+assert.equal(selectQuery.sql, 'select * from employees where salary > $1')
+assert.deepEqual(selectQuery.params, [ 1500 ])
 
-// => Insert query
 
-let data = { name: "Fred", score: 30 }
-let query2 = qb.insert(data).into(T('players')).returning('*').toSQL('mssql')
-assert.equal(query2.sql, 'insert into [players] (name, score) output inserted.* values (?, ?)')
-assert.deepEqual(query2.params, [ 'Fred', 30 ])
+let fred = { name: "Fred", score: 30 }
+let insertQuery = insert(fred).into('players').returning('*').toSQL('mssql')
+assert.equal(insertQuery.sql, 'insert into players (name, score) output inserted.* values (?, ?)')
+assert.deepEqual(insertQuery.params, [ 'Fred', 30 ])
 
-// => Update query
 
-let query3 = qb.update('books').set('status', 'archived').where('publish_date', '<', 2000).toSQL('mysql')
-assert.equal(query3.sql, 'update books set status = ? where publish_date < ?')
-assert.deepEqual(query3.params, [ 'archived', 2000 ])
+let updateQuery = update('books').set('status', 'archived').where({ publish_date: not(lt(2000)) }).toSQL('mysql')
+assert.equal(updateQuery.sql, 'update books set status = ? where (publish_date >= ?)')
+assert.deepEqual(updateQuery.params, [ 'archived', 2000 ])
 
-// => Delete query
 
-let query4 = qb.deleteFrom(T('accounts')).where(C('activated'), false).toSQL('sqlite')
-assert.equal(query4.sql, 'delete from "accounts" where "activated" = ?')
-assert.deepEqual(query4.params, [ false ])
+let deleteQuery = deleteFrom(table('accounts')).where(column('activated'), false).toSQL('sqlite')
+assert.equal(deleteQuery.sql, 'delete from "accounts" where "activated" = ?')
+assert.deepEqual(deleteQuery.params, [ false ])
 ```
 
 ### Custom compiler
@@ -68,43 +60,67 @@ class MariaCompiler extends MysqlCompiler {
 }
 
 // later, you can use its instance with any query instance
+import * as qb from 'vitamin-query'
+
 let query = qb.selectFrom('table').toSQL(new MariaCompiler())
 ```
 
-### Helpers
-
-Helpers are useful functions to create expressions or criteria, simulate SQL functions, etc...
+### API
 
 For examples of usage, please refer to the tests.
 
-Expression  | Aggregates  | Conditional | Functions
-----------  | ----------  | ----------- | ---------
-C, COLUMN   | SUM         | EQ          | UPPER, UCASE
-T, TABLE    | AVG         | NE          | LOWER, LCASE
-SQ          | MAX         | GT          | REPLACE
-RAW         | MIN         | LT          | SUBSTR, SUBSTRING
-ESC         | COUNT       | GTE         | CONCAT
-CAST        |             | LTE         | LENGTH, LEN
-            |             | ISNULL      | REPEAT
-            |             | IN          | SPACE
-            |             | BETWEEN     | STRPOS, POSITION
-            |             | STARTSWITH  | LEFT
-            |             | ENDSWITH    | RIGHT
-            |             | EXISTS      | TRIM
-            |             | LIKE        | LTRIM
-            |             |             | RTRIM
-            |             |             | ABS
-            |             |             | ROUND
-            |             |             | RAND, RANDOM
-            |             |             | NOW, DATETIME
-            |             |             | UTC, UTC_DATETIME
-            |             |             | TODAY, CURRENT_DATE
-            |             |             | CLOCK, CURRENT_TIME
-            |             |             | DATE
-            |             |             | TIME
-            |             |             | DAY
-            |             |             | MONTH
-            |             |             | YEAR
-            |             |             | HOUR
-            |             |             | MINUTE
-            |             |             | SECOND
+query | Expression | Aggregates | Conditional | Functions
+----- | ---------- | ---------- | ----------- | ---------
+select | column | sum | eq | upper, ucase
+selectFrom | table | avg | ne | lower, lcase
+insert | sq | max | gt | replace
+insertInto | raw | min | lt | substr, substring
+update | esc | count | gte | concat
+deleteFrom | cast | | exists | lte | len, length
+ | | | like | repeat
+ | | | in, $in | space
+ | | | between | strpos, position
+ | | | startsWith | left
+ | | | endsWith | right
+ | | | and | trim
+ | | | not | ltrim
+ | | | or | rtrim
+ | | | | abs
+ | | | | round
+ | | | | rand, random
+ | | | | now, datetime
+ | | | | utc
+ | | | | today, curdate
+ | | | | clock, curtime
+ | | | | date
+ | | | | time
+ | | | | day
+ | | | | month
+ | | | | year
+ | | | | hour
+ | | | | minute
+ | | | | second
+
+## Testing
+
+```bash
+$ npm test
+```
+
+## Change log
+
+- **v0.2.0** - _API breaking changes_
+  - Remove the operator argument from `Criteria.where()` (issue #4)
+  - Lowcase all the helper functions
+  - Use class mixin to keep the code DRY
+  - Fix minor bugs  and typos
+
+- **v0.1.2** - _Add new datetime helpers_
+
+- **v0.1.1** - _Add helpers for SQL functions_
+  - Configure Travis CI
+  - Update README.md
+  - Add helpers for SQL functions
+  - Fix minor bugs
+  
+- **v0.1.0** - _Intial release_
