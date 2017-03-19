@@ -5,7 +5,7 @@ var support = require('./support')
 var __ = require('../lib')
 
 function where() {
-  return new Criteria().where(...arguments)
+  return (cr = new Criteria()).where.apply(cr, arguments)
 }
 
 describe("test Criteria object:", () => {
