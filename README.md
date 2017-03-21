@@ -24,30 +24,30 @@ $ npm install --save vitamin-query
 import { select, insert, update, deleteFrom, raw, not, lt, table, column } from 'vitamin-query'
 
 
-let selectQuery = select().from('employees').where(raw('salary > ?', 1500)).toSQL('pg')
+let selectQuery = select().from('employees').where(raw('salary > ?', 1500)).build('pg')
 assert.equal(selectQuery.sql, 'select * from employees where salary > $1')
 assert.deepEqual(selectQuery.params, [ 1500 ])
 
 
 let fred = { name: "Fred", score: 30 }
-let insertQuery = insert(fred).into('players').returning('*').toSQL('mssql')
+let insertQuery = insert(fred).into('players').returning('*').build('mssql')
 assert.equal(insertQuery.sql, 'insert into players (name, score) output inserted.* values (?, ?)')
 assert.deepEqual(insertQuery.params, [ 'Fred', 30 ])
 
 
-let updateQuery = update('books').set('status', 'archived').where({ publish_date: not(lt(2000)) }).toSQL('mysql')
+let updateQuery = update('books').set('status', 'archived').where({ publish_date: not(lt(2000)) }).build('mysql')
 assert.equal(updateQuery.sql, 'update books set status = ? where (publish_date >= ?)')
 assert.deepEqual(updateQuery.params, [ 'archived', 2000 ])
 
 
-let deleteQuery = deleteFrom(table('accounts')).where(column('activated'), false).toSQL('sqlite')
+let deleteQuery = deleteFrom(table('accounts')).where(column('activated'), false).build('sqlite')
 assert.equal(deleteQuery.sql, 'delete from "accounts" where "activated" = ?')
 assert.deepEqual(deleteQuery.params, [ false ])
 ```
 
 ### Custom compiler
 
-If you may use a custom query compiler instead of the built-in ones, you can pass its instance to `toSQL()`
+If you may use a custom query compiler instead of the built-in ones, you can pass its instance to `build()`
 
 ```js
 // in path/to/maria-compiler.js
@@ -62,7 +62,7 @@ class MariaCompiler extends MysqlCompiler {
 // later, you can use its instance with any query instance
 import * as qb from 'vitamin-query'
 
-let query = qb.selectFrom('table').toSQL(new MariaCompiler())
+let query = qb.selectFrom('table').build(new MariaCompiler())
 ```
 
 ### API
@@ -76,16 +76,16 @@ selectFrom | table | avg | ne | lower, lcase
 insert | sq | max | gt | replace
 insertInto | raw | min | lt | substr, substring
 update | esc | count | gte | concat
-deleteFrom | cast | | exists | lte | len, length
- | | | like | repeat
+deleteFrom | cast | | lte | len, length
+ | | | between | repeat
  | | | in, $in | space
  | | | between | strpos, position
  | | | startsWith | left
- | | | endsWith | right
+ | | | like | right
  | | | and | trim
  | | | not | ltrim
  | | | or | rtrim
- | | | | abs
+ | | | exists | abs
  | | | | round
  | | | | rand, random
  | | | | now, datetime
