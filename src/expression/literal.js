@@ -54,7 +54,7 @@ export default class Literal extends Expression {
       let obj = this.values
       this.values = []
 
-      this.expr.replace(/(:\w)/gi, (_, name) => {
+      this.expr = this.expr.replace(/(:\w)/gi, (_, name) => {
         if ( isUndefined(obj[name]) ) return name
         
         this.values.push(obj[name])
