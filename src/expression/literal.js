@@ -1,5 +1,5 @@
 
-import { isString, isEqual } from 'lodash'
+import { isString, isEqual, isPlainObject, isUndefined } from 'lodash'
 import Expression from './base'
 
 /**
@@ -10,7 +10,7 @@ export default class Literal extends Expression {
   /**
    * 
    * @param {String} expr
-   * @param {Array} values
+   * @param {Object} values
    * @constructor
    */
   constructor(expr, values = []) {
@@ -49,6 +49,19 @@ export default class Literal extends Expression {
    * @returns {String}
    */
   compile(compiler) {
+    // replace named parameters with 
+    if ( isPlainObject(this.values) ) {
+      let obj = this.values
+      this.values = []
+
+      this.expr.replace(/(:\w)/gi, (_, name) => {
+        if ( isUndefined(obj[name]) ) return name
+        
+        this.values.push(obj[name])
+        return '?'
+      })
+    }
+    
     var values = this.values.slice()
     var expr = this.expr.replace(/\?\??/g, () => {
       return compiler.parameterize(values.shift())
