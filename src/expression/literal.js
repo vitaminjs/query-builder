@@ -49,15 +49,19 @@ export default class Literal extends Expression {
    * @returns {String}
    */
   compile(compiler) {
-    // replace named parameters with 
+    // replace named parameters with the basic placeholder
     if ( isPlainObject(this.values) ) {
       let obj = this.values
       this.values = []
 
-      this.expr = this.expr.replace(/(:\w)/gi, (_, name) => {
-        if ( isUndefined(obj[name]) ) return name
+      this.expr = this.expr.replace(/[:@](\w+)/gi, (match, attr) => {
+        // we return the match string in case the attribute is undefined
+        if ( isUndefined(obj[attr]) ) return match
         
-        this.values.push(obj[name])
+        // append the value of the attribute
+        this.values.push(obj[attr])
+
+        // return the basic placeholder
         return '?'
       })
     }
