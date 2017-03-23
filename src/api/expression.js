@@ -1,6 +1,6 @@
 
+import { isFunction, isArray, isString, isPlainObject, trim } from 'lodash'
 import { Literal, SubQuery, Column, Table, Escaped } from '../expression'
-import { isFunction, isArray, isString, trim } from 'lodash'
 import { Select } from '../query'
 
 /**
@@ -15,7 +15,9 @@ export function raw(expr, ...args) {
   if ( isArray(expr) )
     expr = expr.join('?')
   
-  return new Literal(expr, args)
+  // pass a plain object instead of the arguments array,
+  // when the named parameters are used
+  return new Literal(expr, isPlainObject(args[0]) ? args[0] : args)
 }
 
 /**
