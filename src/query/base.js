@@ -79,7 +79,7 @@ export default class Query {
    * @param {Object} options
    * @returns {Object}
    */
-  toSQL(dialect, options = {}) {
+  build(dialect, options = {}) {
     if ( isString(dialect) )
       dialect = createCompiler(dialect, options)
     
@@ -91,6 +91,15 @@ export default class Query {
     }
     
     throw new TypeError("Invalid query compiler")
+  }
+  
+  /**
+   * 
+   * @returns {Object}
+   * @deprecated use `build()` instead
+   */
+  toSQL() {
+    return this.build(...arguments)
   }
 
   /**
