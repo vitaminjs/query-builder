@@ -1,5 +1,5 @@
 
-import { isString, isEqual } from 'lodash'
+import { isString } from 'lodash'
 import Expression from './base'
 
 /**

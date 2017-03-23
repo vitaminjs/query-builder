@@ -1,6 +1,6 @@
 
+import { isFunction, isArray, isString, isPlainObject, isUndefined, trim } from 'lodash'
 import { Literal, SubQuery, Column, Table, Escaped } from '../expression'
-import { isFunction, isArray, isString, trim } from 'lodash'
 import { Select } from '../query'
 
 /**
@@ -15,6 +15,23 @@ export function raw(expr, ...args) {
   if ( isArray(expr) )
     expr = expr.join('?')
   
+  // parse named parameters
+  if ( isPlainObject(args[0]) ) {
+    let obj = args[0]
+    args = []
+
+    expr = expr.replace(/[:@](\w+)/gi, (match, attr) => {
+      // we return the match string in case the attribute is undefined
+      if ( isUndefined(obj[attr]) ) return match
+      
+      // append the value of the attribute
+      args.push(obj[attr])
+
+      // return the basic placeholder
+      return '?'
+    })
+  }
+
   return new Literal(expr, args)
 }
 

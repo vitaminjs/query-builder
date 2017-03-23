@@ -167,6 +167,18 @@ describe("test Criteria object:", () => {
   )
   
   support.test(
+    "using named parameters in raw expressions",
+    where(__.raw('a = :x or b > @x', { x: 3 })),
+    {
+      pg: 'a = $1 or b > $2',
+      mysql: 'a = ? or b > ?',
+      mssql:  'a = ? or b > ?',
+      sqlite: 'a = ? or b > ?',
+    },
+    [ 3, 3 ]
+  )
+  
+  support.test(
     "using negated raw expressions (case 2)",
     where(true).orWhereNot(__.raw('a = ? and (b > ? or c in ?)', 123, 200, [4, 5])),
     {
