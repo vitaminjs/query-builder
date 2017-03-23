@@ -69,37 +69,37 @@ let query = qb.selectFrom('table').build(new MariaCompiler())
 
 For examples of usage, please refer to the tests.
 
-query | Expression | Aggregates | Conditional | Functions
------ | ---------- | ---------- | ----------- | ---------
-select | column | sum | eq | upper, ucase
-selectFrom | table | avg | ne | lower, lcase
-insert | sq | max | gt | replace
-insertInto | raw | min | lt | substr, substring
-update | esc | count | gte | concat
-deleteFrom | cast | | lte | len, length
- | | | between | repeat
- | | | in, $in | space
- | | | between | strpos, position
- | | | startsWith | left
- | | | like | right
- | | | and | trim
- | | | not | ltrim
- | | | or | rtrim
- | | | exists | abs
- | | | | round
- | | | | rand, random
- | | | | now, datetime
- | | | | utc
- | | | | today, curdate
- | | | | clock, curtime
- | | | | date
- | | | | time
- | | | | day
- | | | | month
- | | | | year
- | | | | hour
- | | | | minute
- | | | | second
+| query | Expression | Aggregates | Conditional | Functions |
+| ----- | ---------- | ---------- | ----------- | --------- |
+| select | column | sum | eq | upper, ucase |
+| selectFrom | table | avg | ne | lower, lcase |
+| insert | sq | max | gt | replace |
+| insertInto | raw | min | lt | substr, substring |
+| update | esc | count | gte | concat |
+| deleteFrom | cast | | lte | len, length |
+| | | | between | repeat |
+| | | | in, $in | space |
+| | | | between | strpos, position |
+| | | | startsWith | left |
+| | | | like | right |
+| | | | and | trim |
+| | | | not | ltrim |
+| | | | or | rtrim |
+| | | | exists | abs |
+| | | | | round |
+| | | | | rand, random |
+| | | | | now, datetime |
+| | | | | utc |
+| | | | | today, curdate |
+| | | | | clock, curtime |
+| | | | | date |
+| | | | | time |
+| | | | | day |
+| | | | | month |
+| | | | | year |
+| | | | | hour |
+| | | | | minute |
+| | | | | second |
 
 ## Testing
 
