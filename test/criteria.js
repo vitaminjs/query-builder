@@ -168,7 +168,7 @@ describe("test Criteria object:", () => {
   
   support.test(
     "using named parameters in raw expressions",
-    where(__.raw('a =:x or b > :x', { x: 3 })),
+    where(__.raw('a = :x or b > @x', { x: 3 })),
     {
       pg: 'a = $1 or b > $2',
       mysql: 'a = ? or b > ?',
