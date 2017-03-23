@@ -1,5 +1,5 @@
 
-import { isFunction, isArray, isString, isPlainObject, trim } from 'lodash'
+import { isFunction, isArray, isString, isPlainObject, isUndefined, trim } from 'lodash'
 import { Literal, SubQuery, Column, Table, Escaped } from '../expression'
 import { Select } from '../query'
 
