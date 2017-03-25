@@ -1,6 +1,6 @@
 
-import { isArray, isPlainObject, each, uniq } from 'lodash'
-import { Basic, Between, Exists } from '../criterion'
+import { isArray, isPlainObject, isFunction, each, uniq } from 'lodash'
+import { Basic, Between, Exists, Criteria } from '../criterion'
 import Expression, { Literal } from '../expression'
 import { sq } from './expression'
 
@@ -153,10 +153,22 @@ export function endsWith(expr, value) {
 /**
  * Noop helper
  * 
- * @param {Criterion} value
+ * @param {Criterion|Object|Function} value
  * @returns {Criterion}
  */
 export function and(value) {
+  if ( isPlainObject(value) ) {
+    let obj = value
+    
+    value = cr => each(obj, (v, k) => cr.where(k, v))
+  }
+
+  if ( isFunction(value) ) {
+    let fn = value
+
+    fn(value = new Criteria())
+  }
+  
   return value
 }
 
@@ -164,7 +176,7 @@ export function and(value) {
  * Use `or` as separator for a plain object of conditions
  * 
  * @param {Object} value
- * @returns {Function}
+ * @returns {Criterion}
  */
 export function or(value) {
   if ( isPlainObject(value) ) {
@@ -183,6 +195,8 @@ export function or(value) {
  * @returns {Criterion}
  */
 export function not(value) {
+  if ( null === value ) value = eq(value)
+
   return and(value).negate()
 }
 
