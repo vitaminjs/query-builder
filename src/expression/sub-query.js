@@ -1,4 +1,5 @@
 
+import { isString } from 'lodash'
 import Expression from './base'
 
 /**
@@ -8,7 +9,7 @@ export default class SubQuery extends Expression {
   
   /**
    * 
-   * @param {Select} query
+   * @param {Query} query
    * @constructor
    */
   constructor(query) {
@@ -32,9 +33,11 @@ export default class SubQuery extends Expression {
    * @returns {Boolean}
    */
   isEqual(expr) {
-    // TODO enhance this method
+    if ( isString(expr) )
+      return expr === this.alias
+
     return super.isEqual() || (
-      expr instanceof SubQuery && expr.name === this.alias
+      expr instanceof SubQuery && expr.alias === this.alias
     )
   }
   
