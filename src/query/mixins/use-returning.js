@@ -1,19 +1,11 @@
 
+const RETURNING = 'returning'
+
 /**
  * @param {Class} parent
  * @returns {Class}
  */
 export default (parent) => class extends parent {
-
-  /**
-   * 
-   * @constructor
-   */
-  constructor() {
-    super()
-
-    this._returning = []
-  }
 
   /**
    * Add returning columns
@@ -23,7 +15,7 @@ export default (parent) => class extends parent {
    */
   returning(...columns) {
     for ( let value of columns )
-      this._returning.push(this.ensureExpression(value))
+      this.getReturning().push(this.ensureExpression(value))
     
     return this
   }
@@ -33,7 +25,7 @@ export default (parent) => class extends parent {
    * @returns {Boolean}
    */
   hasReturning() {
-    return this._returning.length > 0
+    return this.hasOption(RETURNING) && this.getReturning().length > 0
   }
 
   /**
@@ -41,7 +33,10 @@ export default (parent) => class extends parent {
    * @returns {Array}
    */
   getReturning() {
-    return this._returning
+    if (! this.hasOption(RETURNING) )
+      this.resetReturning()
+    
+    return this.option(RETURNING)
   }
 
   /**
@@ -50,8 +45,7 @@ export default (parent) => class extends parent {
    * @returns {Query}
    */
   setReturning(columns) {
-    this._returning = columns.map(this.ensureExpression)
-    return this
+    return this.option(RETURNING, columns.map(this.ensureExpression))
   }
 
   /**
