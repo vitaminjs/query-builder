@@ -1,13 +1,13 @@
 
 import { isEmpty, isFunction, isArray, chain, keys, clone } from 'lodash'
-import { UseTable, UseReturning } from './mixins'
+import { UseCTE, UseTable, UseReturning } from './mixins'
 import Select from './select'
 import Query from './base'
 
 /**
  * @class InsertQuery
  */
-export default class Insert extends UseTable(UseReturning(Query)) {
+export default class Insert extends UseTable(UseReturning(UseCTE(Query))) {
   
   /**
    * 
@@ -176,24 +176,6 @@ export default class Insert extends UseTable(UseReturning(Query)) {
 
   /**
    * 
-   * @returns {Insert}
-   */
-  onConflictIgnore($) {
-    // TODO
-    return this
-  }
-
-  /**
-   * 
-   * @returns {Insert}
-   */
-  onConflictUpdate($) {
-    // TODO
-    return this
-  }
-
-  /**
-   * 
    * @param {Compiler} compiler
    * @returns {String}
    */
@@ -214,6 +196,7 @@ export default class Insert extends UseTable(UseReturning(Query)) {
     this.hasValues() && query.setValues(this.getValues().slice())
     this.hasColumns() && query.setColumns(this.getColumns().slice())
     this.hasReturning() && query.setReturning(this.getReturning().slice())
+    this.hasCommonTables() && query.setCommonTables(this.getCommonTable().slice())
 
     return query
   }

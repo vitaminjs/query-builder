@@ -1,12 +1,12 @@
 
 import Expression, { Literal, SubQuery, Join } from '../expression'
 import { isString, isFunction, clone } from 'lodash'
-import { UseConditions } from './mixins'
+import { UseConditions, UseCTE } from './mixins'
 import { Criteria } from '../criterion'
 import Query from './base'
 
 // a DRY mixin for select query
-const QueryMixin = UseConditions(UseConditions(Query, 'havingConditions', 'having'))
+const QueryMixin = UseConditions(UseConditions(UseCTE(Query), 'havingConditions', 'having'))
 
 /**
  * 
@@ -68,6 +68,7 @@ export default class Select extends QueryMixin {
     this.hasOrders() && query.setOrders(this.getOrders().slice())
     this.hasColumns() && query.setColumns(this.getColumns().slice())
     this.hasConditions() && query.setConditions(this.getConditions().clone())
+    this.hasCommonTables() && query.setCommonTables(this.getCommonTable().slice())
     this.hasHavingConditions() && query.setHavingConditions(this.getHavingConditions().clone())
 
     return query

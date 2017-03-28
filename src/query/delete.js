@@ -1,12 +1,12 @@
 
-import { UseTable, UseReturning, UseConditions } from './mixins'
+import { UseTable, UseCTE, UseReturning, UseConditions } from './mixins'
 import { clone } from 'lodash'
 import Query from './base'
 
 /**
  * @class DeleteQuery
  */
-export default class Delete extends UseTable(UseReturning(UseConditions(Query))) {
+export default class Delete extends UseTable(UseReturning(UseConditions(UseCTE(Query)))) {
   
   /**
    * 
@@ -37,6 +37,7 @@ export default class Delete extends UseTable(UseReturning(UseConditions(Query)))
     query.setOptions(clone(this.getOptions()))
     this.hasReturning() && query.setReturning(this.getReturning().slice())
     this.hasConditions() && query.setConditions(this.getConditions().clone())
+    this.hasCommonTables() && query.setCommonTables(this.getCommonTable().slice())
 
     return query
   }
