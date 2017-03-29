@@ -1,6 +1,7 @@
 
-import { isEmpty, isFunction, isArray, chain, keys, clone } from 'lodash'
+import { isEmpty, isFunction, isArray, isString, chain, keys, clone } from 'lodash'
 import { UseCTE, UseTable, UseReturning } from './mixins'
+import Expression, { Literal } from '../expression'
 import Select from './select'
 import Query from './base'
 
@@ -80,10 +81,13 @@ export default class Insert extends UseTable(UseReturning(UseCTE(Query))) {
 
   /**
    * 
-   * @param {Select|Function}
+   * @param {Any} query
    * @returns {Insert}
    */
   select(query) {
+    if ( isString(query) )
+      query = Literal.from(query)
+    
     if ( isFunction(query) ) {
       let fn = query
 
