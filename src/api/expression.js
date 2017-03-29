@@ -1,6 +1,6 @@
 
 import { isFunction, isArray, isString, isPlainObject, isUndefined, trim } from 'lodash'
-import { Literal, SubQuery, Column, Table, Escaped, CommonTable } from '../expression'
+import Expression, { Literal, SubQuery, Column, Table, Escaped } from '../expression'
 import { Select } from '../query'
 
 /**
@@ -52,7 +52,7 @@ export function sq(value) {
  * @throws {TypeError}
  */
 export function cte(value) {
-  return createSubQuery(value, CommonTable)
+  return createSubQuery(value).isCTE()
 }
 
 /**
@@ -111,10 +111,10 @@ export function cast(value, type) {
  * @throws {TypeError}
  * @private
  */
-function createSubQuery(value, Ctor = SubQuery) {
+function createSubQuery(value) {
   // accept a raw query string
   if ( isString(value) )
-    return Literal.from(value).wrap()
+    value = Literal.from(value).wrap()
   
   // accept a function as a parameter
   if ( isFunction(value) ) {
@@ -124,11 +124,11 @@ function createSubQuery(value, Ctor = SubQuery) {
   }
   
   // accept a Select query instance
-  if ( value instanceof Select )
-    value = new Ctor(value)
+  if ( value instanceof Select || value instanceof Expression )
+    value = new SubQuery(value)
   
   // and finally an instance of SubQuery expression
-  if ( value instanceof Ctor ) return value
+  if ( value instanceof SubQuery ) return value
   
   // throws an error for invalid argument
   throw new TypeError("Invalid sub query expression")
