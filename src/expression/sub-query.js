@@ -9,13 +9,36 @@ export default class SubQuery extends Expression {
   
   /**
    * 
-   * @param {Query} query
+   * @param {Query|Literal} query
    * @constructor
    */
   constructor(query) {
     super()
     
+    this.columns = []
     this.query = query
+    this._isCTE = false
+  }
+
+  /**
+   * 
+   * @param {String} table
+   * @param {Array} columns
+   */
+  as(table, ...columns) {
+    this.columns = columns
+
+    return super.as(table)
+  }
+
+  /**
+   * 
+   * @param {Boolean} flag
+   * @returns {SubQuery}
+   */
+  isCTE(flag = true) {
+    this._isCTE = flag
+    return this
   }
   
   /**
@@ -24,7 +47,16 @@ export default class SubQuery extends Expression {
    * @returns {String}
    */
   compile(compiler) {
-    return compiler.alias(`(${this.query.compile(compiler)})`, this.alias)
+    let table = compiler.quote(this.alias)
+    let query = `(${this.query.compile(compiler)})`
+
+    if (! isEmpty(this.columns) ) {
+      let columns = this.columns.map(value => compiler.quote(value))
+
+      table += `(${columns.join(', ')})`
+    }
+
+    return this._isCTE ? `${table} as ${query}` : `${query} as ${table}`
   }
   
   /**
