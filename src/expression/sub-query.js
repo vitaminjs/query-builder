@@ -22,13 +22,13 @@ export default class SubQuery extends Expression {
 
   /**
    * 
-   * @param {String} table
+   * @param {String} name
    * @param {Array} columns
    */
-  as(table, ...columns) {
+  as(name, ...columns) {
     this.columns = columns
 
-    return super.as(table)
+    return super.as(name)
   }
 
   /**
@@ -47,16 +47,19 @@ export default class SubQuery extends Expression {
    * @returns {String}
    */
   compile(compiler) {
-    let table = compiler.quote(this.alias)
     let query = `(${this.query.compile(compiler)})`
 
+    if (! this.alias ) return query
+
+    let name = compiler.quote(this.alias)
+    
     if (! isEmpty(this.columns) ) {
       let columns = this.columns.map(value => compiler.quote(value))
 
-      table += `(${columns.join(', ')})`
+      name += `(${columns.join(', ')})`
     }
 
-    return this._isCTE ? `${table} as ${query}` : `${query} as ${table}`
+    return this._isCTE ? `${name} as ${query}` : `${query} as ${name}`
   }
   
   /**
