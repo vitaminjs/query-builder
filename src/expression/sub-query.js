@@ -49,16 +49,20 @@ export default class SubQuery extends Expression {
   compile(compiler) {
     let query = `(${this.query.compile(compiler)})`
 
+    // we return only the query string 
+    // to prevent adding the name if not available
     if (! this.alias ) return query
 
     let name = compiler.quote(this.alias)
     
+    // compile the table name columns
     if (! isEmpty(this.columns) ) {
       let columns = this.columns.map(value => compiler.quote(value))
 
       name += `(${columns.join(', ')})`
     }
 
+    // reverse the order of element for common table expressions
     return this._isCTE ? `${name} as ${query}` : `${query} as ${name}`
   }
   
