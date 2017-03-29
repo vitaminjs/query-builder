@@ -85,7 +85,7 @@ export default class Compiler {
    * @returns {String}
    */
   compileSelectQueryName(query) {
-    return 'select ' + (query.isDistinct() ? 'distinct ' : '')
+    return 'select' + (query.isDistinct() ? ' distinct' : '')
   }
   
   /**
