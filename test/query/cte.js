@@ -40,9 +40,9 @@ describe("test building insert queries:", () => {
 
   support.test(
     "accepts delete query as a common table expression",
-    qb.insertInto('history').select(raw('select * from removed')).with(qb.deleteFrom('posts').where('published_at', lt('2012-01-01')).retruning('*').toCTE().as('removed')),
+    qb.insertInto('history').select(raw('select * from removed')).with(qb.deleteFrom('posts').where('published_at', lt('2012-01-01')).returning('*').toCTE().as('removed')),
     {
-      pg:     'with "removed" as (delete from posts where published_at > $1 returning *) insert into history select * from removed',
+      pg:     'with "removed" as (delete from posts where published_at < $1 returning *) insert into history select * from removed',
     },
     [ '2012-01-01' ]
   )

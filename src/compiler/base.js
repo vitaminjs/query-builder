@@ -271,7 +271,7 @@ export default class Compiler {
 
     // compile select query as insert values
     if ( query.hasSelect() )
-      return this.compileSelectQuery(query.getSelect())
+      return query.getSelect().compile(this)
 
     // compile the standard values of insert query
     var columns = query.getColumns().map(value => value.toString())

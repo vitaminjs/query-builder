@@ -1,7 +1,7 @@
 
 import { isFunction, isArray, isString, isPlainObject, isUndefined, trim } from 'lodash'
 import Expression, { Literal, SubQuery, Column, Table, Escaped } from '../expression'
-import { Select } from '../query'
+import Query from '../query'
 
 /**
  * A handler function for template strings
@@ -124,7 +124,7 @@ function createSubQuery(value) {
   }
   
   // accept a Select query instance
-  if ( value instanceof Select || value instanceof Expression )
+  if ( value instanceof Query || value instanceof Expression )
     value = new SubQuery(value)
   
   // and finally an instance of SubQuery expression
