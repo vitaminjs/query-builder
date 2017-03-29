@@ -78,7 +78,7 @@ describe("test building insert queries:", () => {
   )
 
   support.test(
-    "",
+    "using a select query for values",
     qb.insertInto('table', 'a', 'b').select(qb.selectFrom('another_table').limit(3)),
     {
       pg:     'insert into table (a, b) select * from another_table limit $1',
