@@ -109,11 +109,17 @@ $ npm test
 
 ## Change log
 
+- **v0.2.1** - _Add support for common table expressions_
+  - Deprecate `Query::toSQL()` and add `Query::build()` instead
+  - Add Support for named parameters within `raw` helper (issue #6)
+  - Add Support for common table expressions using `Query::with()`
+  - Minor fixes
+
 - **v0.2.0** - _API breaking changes_
   - Remove the operator argument from `Criteria.where()` (issue #4)
   - Lowcase all the helper functions
   - Use class mixin to keep the code DRY
-  - Fix minor bugs  and typos
+  - Fix minor bugs and typos
 
 - **v0.1.2** - _Add new datetime helpers_
 
