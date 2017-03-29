@@ -59,17 +59,6 @@ export default class extends Compiler {
 
     return this.appendReturningClause(sql, query.getReturning())
   }
-
-  /**
-   * 
-   * @param {Insert} query
-   * @returns {String}
-   */
-  compileInsertDefaultValues(query) {
-    var sql = super.compileInsertDefaultValues(query)
-
-    return this.appendReturningClause(sql, query.getReturning())
-  }
   
   /**
    * Compile the function name and its arguments

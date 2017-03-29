@@ -1,4 +1,5 @@
 
+import { isString, isEmpty } from 'lodash'
 import Expression from './base'
 
 /**
@@ -8,13 +9,36 @@ export default class SubQuery extends Expression {
   
   /**
    * 
-   * @param {Select} query
+   * @param {Query|Literal} query
    * @constructor
    */
   constructor(query) {
     super()
     
+    this.columns = []
     this.query = query
+    this._isCTE = false
+  }
+
+  /**
+   * 
+   * @param {String} name
+   * @param {Array} columns
+   */
+  as(name, ...columns) {
+    this.columns = columns
+
+    return super.as(name)
+  }
+
+  /**
+   * 
+   * @param {Boolean} flag
+   * @returns {SubQuery}
+   */
+  isCTE(flag = true) {
+    this._isCTE = flag
+    return this
   }
   
   /**
@@ -23,7 +47,23 @@ export default class SubQuery extends Expression {
    * @returns {String}
    */
   compile(compiler) {
-    return compiler.alias(`(${this.query.compile(compiler)})`, this.alias)
+    let query = `(${this.query.compile(compiler)})`
+
+    // we return only the query string 
+    // to prevent adding the name if not available
+    if (! this.alias ) return query
+
+    let name = compiler.quote(this.alias)
+    
+    // compile the table name columns
+    if (! isEmpty(this.columns) ) {
+      let columns = this.columns.map(value => compiler.quote(value))
+
+      name += `(${columns.join(', ')})`
+    }
+
+    // reverse the order of element for common table expressions
+    return this._isCTE ? `${name} as ${query}` : `${query} as ${name}`
   }
   
   /**
@@ -32,9 +72,11 @@ export default class SubQuery extends Expression {
    * @returns {Boolean}
    */
   isEqual(expr) {
-    // TODO enhance this method
+    if ( isString(expr) )
+      return expr === this.alias
+
     return super.isEqual() || (
-      expr instanceof SubQuery && expr.name === this.alias
+      expr instanceof SubQuery && expr.alias === this.alias
     )
   }
   

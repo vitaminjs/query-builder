@@ -1,7 +1,7 @@
 
 import { isFunction, isArray, isString, isPlainObject, isUndefined, trim } from 'lodash'
-import { Literal, SubQuery, Column, Table, Escaped } from '../expression'
-import { Select } from '../query'
+import Expression, { Literal, SubQuery, Column, Table, Escaped } from '../expression'
+import Query from '../query'
 
 /**
  * A handler function for template strings
@@ -37,31 +37,22 @@ export function raw(expr, ...args) {
 
 /**
  * 
- * @param {Any} query
+ * @param {Any} value
  * @returns {Expression}
  * @throws {TypeError}
  */
-export function sq(query) {
-  // accept a raw query string
-  if ( isString(query) )
-    return Literal.from(query).wrap()
-  
-  // accept a function as a parameter
-  if ( isFunction(query) ) {
-    let fn = query
-    
-    fn(query = new Select())
-  }
-  
-  // accept a Select query instance
-  if ( query instanceof Select )
-    query = new SubQuery(query)
-  
-  // and finally an instance of SubQuery expression
-  if ( query instanceof SubQuery ) return query
-  
-  // throws an error for invalid argument
-  throw new TypeError("Invalid sub query expression")
+export function sq(value) {
+  return createSubQuery(value)
+}
+
+/**
+ * 
+ * @param {Any} value
+ * @returns {Expression}
+ * @throws {TypeError}
+ */
+export function cte(value) {
+  return createSubQuery(value).isCTE()
 }
 
 /**
@@ -111,4 +102,34 @@ export function esc(value) {
  */
 export function cast(value, type) {
   return raw(`cast(? as ${type})`, value)
+}
+
+/**
+ * 
+ * @param {Any} value
+ * @returns {Expression}
+ * @throws {TypeError}
+ * @private
+ */
+function createSubQuery(value) {
+  // accept a raw query string
+  if ( isString(value) )
+    value = Literal.from(value)
+  
+  // accept a function as a parameter
+  if ( isFunction(value) ) {
+    let fn = value
+    
+    fn(value = new Select())
+  }
+  
+  // accept a Select query instance
+  if ( value instanceof Query || value instanceof Expression )
+    value = new SubQuery(value)
+  
+  // and finally an instance of SubQuery expression
+  if ( value instanceof SubQuery ) return value
+  
+  // throws an error for invalid argument
+  throw new TypeError("Invalid sub query expression")
 }

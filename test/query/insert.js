@@ -70,15 +70,13 @@ describe("test building insert queries:", () => {
     qb.insert({ fname: "foo", lname: 'bar' }).into('users').returning(C('id')),
     {
       pg:     'insert into users (fname, lname) values ($1, $2) returning "id"',
-      mysql:  'insert into users (fname, lname) values (?, ?)',
       mssql:  'insert into users (fname, lname) output inserted.[id] values (?, ?)',
-      sqlite: 'insert into users (fname, lname) values (?, ?)',
     },
     ['foo', 'bar']
   )
 
   support.test(
-    "",
+    "using a select query for values",
     qb.insertInto('table', 'a', 'b').select(qb.selectFrom('another_table').limit(3)),
     {
       pg:     'insert into table (a, b) select * from another_table limit $1',

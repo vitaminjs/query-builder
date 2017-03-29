@@ -35,9 +35,7 @@ describe("test building delete queries:", () => {
     qb.deleteFrom('table').where({ id: 1 }).returning('*'),
     {
       pg:     'delete from table where (id = $1) returning *',
-      mysql:  'delete from table where (id = ?)',
       mssql:  'delete from table output deleted.* where (id = ?)',
-      sqlite: 'delete from table where (id = ?)',
     },
     [1]
   )

@@ -1,13 +1,14 @@
 
-import { isEmpty, isFunction, isArray, chain, keys, clone } from 'lodash'
-import { UseTable, UseReturning } from './mixins'
+import { isEmpty, isFunction, isArray, isString, chain, keys, clone } from 'lodash'
+import { UseCTE, UseTable, UseReturning } from './mixins'
+import Expression, { Literal } from '../expression'
 import Select from './select'
 import Query from './base'
 
 /**
  * @class InsertQuery
  */
-export default class Insert extends UseTable(UseReturning(Query)) {
+export default class Insert extends UseTable(UseReturning(UseCTE(Query))) {
   
   /**
    * 
@@ -80,10 +81,13 @@ export default class Insert extends UseTable(UseReturning(Query)) {
 
   /**
    * 
-   * @param {Select|Function}
+   * @param {Any} query
    * @returns {Insert}
    */
   select(query) {
+    if ( isString(query) )
+      query = Literal.from(query)
+    
     if ( isFunction(query) ) {
       let fn = query
 
@@ -176,24 +180,6 @@ export default class Insert extends UseTable(UseReturning(Query)) {
 
   /**
    * 
-   * @returns {Insert}
-   */
-  onConflictIgnore($) {
-    // TODO
-    return this
-  }
-
-  /**
-   * 
-   * @returns {Insert}
-   */
-  onConflictUpdate($) {
-    // TODO
-    return this
-  }
-
-  /**
-   * 
    * @param {Compiler} compiler
    * @returns {String}
    */
@@ -214,6 +200,7 @@ export default class Insert extends UseTable(UseReturning(Query)) {
     this.hasValues() && query.setValues(this.getValues().slice())
     this.hasColumns() && query.setColumns(this.getColumns().slice())
     this.hasReturning() && query.setReturning(this.getReturning().slice())
+    this.hasCommonTables() && query.setCommonTables(this.getCommonTable().slice())
 
     return query
   }

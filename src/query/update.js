@@ -1,12 +1,12 @@
 
 import { extend, clone, fromPairs, isString, isEmpty } from 'lodash'
-import { UseTable, UseReturning, UseConditions } from './mixins'
+import { UseTable, UseReturning, UseConditions, UseCTE } from './mixins'
 import Query from './base'
 
 /**
  * @class UpdateQuery
  */
-export default class Update extends UseTable(UseReturning(UseConditions(Query))) {
+export default class Update extends UseTable(UseReturning(UseConditions(UseCTE(Query)))) {
   
   /**
    * 
@@ -85,6 +85,7 @@ export default class Update extends UseTable(UseReturning(UseConditions(Query)))
     this.hasValues() && query.setValues(this.getValues())
     this.hasReturning() && query.setReturning(this.getReturning().slice())
     this.hasConditions() && query.setConditions(this.getConditions().clone())
+    this.hasCommonTables() && query.setCommonTables(this.getCommonTable().slice())
 
     return query
   }

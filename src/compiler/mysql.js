@@ -45,8 +45,25 @@ export default class extends Compiler {
    * @param {Insert} query
    * @returns {String}
    */
-  compileInsertDefaultValues(query) {
-    return `insert into ${this.escape(query.getTable())} () values ()`
+  compileInsertTable(query) {
+    // compile default columns
+    if ( query.option('default values') === true )
+      return `${this.escape(query.getTable())} ()`
+    
+    return super.compileInsertTable(query)
+  }
+
+  /**
+   * 
+   * @param {Insert} query
+   * @returns {String}
+   */
+  compileInsertValues(query) {
+    // compile default values
+    if ( query.option('default values') === true )
+      return 'values ()'
+
+    return super.compileInsertValues(query)
   }
   
   /**
@@ -86,6 +103,15 @@ export default class extends Compiler {
     })
     
     return `concat(${args.join(', ')})`
+  }
+
+  /**
+   * 
+   * @param {Query} query
+   * @returns {String}
+   */
+  compileWithClause(query) {
+    return ''
   }
   
 }

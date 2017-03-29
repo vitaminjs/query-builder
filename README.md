@@ -77,7 +77,7 @@ For examples of usage, please refer to the tests.
 | insertInto | raw | min | lt | substr, substring |
 | update | esc | count | gte | concat |
 | deleteFrom | cast | | lte | len, length |
-| | | | between | repeat |
+| | cte | | between | repeat |
 | | | | in, $in | space |
 | | | | between | strpos, position |
 | | | | startsWith | left |

@@ -76,9 +76,7 @@ describe("test building update queries:", () => {
     qb.update('foo').set('a', RAW`a + 1`).where('a', gt(3)).returning('*'),
     {
       pg:     'update foo set a = a + 1 where a > $1 returning *',
-      mysql:  'update foo set a = a + 1 where a > ?',
       mssql:  'update foo set a = a + 1 output inserted.* where a > ?',
-      sqlite: 'update foo set a = a + 1 where a > ?',
     },
     [ 3 ]
   )

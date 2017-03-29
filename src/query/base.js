@@ -1,7 +1,7 @@
 
 import { has, extend, isString, isPlainObject } from 'lodash'
+import Expression, { Literal, SubQuery } from '../expression'
 import Compiler, { createCompiler } from '../compiler'
-import Expression, { Literal } from '../expression'
 
 /**
  * @class BaseQuery
@@ -91,6 +91,32 @@ export default class Query {
     }
     
     throw new TypeError("Invalid query compiler")
+  }
+
+  /**
+   * 
+   * @returns {SubQuery}
+   */
+  toExpression() {
+    return new SubQuery(this)
+  }
+
+  /**
+   * 
+   * @returns {SubQuery}
+   */
+  toCTE() {
+    return this.toExpression().isCTE()
+  }
+
+  /**
+   * 
+   * @param {String} name
+   * @param {Array} columns
+   * @returns {SubQuery}
+   */
+  as(name, ...columns) {
+    return this.toExpression().as(name, ...columns)
   }
   
   /**
