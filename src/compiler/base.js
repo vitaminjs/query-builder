@@ -41,18 +41,9 @@ export default class Compiler {
    * @returns {String}
    */
   compileSelectQuery(query) {
-    var select = 'select ' + (query.isDistinct() ? 'distinct ' : '')
-    
-    return select + this.compileSelectComponents(query)
-  }
-  
-  /**
-   * 
-   * @param {Select} query
-   * @returns {String}
-   */
-  compileSelectComponents(query) {
     var components = [
+      this.compileWithClause(query),
+      this.compileSelectQueryName(query),
       this.compileSelectColumns(query),
       this.compileTables(query),
       this.compileJoins(query),
@@ -65,6 +56,36 @@ export default class Compiler {
     ]
     
     return compact(components).join(' ')
+  }
+
+  /**
+   * 
+   * @param {Query} query
+   * @returns {String}
+   */
+  compileWithClause(query) {
+    if (! query.hasCommonTables() ) return ''
+    
+    return 'with ' + query.getCommonTables().map(value => this.escape(value)).join(', ')
+  }
+  
+  /**
+   * 
+   * @param {Select} query
+   * @returns {String}
+   * @deprecated
+   */
+  compileSelectComponents(query) {
+    return this
+  }
+
+  /**
+   * 
+   * @param {Select} query
+   * @returns {String}
+   */
+  compileSelectQueryName(query) {
+    return 'select ' + (query.isDistinct() ? 'distinct ' : '')
   }
   
   /**
@@ -198,13 +219,14 @@ export default class Compiler {
    * @returns {String}
    */
   compileInsertQuery(query) {
-    if ( query.option('default values') === true )
-      return this.compileInsertDefaultValues(query)
-
-    var values = this.compileInsertValues(query)
-    var table = this.compileInsertTable(query)
-
-    return `insert into ${table} ${values}`
+    let components = [
+      this.compileWithClause(query),
+      this.compileInsertQueryName(query),
+      this.compileInsertTable(query),
+      this.compileInsertValues(query),
+    ]
+    
+    return compact(components).join(' ')
   }
 
   /**
@@ -212,8 +234,18 @@ export default class Compiler {
    * @param {Insert} query
    * @returns {String}
    */
+  compileInsertQueryName(query) {
+    return 'insert into'
+  }
+
+  /**
+   * 
+   * @param {Insert} query
+   * @returns {String}
+   * @deprecated
+   */
   compileInsertDefaultValues(query) {
-    return `insert into ${this.compileInsertTable(query)} default values`
+    return ''
   }
 
   /**
@@ -233,9 +265,15 @@ export default class Compiler {
    * @returns {String}
    */
   compileInsertValues(query) {
+    // compile default values
+    if ( query.option('default values') === true )
+      return 'default values'
+
+    // compile select query as insert values
     if ( query.hasSelect() )
       return this.compileSelectQuery(query.getSelect())
 
+    // compile the standard values of insert query
     var columns = query.getColumns().map(value => value.toString())
 
     return 'values ' + query.getValues().map(value => {
@@ -251,13 +289,33 @@ export default class Compiler {
    * @returns {String}
    */
   compileUpdateQuery(query) {
-    var table = this.escape(query.getTable())
-    var sql = `update ${table} ${this.compileUpdateValues(query)}`
-
-    if ( query.hasConditions() )
-      sql += ` ${this.compileConditions(query)}`
+    let components = [
+      this.compileWithClause(query),
+      this.compileUpdateQueryName(query),
+      this.compileUpdateTable(query),
+      this.compileUpdateValues(query),
+      this.compileConditions(query),
+    ]
     
-    return sql
+    return compact(components).join(' ')
+  }
+
+  /**
+   * 
+   * @param {Update} query
+   * @returns {String}
+   */
+  compileUpdateQueryName(query) {
+    return 'update'
+  }
+
+  /**
+   * 
+   * @param {Update} query
+   * @returns {String}
+   */
+  compileUpdateTable(query) {
+    return this.escape(query.getTable())
   }
 
   /**
@@ -267,6 +325,8 @@ export default class Compiler {
    */
   compileUpdateValues(query) {
     var expr = 'set'
+
+    // TODO throw an error for empty values
     
     each(query.getValues(), (value, key) => {
       expr += ` ${key} = ${this.parameter(value, true)},`
@@ -282,12 +342,32 @@ export default class Compiler {
    * @returns {String}
    */
   compileDeleteQuery(query) {
-    var sql = `delete from ${this.escape(query.getTable())}`
-
-    if ( query.hasConditions() )
-      sql += ` ${this.compileConditions(query)}`
+    let components = [
+      this.compileWithClause(query),
+      this.compileDeleteQueryName(query),
+      this.compileDeleteTable(query),
+      this.compileConditions(query),
+    ]
     
-    return sql
+    return compact(components).join(' ')
+  }
+
+  /**
+   * 
+   * @param {Delete} query
+   * @returns {String}
+   */
+  compileDeleteQueryName(query) {
+    return 'delete from'
+  }
+
+  /**
+   * 
+   * @param {Delete} query
+   * @returns {String}
+   */
+  compileDeleteTable(query) {
+    return this.escape(query.getTable())
   }
   
   /**
