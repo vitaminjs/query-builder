@@ -1,5 +1,5 @@
 
-import Expression, { Literal, SubQuery, Join } from '../expression'
+import Expression, { Literal, Join } from '../expression'
 import { isString, isFunction, clone } from 'lodash'
 import { UseConditions, UseCTE } from './mixins'
 import { Criteria } from '../criterion'
@@ -28,27 +28,10 @@ export default class Select extends QueryMixin {
 
   /**
    * 
-   * @param {String} name
-   * @returns {SubQuery}
-   */
-  as(name) {
-    return this.toExpression().as(name)
-  }
-
-  /**
-   * 
    * @returns {Select}
    */
   newQuery() {
     return new Select()
-  }
-
-  /**
-   * 
-   * @returns {SubQuery}
-   */
-  toExpression() {
-    return new SubQuery(this)
   }
 
   /**
