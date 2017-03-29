@@ -114,7 +114,7 @@ export function cast(value, type) {
 function createSubQuery(value) {
   // accept a raw query string
   if ( isString(value) )
-    value = Literal.from(value).wrap()
+    value = Literal.from(value)
   
   // accept a function as a parameter
   if ( isFunction(value) ) {
