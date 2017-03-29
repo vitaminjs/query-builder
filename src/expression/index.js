@@ -10,8 +10,7 @@ import Expression from './base'
 import Escaped from './escaped'
 import SubQuery from './sub-query'
 import Aggregate from './aggregate'
-import CommonTable from './common-table'
 
 export default Expression
 
-export { Literal, Order, Join, Table, Union, Column, Func, Escaped, SubQuery, Aggregate, CommonTable }
+export { Literal, Order, Join, Table, Union, Column, Func, Escaped, SubQuery, Aggregate }
