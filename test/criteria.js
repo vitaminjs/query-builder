@@ -60,14 +60,14 @@ describe("test Criteria object:", () => {
   
   support.test(
     "using plain objects",
-    where({ foo: 123, bar: 'baz' }),
+    where({ foo: 123, bar: __.contains('_az') }),
     {
-      pg: '(foo = $1 and bar = $2)',
-      mysql: '(foo = ? and bar = ?)',
-      mssql:  '(foo = ? and bar = ?)',
-      sqlite: '(foo = ? and bar = ?)',
+      pg: '(foo = $1 and bar like $2)',
+      mysql: '(foo = ? and bar like ?)',
+      mssql:  '(foo = ? and bar like ?)',
+      sqlite: '(foo = ? and bar like ?)',
     },
-    [ 123, 'baz' ]
+    [ 123, '%\_az%' ]
   )
   
   support.test(
@@ -193,6 +193,18 @@ describe("test Criteria object:", () => {
   support.test(
     "using an expression as operand instead of a plain string",
     where(__.column('a'), false),
+    {
+      pg: '"a" = $1',
+      mysql: '`a` = ?',
+      mssql:  '[a] = ?',
+      sqlite: '"a" = ?',
+    },
+    [ false ]
+  )
+  
+  support.test(
+    "using an expression as operand instead of a plain string",
+    where('foo', __.like('bar')),
     {
       pg: '"a" = $1',
       mysql: '`a` = ?',
