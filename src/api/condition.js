@@ -123,6 +123,21 @@ export function like(expr, pattern) {
 /**
  * 
  * @param {String|Expression} expr
+ * @param {String} value 
+ * @returns {Criterion}
+ */
+export function contains(expr, value) {
+  if ( arguments.length === 1 ) {
+    value = expr
+    expr = null
+  }
+  
+  return like(expr, escapeLike(value))
+}
+
+/**
+ * 
+ * @param {String|Expression} expr
  * @param {String} value
  * @returns {Criterion}
  */
@@ -132,7 +147,7 @@ export function startsWith(expr, value) {
     expr = null
   }
   
-  return like(expr, value.replace(/(_|%)/g, '\\$1') + '%')
+  return like(expr, escapeLike(value, 'after'))
 }
 
 /**
@@ -147,7 +162,7 @@ export function endsWith(expr, value) {
     expr = null
   }
   
-  return like(expr, '%' + value.replace(/(_|%)/g, '\\$1'))
+  return like(expr, escapeLike(value, 'before'))
 }
 
 /**
@@ -206,6 +221,7 @@ export function not(value) {
  * @param {String|Expression} expr
  * @param {Any} value
  * @returns {Basic}
+ * @private
  */
 function createBasicCriterion(operator, expr, value) {
   if ( arguments.length === 2 ) {
@@ -223,7 +239,20 @@ function createBasicCriterion(operator, expr, value) {
  * 
  * @param {Any} value
  * @returns {Expression}
+ * @private
  */
 function ensureExpression(value) {
   return value instanceof Expression ? value : Literal.from(value)
+}
+
+/**
+ * 
+ * @param {String} value
+ * @param {String} position [both, before, after]
+ * @returns {String}
+ */
+function escapeLike(value, position = 'both') {
+  return (position in ['both', 'before'] ? '%' : '') +
+          value.replace(/[_%]/g, '\\$&') +
+         (position in ['both', 'after'] ? '%' : '')
 }
