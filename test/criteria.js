@@ -24,14 +24,14 @@ describe("test Criteria object:", () => {
   
   support.test(
     "using simple value",
-    where('foo', 123).orWhere('bar', 'baz'),
+    where('foo', 123).orWhere('bar', __.endsWith('baz')),
     {
       pg: 'foo = $1 or bar = $2',
       mysql: 'foo = ? or bar = ?',
       mssql:  'foo = ? or bar = ?',
       sqlite: 'foo = ? or bar = ?',
     },
-    [ 123, 'baz' ]
+    [ 123, '%baz' ]
   )
   
   support.test(
@@ -67,7 +67,7 @@ describe("test Criteria object:", () => {
       mssql:  '(foo = ? and bar like ?)',
       sqlite: '(foo = ? and bar like ?)',
     },
-    [ 123, '%\_az%' ]
+    [ 123, '%\\_az%' ]
   )
   
   support.test(
@@ -193,18 +193,6 @@ describe("test Criteria object:", () => {
   support.test(
     "using an expression as operand instead of a plain string",
     where(__.column('a'), false),
-    {
-      pg: '"a" = $1',
-      mysql: '`a` = ?',
-      mssql:  '[a] = ?',
-      sqlite: '"a" = ?',
-    },
-    [ false ]
-  )
-  
-  support.test(
-    "using an expression as operand instead of a plain string",
-    where('foo', __.like('bar')),
     {
       pg: '"a" = $1',
       mysql: '`a` = ?',
