@@ -1,7 +1,8 @@
 
-import { isArray, isPlainObject, isFunction, each, uniq } from 'lodash'
+import { isArray, isPlainObject, isFunction, isString, each, uniq } from 'lodash'
 import { Basic, Between, Exists, Criteria } from '../criterion'
 import Expression, { Literal } from '../expression'
+import { concat } from './function'
 import { sq } from './expression'
 
 /**
@@ -123,7 +124,7 @@ export function like(expr, pattern) {
 /**
  * 
  * @param {String|Expression} expr
- * @param {String} value 
+ * @param {String|Expression} value 
  * @returns {Criterion}
  */
 export function contains(expr, value) {
@@ -131,14 +132,17 @@ export function contains(expr, value) {
     value = expr
     expr = null
   }
+
+  if ( isString(value) )
+    return like(expr, `%${escapeLike(value)}%`)
   
-  return like(expr, escapeLike(value))
+  return like(expr, concat('%', value, '%'))
 }
 
 /**
  * 
  * @param {String|Expression} expr
- * @param {String} value
+ * @param {String|Expression} value
  * @returns {Criterion}
  */
 export function startsWith(expr, value) {
@@ -146,14 +150,17 @@ export function startsWith(expr, value) {
     value = expr
     expr = null
   }
+
+  if ( isString(value) )
+    return like(expr, `${escapeLike(value)}%`)
   
-  return like(expr, escapeLike(value, 'after'))
+  return like(expr, concat(value, '%'))
 }
 
 /**
  * 
  * @param {String|Expression} expr
- * @param {String} value
+ * @param {String|Expression} value
  * @returns {Criterion}
  */
 export function endsWith(expr, value) {
@@ -161,8 +168,11 @@ export function endsWith(expr, value) {
     value = expr
     expr = null
   }
+
+  if ( isString(value) )
+    return like(expr, `%${escapeLike(value)}`)
   
-  return like(expr, escapeLike(value, 'before'))
+  return like(expr, concat('%', value))
 }
 
 /**
@@ -248,11 +258,8 @@ function ensureExpression(value) {
 /**
  * 
  * @param {String} value
- * @param {String} position [both, before, after]
  * @returns {String}
  */
-function escapeLike(value, position = 'both') {
-  return (position in ['both', 'before'] ? '%' : '') +
-          value.replace(/[_%]/g, '\\$&') +
-         (position in ['both', 'after'] ? '%' : '')
+function escapeLike(value) {
+  return value.replace(/[_%]/g, '\\$&')
 }
