@@ -26,10 +26,10 @@ describe("test Criteria object:", () => {
     "using simple value",
     where('foo', 123).orWhere('bar', __.endsWith('baz')),
     {
-      pg: 'foo = $1 or bar = $2',
-      mysql: 'foo = ? or bar = ?',
-      mssql:  'foo = ? or bar = ?',
-      sqlite: 'foo = ? or bar = ?',
+      pg: 'foo = $1 or bar like $2',
+      mysql: 'foo = ? or bar like ?',
+      mssql:  'foo = ? or bar like ?',
+      sqlite: 'foo = ? or bar like ?',
     },
     [ 123, '%baz' ]
   )
@@ -67,7 +67,7 @@ describe("test Criteria object:", () => {
       mssql:  '(foo = ? and bar like ?)',
       sqlite: '(foo = ? and bar like ?)',
     },
-    [ 123, '%\\_az%' ]
+    [ 123, '%\_az%' ]
   )
   
   support.test(
