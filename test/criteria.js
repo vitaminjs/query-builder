@@ -67,7 +67,7 @@ describe("test Criteria object:", () => {
       mssql:  '(foo = ? and bar like ?)',
       sqlite: '(foo = ? and bar like ?)',
     },
-    [ 123, '%\_az%' ]
+    [ 123, '%\\_az%' ]
   )
   
   support.test(
