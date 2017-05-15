@@ -361,4 +361,52 @@ describe("test SQL functions:", () => {
     }
   )
   
+  support.test(
+    "test values()",
+    __.values([ 123, 'foo' ]),
+    {
+      pg:     "values ($1, $2)",
+      mysql:  "values (?, ?)",
+      mssql:  "values (?, ?)",
+      sqlite: "values (?, ?)",
+    },
+    [ 123, 'foo' ]
+  )
+  
+  support.test(
+    "test values() with nested data",
+    __.values([[1, 'foo'], [2, 'bar'], [3, 'baz']]),
+    {
+      pg:     "values ($1, $2), ($3, $4), ($5, $6)",
+      mysql:  "values (?, ?), (?, ?), (?, ?)",
+      mssql:  "values (?, ?), (?, ?), (?, ?)",
+      sqlite: "values (?, ?), (?, ?), (?, ?)",
+    },
+    [ 1, 'foo', 2, 'bar', 3, 'baz' ]
+  )
+  
+  support.test(
+    "test values() with a name",
+    __.values([ 123, 'foo' ]).as('table'),
+    {
+      pg:     '(values ($1, $2)) as "table"',
+      mysql:  '(values (?, ?)) as `table`',
+      mssql:  '(values (?, ?)) as [table]',
+      sqlite: '(values (?, ?)) as "table"',
+    },
+    [ 123, 'foo' ]
+  )
+  
+  support.test(
+    "test values() with a name and columns",
+    __.values([[1, 'foo'], [2, 'bar'], [3, 'baz']]).as('table', 'col1', 'col2'),
+    {
+      pg:     '(values ($1, $2), ($3, $4), ($5, $6)) as "table" ("col1", "col2")',
+      mysql:  '(values (?, ?), (?, ?), (?, ?)) as `table` (`col1`, `col2`)',
+      mssql:  '(values (?, ?), (?, ?), (?, ?)) as [table] ([col1], [col2])',
+      sqlite: '(values (?, ?), (?, ?), (?, ?)) as "table" ("col1", "col2")',
+    },
+    [ 1, 'foo', 2, 'bar', 3, 'baz' ]
+  )
+  
 })
