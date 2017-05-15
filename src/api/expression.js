@@ -1,6 +1,6 @@
 
 import { isFunction, isArray, isString, isPlainObject, isUndefined, trim } from 'lodash'
-import Expression, { Literal, SubQuery, Column, Table, Escaped } from '../expression'
+import Expression, { Literal, SubQuery, Column, Table, Escaped, Values } from '../expression'
 import Query from '../query'
 
 /**
@@ -102,6 +102,15 @@ export function esc(value) {
  */
 export function cast(value, type) {
   return raw(`cast(? as ${type})`, value)
+}
+
+/**
+ * 
+ * @param {Array} data
+ * @returns {Expression}
+ */
+export function values (data) {
+  return new Values(data)
 }
 
 /**
