@@ -78,7 +78,7 @@ For examples of usage, please refer to the tests.
 | update | esc | count | gte | concat |
 | deleteFrom | cast | | lte | len, length |
 | | cte | | between | repeat |
-| | | | in, $in | space |
+| | values | | in, $in | space |
 | | | | between | strpos, position |
 | | | | startsWith | left |
 | | | | like | right |
@@ -86,7 +86,7 @@ For examples of usage, please refer to the tests.
 | | | | not | ltrim |
 | | | | or | rtrim |
 | | | | exists | abs |
-| | | | | round |
+| | | | contatins | round |
 | | | | | rand, random |
 | | | | | now, datetime |
 | | | | | utc |
