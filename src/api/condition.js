@@ -1,7 +1,8 @@
 
-import { isArray, isPlainObject, isFunction, each, uniq } from 'lodash'
+import { isArray, isPlainObject, isFunction, isString, each, uniq } from 'lodash'
 import { Basic, Between, Exists, Criteria } from '../criterion'
 import Expression, { Literal } from '../expression'
+import { concat } from './function'
 import { sq } from './expression'
 
 /**
@@ -123,7 +124,25 @@ export function like(expr, pattern) {
 /**
  * 
  * @param {String|Expression} expr
- * @param {String} value
+ * @param {String|Expression} value 
+ * @returns {Criterion}
+ */
+export function contains(expr, value) {
+  if ( arguments.length === 1 ) {
+    value = expr
+    expr = null
+  }
+
+  if ( isString(value) )
+    return like(expr, `%${escapeLike(value)}%`)
+  
+  return like(expr, concat('%', value, '%'))
+}
+
+/**
+ * 
+ * @param {String|Expression} expr
+ * @param {String|Expression} value
  * @returns {Criterion}
  */
 export function startsWith(expr, value) {
@@ -131,14 +150,17 @@ export function startsWith(expr, value) {
     value = expr
     expr = null
   }
+
+  if ( isString(value) )
+    return like(expr, `${escapeLike(value)}%`)
   
-  return like(expr, value.replace(/(_|%)/g, '\\$1') + '%')
+  return like(expr, concat(value, '%'))
 }
 
 /**
  * 
  * @param {String|Expression} expr
- * @param {String} value
+ * @param {String|Expression} value
  * @returns {Criterion}
  */
 export function endsWith(expr, value) {
@@ -146,8 +168,11 @@ export function endsWith(expr, value) {
     value = expr
     expr = null
   }
+
+  if ( isString(value) )
+    return like(expr, `%${escapeLike(value)}`)
   
-  return like(expr, '%' + value.replace(/(_|%)/g, '\\$1'))
+  return like(expr, concat('%', value))
 }
 
 /**
@@ -206,6 +231,7 @@ export function not(value) {
  * @param {String|Expression} expr
  * @param {Any} value
  * @returns {Basic}
+ * @private
  */
 function createBasicCriterion(operator, expr, value) {
   if ( arguments.length === 2 ) {
@@ -223,7 +249,17 @@ function createBasicCriterion(operator, expr, value) {
  * 
  * @param {Any} value
  * @returns {Expression}
+ * @private
  */
 function ensureExpression(value) {
   return value instanceof Expression ? value : Literal.from(value)
+}
+
+/**
+ * 
+ * @param {String} value
+ * @returns {String}
+ */
+function escapeLike(value) {
+  return value.replace(/[_%]/g, '\\$&')
 }
