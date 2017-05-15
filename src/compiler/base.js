@@ -1,5 +1,5 @@
 
-import { compact, each, isObject, isArray, isString, isUndefined } from 'lodash'
+import { compact, each, first, isObject, isArray, isString, isUndefined } from 'lodash'
 import Expression from '../expression'
 
 /**
@@ -414,7 +414,19 @@ export default class Compiler {
   parameterize(value) {
     if (! isArray(value) ) return this.parameter(value)
 
+    // Allow nested array values
+    if ( isArray(first(value)) ) return this.parameterizeNested(value)
+
     return `(${value.map(item => this.parameter(item)).join(', ')})`
+  }
+
+  /**
+   * 
+   * @param {Array} value
+   * @returns {String}
+   */
+  parameterizeNested(value) {
+    return value.map((item) => this.parameterize(item)).join(', ')
   }
 
   /**
