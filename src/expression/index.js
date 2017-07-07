@@ -1,14 +1,18 @@
 
 export { default as Identifier } from './identifier'
 
+export { default as Statement } from './statement'
+
 export { default as Function } from './function'
 
 export { default as Literal } from './literal'
 
 export { default as Column } from './column'
 
-export { default as default } from './base'
-
 export { default as Alias } from './alias'
 
 export { default as Table } from './table'
+
+export { default } from './base'
+
+export * from './statement'

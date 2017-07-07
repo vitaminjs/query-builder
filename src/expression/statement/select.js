@@ -1,6 +1,9 @@
 
-import Statement from './base'
+import Statement from '../statement'
 
+/**
+ * @class SelectStatement
+ */
 export default class Select extends Statement {
   constructor () {
     super()

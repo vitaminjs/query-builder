@@ -1,15 +1,12 @@
 
 import { isString } from 'lodash'
-import Expression, { Alias } from '../expression'
 import Compiler, { createCompiler } from '../compiler'
+import Expression, { Alias, Literal } from '../expression'
 
+/**
+ * @class StatementExpression
+ */
 export default class Statement extends Expression {
-  constructor () {
-    super()
-
-    this.isChild = false  // true for sub queries
-  }
-
   /**
    * @param {String|Compiler} dialect
    * @param {Object} options
@@ -36,8 +33,6 @@ export default class Statement extends Expression {
    * @returns {Alias}
    */
   as (name, ...columns) {
-    this.isChild = true
-
-    return new Alias(this, name, ...columns)
+    return new Alias(new Literal('(?)', this), name, ...columns)
   }
 }
