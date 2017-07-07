@@ -1,0 +1,76 @@
+
+/**
+ * Symbols
+ */
+
+sym_comma = s:( "," ) _ { return s }
+
+sym_dot = s:( "." ) _ { return s }
+
+sym_star = s:( "*" ) _ { return s }
+
+sym_popen = s:( "(" ) _ { return s }
+
+sym_pclose = s:( ")" ) _ { return s }
+
+/**
+ * Keywords
+ */
+
+AS = "AS"i !name_char
+
+DISTINCT = "DISTINCT" !name_char
+
+
+/**
+ * Select rules
+ */
+
+select_node_list = l:( ( sym_comma? n:( select_node ) _ ) { return n } )+ { return l }
+
+select_node = select_star / select_expression
+
+select_star = q:( id_table_qualified )? s:( sym_star ) { return makeIdentifier((q || '') + s) }
+
+select_expression = e:( expression ) _ a:( alias )? { return e.as( a ) }
+
+
+/**
+ * Aggregate call
+ */
+
+aggregate_call "Aggregate Call"
+  = n:( id_function ) _ sym_popen _ d:( DISTINCT )? _ a:( aggregate_call_args )? _ sym_pclose
+  { return makeAggregate(n, a, !!d)
+  }
+
+aggregate_call_args "Aggregate Call Arguments"
+  = s:( select_star ) { return [makeLiteral(s)] }
+  / l:( expression_list ) { return l }
+
+
+/**
+ * Common rules
+ */
+
+name = !( number_digit ) ( name_char )+
+
+name_char = [\w$]i // [a-z0-9_$]i
+
+id_qualified = n:( name ) s:( sym_dot ) { return n + s }
+
+id_table "Table identifier" = d:( id_qualified )? n:( name ) { return (d || '') + n }
+
+id_table_qualified = n:( id_table ) s:( sym_dot ) { return n + s }
+
+id_column "Column identifier" = t:( id_table_qualified )? n:( name ) { return (t || '') + n }
+
+number_digit = [0-9]
+
+alias = ( AS _ )? n:( name ) _ { return n }
+
+expression "" = _TODO_
+
+expression_list = _TODO_
+
+_ "Whitespace" = [ \t\r\n]*
