@@ -1,18 +1,21 @@
 
 import Expression from '../expression'
-import { extend, isString, isUndefined } from 'lodash'
+import { extend, isString, isUndefined, isObject, isArray } from 'lodash'
 
-const default_options = {
-  autoQuoteIdentifiers = false
+const defaultOptions = {
+  autoQuoteIdentifiers: false
 }
 
+/**
+ * @class BaseCompiler
+ */
 export default class Compiler {
   /**
    * @param {Object} options
    * @constructor
    */
   constructor (options = {}) {
-    this.options = extend({}, default_options, options)
+    this.options = extend({}, defaultOptions, options)
   }
 
   /**
@@ -27,12 +30,13 @@ export default class Compiler {
   }
 
   compileIdentifier ({ name }) {
-    let parts = name.split('.')
     let { autoQuoteIdentifiers } = this.options
 
-    if (autoQuoteIdentifiers) parts.map((value) => this.quote(value))
+    if (autoQuoteIdentifiers === true) {
+      return name.split('.').map((part) => this.quote(part)).join('.')
+    }
 
-    return parts.join('.')
+    return name
   }
 
   compileLiteral ({ expr, values }) {
@@ -107,7 +111,7 @@ export default class Compiler {
   quote (value) {
     return value === '*' ? value : `"${value.trim().replace(/"/g, '""')}"`
   }
-  
+
   /**
    * @param {Any} value
    * @returns {String}
@@ -121,7 +125,7 @@ export default class Compiler {
     if (value instanceof Expression) return value.compile(this)
 
     if (isString(value)) value = `'${value.replace(/'/g, "''")}'`
-    
+
     return value
   }
 }

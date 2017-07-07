@@ -2,6 +2,9 @@
 import Alias from './alias'
 import Expression from './base'
 
+/**
+ * @class FunctionExpression
+ */
 export default class Function extends Expression {
   constructor (name, args = []) {
     super()

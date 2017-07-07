@@ -2,6 +2,9 @@
 import Alias from './alias'
 import Expression from './base'
 
+/**
+ * @class IdentifierExpression
+ */
 export default class Identifier extends Expression {
   /**
    * @param {String} value

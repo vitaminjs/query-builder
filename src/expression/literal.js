@@ -1,6 +1,9 @@
 
 import Expression from './base'
 
+/**
+ * @class LiteralExpression
+ */
 export default class Literal extends Expression {
   /**
    * @param {String} expr
@@ -12,10 +15,6 @@ export default class Literal extends Expression {
 
     this.expr = expr
     this.values = values
-  }
-
-  static from (expr, values = []) {
-    // TODO
   }
 
   /**

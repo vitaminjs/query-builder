@@ -1,7 +1,9 @@
 
+/**
+ * @class BaseExpression
+ */
 export default class Expression {
   /**
-   *
    * @param {Compiler}
    * @returns {String}
    */
@@ -9,6 +11,10 @@ export default class Expression {
     throw new Error('Expression.compile() not yet overridden')
   }
 
+  /**
+   * @param {Any} expr
+   * @returns {Boolean}
+   */
   isEqual (expr) {
     return this === expr
   }

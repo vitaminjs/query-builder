@@ -5,7 +5,7 @@ import Sqlite from './sqlite'
 import Postgre from './postgre'
 
 // export the base compiler as default
-export { default as default } from './base'
+export { default } from './base'
 
 /**
  * Create a compiler for the given dialect

@@ -4,6 +4,7 @@ import Expression from './base'
 
 /**
  * @class SubQueryExpression
+ * @deprecated
  */
 export default class SubQuery extends Expression {
   

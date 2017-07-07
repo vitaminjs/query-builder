@@ -1,6 +1,9 @@
 
 import Expression from './base'
 
+/**
+ * @class AliasExpression
+ */
 export default class Alias extends Expression {
   /**
    * @param {Any} value
