@@ -17,6 +17,18 @@ export default class Identifier extends Expression {
   }
 
   /**
+   * @param {Any} value
+   * @returns {Expression}
+   */
+  static from (value) {
+    if (value instanceof Expression) return value
+
+    let [expr, alias] = value.toString().split(' as ')
+
+    return alias ? new Identifier(expr).as(alias) : new Identifier(expr)
+  }
+
+  /**
    * @param {String} name
    * @returns {Alias}
    */

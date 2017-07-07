@@ -29,6 +29,10 @@ export default class Compiler {
     return `${name}(${isDistinct ? 'distinct ' : ''}${this.parameterize(args)})`
   }
 
+  /**
+   * @param {Object} expr
+   * @returns {String}
+   */
   compileIdentifier ({ name }) {
     let { autoQuoteIdentifiers } = this.options
 

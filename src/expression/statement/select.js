@@ -1,5 +1,6 @@
 
 import Statement from '../statement'
+import Identifier from '../identifier'
 
 /**
  * @class SelectStatement
@@ -26,5 +27,23 @@ export default class Select extends Statement {
    */
   compile (compiler) {
     return compiler.compileSelectQuery(this)
+  }
+
+  /**
+   * @param {Any} columns
+   * @returns {Select}
+   */
+  select (...columns) {
+    columns.forEach((value) => this.addColumn(value))
+    return this
+  }
+
+  /**
+   * @param {Any} value
+   * @return {Select}
+   */
+  addColumn (value) {
+    this.getColumns().push(Identifier.from(value))
+    return this
   }
 }
