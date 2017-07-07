@@ -25,6 +25,14 @@ export default class Compiler {
     return '?'
   }
 
+  /**
+   * @param {Object} query
+   * @returns {String}
+   */
+  compileSelectQuery (query) {
+    // TODO
+  }
+
   compileFunction ({ name, args = [], isDistinct = false }) {
     return `${name}(${isDistinct ? 'distinct ' : ''}${this.parameterize(args)})`
   }
