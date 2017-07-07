@@ -13,6 +13,6 @@ export { default as Alias } from './alias'
 
 export { default as Table } from './table'
 
-export { default } from './base'
+export * from './statement/index'
 
-export * from './statement'
+export { default } from './base'
