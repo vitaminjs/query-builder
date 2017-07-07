@@ -1,17 +1,14 @@
 
-import Join from './join'
-import Union from './union'
-import Order from './order'
-import Table from './table'
-import Func from './function'
-import Column from './column'
-import Values from './values'
-import Literal from './literal'
-import Escaped from './escaped'
-import Expression from './base'
-import SubQuery from './sub-query'
-import Aggregate from './aggregate'
+export { default as Identifier } from './identifier'
 
-export default Expression
+export { default as Function } from './function'
 
-export { Literal, Order, Join, Table, Union, Column, Func, Escaped, SubQuery, Aggregate, Values }
+export { default as Literal } from './literal'
+
+export { default as Column } from './column'
+
+export { default as default } from './base'
+
+export { default as Alias } from './alias'
+
+export { default as Table } from './table'

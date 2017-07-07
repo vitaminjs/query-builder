@@ -1,51 +1,15 @@
 
-/**
- * @class Expression
- */
-export default class {
-
+export default class Expression {
   /**
-   * 
-   * @constructor
-   */
-  constructor() {
-    this.alias = ''
-  }
-  
-  /**
-   * 
+   *
    * @param {Compiler}
    * @returns {String}
    */
-  compile(compiler) {
-    throw new Error("Not overridden method")
+  compile (compiler) {
+    throw new Error('Expression.compile() not yet overridden')
   }
 
-  /**
-   * 
-   * @param {String} name
-   * @returns {Expression}
-   */
-  as(name) {
-    this.alias = name
-    return this
-  }
-  
-  /**
-   * 
-   * @param {Any} expr
-   * @returns {Boolean}
-   */
-  isEqual(expr) {
+  isEqual (expr) {
     return this === expr
   }
-
-  /**
-   * 
-   * @returns {String}
-   */
-  toString() {
-    return ''
-  }
-  
 }

@@ -1,48 +1,40 @@
 
+import Alias from './alias'
 import Expression from './base'
 
-/**
- * @class FunctionExpression
- */
-export default class Func extends Expression {
-  
-  /**
-   * 
-   * @param {String} name
-   * @param {Array} args
-   * @constructor
-   */
-  constructor(name, ...args) {
+export default class Function extends Expression {
+  constructor (name, args = []) {
     super()
-    
+
     this.name = name
     this.args = args
-  }
-  
-  /**
-   * 
-   * @param {Compiler}
-   * @returns {String}
-   */
-  compile(compiler) {
-    return compiler.compileFunction(this.name, this.args)
-  }
-  
-  /**
-   * 
-   * @param {Any} expr
-   * @returns {Boolean}
-   */
-  isEqual(expr) {
-    return super.isEqual() || ( expr instanceof Func && expr.name === this.name )
+    this.isDistinct = false
   }
 
   /**
-   * 
-   * @returns {String}
+   * @param {Boolean} flag
+   * @returns {Aggregate}
    */
-  toString() {
-    return this.name
+  distinct (flag = true) {
+    this.isDistinct = flag
+    return this
   }
-  
+
+  /**
+   * @param {String} name
+   * @returns {Alias}
+   */
+  as (name) {
+    return new Alias(this, name)
+  }
+
+  /**
+   *
+   * @param {Compiler}
+   * @returns {String}
+   * @override
+   */
+  compile (compiler) {
+    return compiler.compileFunction(this)
+  }
 }
