@@ -1,11 +1,28 @@
 
-import { extend, isString, castArray } from 'lodash'
 import Statement from '../statement'
+import { extend, isString, castArray } from 'lodash'
+
+import {
+  compose,
+  useCTE,
+  useOne,
+  useMany,
+  useReturning,
+  useConditions
+} from '../mixin'
+
+const mixin = compose(
+  useCTE(),
+  useReturning(),
+  useConditions(),
+  useOne('table'),
+  useMany('values')
+)
 
 /**
  * @class UpdateQuery
  */
-export default class Update extends Statement {
+export default class Update extends mixin(Statement) {
   /**
    * @param {Compiler} compiler
    * @returns {String}

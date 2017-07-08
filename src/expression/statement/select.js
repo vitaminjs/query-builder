@@ -2,10 +2,34 @@
 import Statement from '../statement'
 import Identifier from '../identifier'
 
+import {
+  useCTE,
+  compose,
+  useMany,
+  useJoins,
+  useLimit,
+  useOffset,
+  useOrders,
+  useConditions
+} from '../mixin'
+
+const mixin = compose(
+  useCTE(),
+  useJoins(),
+  useLimit(),
+  useOffset(),
+  useOrders(),
+  useConditions(),
+  useMany('tables'),
+  useMany('groups'),
+  useMany('columns'),
+  useConditions('havingConditions', 'having')
+)
+
 /**
  * @class SelectStatement
  */
-export default class Select extends Statement {
+export default class Select extends mixin(Statement) {
   /**
    * @constructor
    */

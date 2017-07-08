@@ -1,12 +1,22 @@
 
-import { isEmpty, isArray, chain, keys } from 'lodash'
 import Select from './select'
 import Statement from '../statement'
+import { isEmpty, isArray, chain, keys } from 'lodash'
+import { compose, useCTE, useOne, useMany, useReturning } from '../mixin'
+
+const mixin = compose(
+  useCTE(),
+  useReturning(),
+  useOne('table'),
+  useOne('select'),
+  useMany('values'),
+  useMany('columns')
+)
 
 /**
  * @class SelectStatement
  */
-export default class Insert extends Statement {
+export default class Insert extends mixin(Statement) {
   /**
    * @param {Compiler} compiler
    * @returns {String}

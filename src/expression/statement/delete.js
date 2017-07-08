@@ -1,10 +1,18 @@
 
 import Statement from '../statement'
+import { compose, useReturning, useConditions, useCTE, useOne } from '../mixin'
+
+const mixin = compose(
+  useCTE(),
+  useReturning(),
+  useOne('table'),
+  useConditions()
+)
 
 /**
  * @class DeleteStatement
  */
-export default class Delete extends Statement {
+export default class Delete extends mixin(Statement) {
   /**
    * @param {Compiler} compiler
    * @returns {String}
