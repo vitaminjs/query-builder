@@ -1,5 +1,5 @@
 
-import Statement from '../statement'
+import Statement from './base'
 import Identifier from '../identifier'
 
 import {

@@ -1,5 +1,5 @@
 
-import Statement from '../statement'
+import Statement from './base'
 import { extend, isString, castArray } from 'lodash'
 
 import {

@@ -1,5 +1,5 @@
 
-import Statement from '../statement'
+import Statement from './base'
 import { compose, useReturning, useConditions, useCTE, useOne } from '../mixin'
 
 const mixin = compose(

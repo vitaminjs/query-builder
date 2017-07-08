@@ -1,7 +1,9 @@
 
+import Alias from '../alias'
+import Expression from '../base'
+import Literal from '../literal'
 import { isString } from 'lodash'
-import Compiler, { createCompiler } from '../compiler'
-import Expression, { Alias, Literal } from '../expression'
+import Compiler, { createCompiler } from '../../compiler'
 
 /**
  * @class StatementExpression
