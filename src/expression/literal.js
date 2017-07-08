@@ -18,6 +18,17 @@ export default class Literal extends Expression {
   }
 
   /**
+   * @param {Any} expr
+   * @param {Array} args
+   * @returns {Expression}
+   */
+  static from (expr, ...args) {
+    if (expr instanceof Expression) return expr
+
+    return new Literal(expr.toString(), args)
+  }
+
+  /**
    * @param {Compiler} compiler
    * @returns {String}
    * @override

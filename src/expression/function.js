@@ -6,12 +6,12 @@ import Expression from './base'
  * @class FunctionExpression
  */
 export default class Function extends Expression {
-  constructor (name, args = []) {
+  constructor (name, args = [], distinct = false) {
     super()
 
     this.name = name
     this.args = args
-    this.isDistinct = false
+    this.isDistinct = distinct
   }
 
   /**
@@ -45,6 +45,6 @@ export default class Function extends Expression {
    * @returns {Function}
    */
   clone () {
-    return new this.constructor(this.name, this.args.slice()).distinct(this.isDistinct)
+    return new this.constructor(this.name, this.args.slice(), this.isDistinct)
   }
 }
