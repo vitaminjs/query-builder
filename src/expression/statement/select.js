@@ -18,6 +18,7 @@ export default class Select extends Statement {
   /**
    * @param {Compiler} compiler
    * @returns {String}
+   * @override
    */
   compile (compiler) {
     return compiler.compileSelectQuery(this)
