@@ -25,4 +25,11 @@ export default class Literal extends Expression {
   compile (compiler) {
     return compiler.compileLiteral(this)
   }
+
+  /**
+   * @returns {Literal}
+   */
+  clone () {
+    return new Literal(this.expr, this.values.slice())
+  }
 }

@@ -40,4 +40,11 @@ export default class Function extends Expression {
   compile (compiler) {
     return compiler.compileFunction(this)
   }
+
+  /**
+   * @returns {Function}
+   */
+  clone () {
+    return new this.constructor(this.name, this.args.slice()).distinct(this.isDistinct)
+  }
 }

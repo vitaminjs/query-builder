@@ -44,4 +44,11 @@ export default class Identifier extends Expression {
   compile (compiler) {
     return compiler.compileIdentifier(this)
   }
+
+  /**
+   * @returns {Identifier}
+   */
+  clone () {
+    return new Identifier(this.name)
+  }
 }

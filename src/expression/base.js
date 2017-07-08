@@ -12,6 +12,13 @@ export default class Expression {
   }
 
   /**
+   * @returns {Expression}
+   */
+  clone () {
+    return new this.constructor(...arguments)
+  }
+
+  /**
    * @param {Any} expr
    * @returns {Boolean}
    */
