@@ -15,6 +15,7 @@ export default class Compiler {
    * @constructor
    */
   constructor (options = {}) {
+    this.bindings = []
     this.options = extend({}, defaultOptions, options)
   }
 
@@ -26,15 +27,30 @@ export default class Compiler {
   }
 
   /**
-   * @param {Object} query
-   * @returns {String}
+   * @param {Expression} query
+   * @returns {Object}
    */
-  compileSelectQuery (query) {
-    // TODO
+  build (expr) {
+    return { sql: expr.compile(this), params: this.bindings }
   }
 
+  /**
+   * @param {Object} query
+   * @returns {String}
+   * @todo
+   */
+  compileSelectQuery (query) {
+    return ''
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   */
   compileFunction ({ name, args = [], isDistinct = false }) {
-    return `${name}(${isDistinct ? 'distinct ' : ''}${this.parameterize(args)})`
+    let distinct = isDistinct ? 'distinct ' : ''
+
+    return `${name}(${distinct}${this.parameterize(args)})`
   }
 
   /**
@@ -42,21 +58,25 @@ export default class Compiler {
    * @returns {String}
    */
   compileIdentifier ({ name }) {
-    let { autoQuoteIdentifiers } = this.options
+    if (this.options.autoQuoteIdentifiers === false) return name
 
-    if (autoQuoteIdentifiers === true) {
-      return name.split('.').map((part) => this.quote(part)).join('.')
-    }
-
-    return name
+    return name.split('.').map((part) => this.quote(part)).join('.')
   }
 
+  /**
+   * @param {Object}
+   * @returns {String}
+   */
   compileLiteral ({ expr, values }) {
     values = values.slice()
 
     return expr.replace(/\??/g, () => this.parameterize(values.shift()))
   }
 
+  /**
+   * @param {Object}
+   * @returns {String}
+   */
   compileAlias ({ value, name, columns = [] }) {
     let alias = this.compileIdentifier({ name })
 

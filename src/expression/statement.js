@@ -16,12 +16,7 @@ export default class Statement extends Expression {
   build (dialect, options = {}) {
     if (isString(dialect)) dialect = createCompiler(dialect, options)
 
-    if (dialect instanceof Compiler) {
-      let sql = this.compile(dialect)
-      let params = dialect.getBindings()
-
-      return { sql, params }
-    }
+    if (dialect instanceof Compiler) return dialect.build(this)
 
     throw new TypeError('Invalid query compiler')
   }
