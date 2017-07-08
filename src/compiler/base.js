@@ -54,6 +54,21 @@ export default class Compiler {
   }
 
   /**
+   * @param {Object}
+   * @returns {String}
+   */
+  compileJoin ({ table, conditions, columns }) {
+    let sql = `${this.type} join ${this.escape(table)}`
+
+    // TODO fixme
+    // if (conditions != null) sql += ' on ' + this.compileConditions(conditions)
+
+    if (columns.length > 0) sql += ` using (${this.columnize(columns)})`
+
+    return sql
+  }
+
+  /**
    * @param {Object} expr
    * @returns {String}
    */
