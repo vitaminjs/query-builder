@@ -1,6 +1,6 @@
 
 import Expression from '../expression'
-import { extend, isString, isUndefined, isObject, isArray } from 'lodash'
+import { extend, isString, isUndefined, isObject, isArray, isEmpty } from 'lodash'
 
 const defaultOptions = {
   autoQuoteIdentifiers: false
@@ -60,12 +60,19 @@ export default class Compiler {
   compileJoin ({ table, conditions, columns }) {
     let sql = `${this.type} join ${this.escape(table)}`
 
-    // TODO fixme
-    // if (conditions != null) sql += ' on ' + this.compileConditions(conditions)
+    if (!isEmpty(conditions)) sql += ' on ' + this.compileConditions(conditions)
 
-    if (columns.length > 0) sql += ` using (${this.columnize(columns)})`
+    if (!isEmpty(columns)) sql += ` using (${this.columnize(columns)})`
 
     return sql
+  }
+
+  /**
+   * @param {Compiler} compiler
+   * @returns {String}
+   */
+  compileCriteria ({ expr, prefix, negate }) {
+    return `${prefix}${negate ? ' not' : ''} (${this.escape(expr)})`
   }
 
   /**
@@ -103,6 +110,14 @@ export default class Compiler {
     }
 
     return `${this.escape(value)} as ${alias}`
+  }
+
+  /**
+   * @param {Array} value
+   * @returns {String}
+   */
+  compileConditions (value) {
+    return value.map((cnd) => this.escape(cnd)).join(' ').substr(3).trim()
   }
 
   /**
@@ -165,8 +180,6 @@ export default class Compiler {
    */
   escape (value) {
     if (value === '*') return value
-
-    // TODO escape literal functions
 
     // escape expressions
     if (value instanceof Expression) return value.compile(this)

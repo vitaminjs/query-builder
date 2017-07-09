@@ -1,13 +1,7 @@
 
 import mixin from './use-many'
+import Criteria from '../criteria'
 import { upperFirst } from 'lodash'
-import Criterion, { Criteria } from '../../criterion'
-
-function condition (key, value, bool = 'and', not = false) {
-  if (key instanceof Criterion) return key
-
-  return new Criteria().where(key, value, bool, not)
-}
 
 /**
  * @param {String} field
@@ -23,50 +17,42 @@ export default function (field = 'conditions', method = 'where') {
    */
   return (parent) => class extends mixin(field)(parent) {
     /**
-     *
-     * @param {Any} key
-     * @param {Any} value
+     * @param {String} expr
+     * @param {Array} args
      * @returns {Expression}
-     * @see `Criteria.where()`
      */
-    [method] (key, value) {
-      this[`get${capField}`]().push(condition(key, value))
+    [method] (expr, ...args) {
+      this[`get${capField}`]().push(Criteria.from(...arguments))
       return this
     }
 
     /**
-     *
-     * @param {Any} key
-     * @param {Any} value
+     * @param {String} expr
+     * @param {Array} args
      * @returns {Expression}
-     * @see `Criteria.orWhere()`
      */
-    [`or${upperFirst(method)}`] (key, value) {
-      this[`get${capField}`]().push(condition(key, value, 'or'))
+    [`or${upperFirst(method)}`] (expr, ...args) {
+      this[`get${capField}`]().push(Criteria.from(...arguments).or())
       return this
     }
 
     /**
-     *
-     * @param {Any} key
-     * @param {Any} value
+     * @param {String} expr
+     * @param {Array} args
      * @returns {Expression}
-     * @see `Criteria.whereNot()`
      */
-    [`${method}Not`] (key, value) {
-      this[`get${capField}`]().push(condition(key, value, 'and', true))
+    [`${method}Not`] (expr, ...args) {
+      this[`get${capField}`]().push(Criteria.from(...arguments).not())
       return this
     }
 
     /**
-     *
-     * @param {Any} key
-     * @param {Any} value
+     * @param {String} expr
+     * @param {Array} args
      * @returns {Expression}
-     * @see `Criteria.orWhereNot()`
      */
-    [`or${upperFirst(method)}Not`] (key, value) {
-      this[`get${capField}`]().push(condition(key, value, 'or', true))
+    [`or${upperFirst(method)}Not`] (expr, ...args) {
+      this[`get${capField}`]().push(Criteria.from(...arguments).or().not())
       return this
     }
   }
