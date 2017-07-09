@@ -1,15 +1,9 @@
 
-// export aggregators
-export * from './api/aggregate'
-
 // export expressions
-export * from './api/expression'
-
-// export conditions
-export * from './api/condition'
+export * from './helper/expression'
 
 // export functions
-export * from './api/function'
+export * from './helper/function'
 
 // export queries
-export * from './api/query'
+export * from './helper/statement'
