@@ -1,6 +1,15 @@
 
 import Expression from '../expression'
-import { extend, compact, isString, isUndefined, isArray, isEmpty } from 'lodash'
+
+import {
+  each,
+  extend,
+  compact,
+  isArray,
+  isEmpty,
+  isString, 
+  isUndefined
+} from 'lodash'
 
 const defaultOptions = {
   autoQuoteIdentifiers: false
@@ -35,7 +44,7 @@ export default class Compiler {
   }
 
   /**
-   * @param {Object}
+   * @param {Object} query
    * @returns {String}
    */
   compileSelectQuery (query) {
@@ -58,7 +67,7 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileWithClause () {
+  compileWithClause ({ commonTables }) {
     // TODO
   }
 
@@ -142,7 +151,7 @@ export default class Compiler {
   }
 
   /**
-   * @param {Object}
+   * @param {Object} query
    * @returns {String}
    */
   compileInsertQuery (query) {
@@ -157,6 +166,38 @@ export default class Compiler {
 
   /**
    * @param {Object}
+   * @returns {String}
+   * @private
+   */
+  compileInsertClause ({ table, columns }) {
+    let out = 'insert into ' + this.escape(table)
+
+    if (!isEmpty(columns)) {
+      out += ` (${this.columnize(columns)})`
+    }
+
+    return out
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   * @private
+   */
+  compileInsertValues ({ select, values, columns }) {
+    // compile select query as insert values
+    if (select) return this.escape(select)
+
+    // compile default values
+    if (isEmpty(values)) return 'default values'
+
+    return 'values ' + values.map((value) => {
+      return `(${columns.map((name) => this.parameter(value[name], true)).join(', ')})`
+    }).join(', ')
+  }
+
+  /**
+   * @param {Object} query
    * @returns {String}
    */
   compileUpdateQuery (query) {
@@ -173,6 +214,30 @@ export default class Compiler {
   /**
    * @param {Object}
    * @returns {String}
+   * @private
+   */
+  compileUpdateClause ({ table }) {
+    return 'update ' + this.escape(table)
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   * @private
+   */
+  compileSetClause ({ values = [] }) {
+    let expr = []
+
+    each(values.reduce(extend, {}), (value, key) => {
+      expr.push(`${key} = ${this.parameter(value, true)}`)
+    })
+
+    return 'set ' + expr.join(', ')
+  }
+
+  /**
+   * @param {Object} query
+   * @returns {String}
    */
   compileDeleteQuery (query) {
     let components = [
@@ -182,6 +247,14 @@ export default class Compiler {
     ]
 
     return compact(components).join(' ')
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   */
+  compileDeleteClause ({ table }) {
+    return 'delete from ' + this.escape(table)
   }
 
   /**
@@ -240,15 +313,16 @@ export default class Compiler {
    * @param {Object}
    * @returns {String}
    */
-  compileAlias ({ value, name, columns = [] }) {
+  compileAlias ({ value, name, columns, isCTE = false }) {
+    let expr = this.escape(value)
     let alias = this.compileIdentifier({ name })
 
     // compile the table name columns
-    if (columns.length > 0) {
+    if (!isEmpty(columns)) {
       alias += ` (${this.columnize(columns)})`
     }
 
-    return `${this.escape(value)} as ${alias}`
+    return isCTE ? `${alias} as ${expr}` : `${expr} as ${alias}`
   }
 
   /**

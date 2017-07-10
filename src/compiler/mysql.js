@@ -48,11 +48,11 @@ export default class extends Compiler {
    * @override
    * @private
    */
-  compileInsertTable (query) {
+  compileInsertClause ({ table, columns, values }) {
     // compile default columns
-    if (query.option('default values') === true) { return `${this.escape(query.getTable())} ()` }
+    if (isEmpty(values)) return `insert into ${this.escape(table)} ()`
 
-    return super.compileInsertTable(query)
+    return super.compileInsertClause({ table, columns })
   }
 
   /**
@@ -61,11 +61,11 @@ export default class extends Compiler {
    * @override
    * @private
    */
-  compileInsertValues (query) {
+  compileInsertValues ({ select, values, columns }) {
     // compile default values
-    if (query.option('default values') === true) { return 'values ()' }
+    if (isEmpty(values)) return 'values ()'
 
-    return super.compileInsertValues(query)
+    return super.compileInsertValues({ select, values, columns })
   }
 
   /**
@@ -73,19 +73,19 @@ export default class extends Compiler {
    * @returns {String}
    * @override
    */
-  compileFunction ({ name, args = [], isDistinct = false }) {
+  compileFunction ({ name, args = [] }) {
     switch (name) {
       case 'concat':
         return this.compileConcatFunction(args)
 
       case 'utc':
-        return super.compileFunction('utc_timestamp', args)
+        return super.compileFunction({ name: 'utc_timestamp', args })
 
       case 'strpos':
-        return super.compileFunction('instr', args)
+        return super.compileFunction({ name: 'instr', args })
 
       default:
-        return super.compileFunction({ name, args, isDistinct })
+        return super.compileFunction(arguments[0])
     }
   }
 
@@ -95,17 +95,19 @@ export default class extends Compiler {
    * @private
    */
   compileConcatFunction (args) {
-    args = args.map(value => {
-      if (value instanceof Expression) { return `coalesce(${value.compile(this)}, '')` }
+    args = args.map((value) => {
+      if (value instanceof Expression) {
+        return `coalesce(${this.escape(value)}, '')`
+      }
 
-      return this.escape(value)
+      return this.parameter(value)
     })
 
     return `concat(${args.join(', ')})`
   }
 
   /**
-   * @param {Object}
+   * @param {Object} query
    * @returns {String}
    * @override
    * @private

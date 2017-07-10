@@ -27,10 +27,8 @@ export default class extends Compiler {
    * @returns {String}
    * @override
    */
-  compileInsertQuery (query) {
-    var sql = super.compileInsertQuery(query)
-
-    return this.appendReturningClause(sql, query.getReturning())
+  compileInsertQuery ({ output }) {
+    return this.appendReturningClause(super.compileInsertQuery(arguments[0]), output)
   }
 
   /**
@@ -38,10 +36,8 @@ export default class extends Compiler {
    * @returns {String}
    * @override
    */
-  compileUpdateQuery (query) {
-    var sql = super.compileUpdateQuery(query)
-
-    return this.appendReturningClause(sql, query.getReturning())
+  compileUpdateQuery ({ output }) {
+    return this.appendReturningClause(super.compileUpdateQuery(arguments[0]), output)
   }
 
   /**
@@ -49,10 +45,8 @@ export default class extends Compiler {
    * @returns {String}
    * @override
    */
-  compileDeleteQuery (query) {
-    var sql = super.compileDeleteQuery(query)
-
-    return this.appendReturningClause(sql, query.getReturning())
+  compileDeleteClause ({ output }) {
+    return this.appendReturningClause(super.compileDeleteClause(arguments[0]), output)
   }
 
   /**
@@ -60,7 +54,7 @@ export default class extends Compiler {
    * @returns {String}
    * @override
    */
-  compileFunction ({ name, args = [], isDistinct = false }) {
+  compileFunction ({ name, args = [] }) {
     switch (name) {
       case 'now':
         return 'localtimestamp(0)'
@@ -92,7 +86,7 @@ export default class extends Compiler {
         return this.compileExtractFunction(name, first(args))
 
       default:
-        return super.compileFunction({ name, args, isDistinct })
+        return super.compileFunction(arguments[0])
     }
   }
 

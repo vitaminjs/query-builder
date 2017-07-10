@@ -40,7 +40,7 @@ export default class extends Compiler {
    * @returns {String}
    * @override
    */
-  compileFunction ({ name, args = [], isDistinct = false }) {
+  compileFunction ({ name, args = [] }) {
     switch (name) {
       case 'concat':
         return this.compileConcatFunction(args)
@@ -91,10 +91,10 @@ export default class extends Compiler {
         return '(random() / 18446744073709551616 + .5)'
 
       case 'strpos':
-        return super.compileFunction('instr', args)
+        return super.compileFunction({ name: 'instr', args })
 
       default:
-        return super.compileFunction({ name, args, isDistinct })
+        return super.compileFunction(arguments[0])
     }
   }
 
@@ -115,16 +115,16 @@ export default class extends Compiler {
    * @private
    */
   compileRepeatFunction (expr, count) {
-    var n = this.parameter(count)
+    var p = this.parameter(count)
 
-    // we use an indexed placeholder instead of a new parameter
-    // will not be appended in case of expressions
-    var i = isNaN(count) ? '' : this.bindings.length
+    // we use an numbered placeholder instead the simple "?".
+    // will not be appended in case of expressions.
+    p += isNaN(count) ? '' : this.bindings.length
 
-    // escape spaces to support also the missing function `space(n)`
+    // escape spaces to support the missing function `space(n)`
     var s = (expr === ' ') ? this.escape(expr) : this.parameter(expr)
 
-    return `replace(substr(quote(zeroblob((${n} + 1) / 2)), 3, ${n + i}), '0', ${s})`
+    return `replace(substr(quote(zeroblob((${p} + 1) / 2)), 3, ${p}), '0', ${s})`
   }
 
   /**
@@ -154,9 +154,11 @@ export default class extends Compiler {
    */
   compileConcatFunction (args) {
     return args.map(value => {
-      if (value instanceof Expression) { return `coalesce(${value.compile(this)}, '')` }
+      if (value instanceof Expression) {
+        return `coalesce(${this.escape(this)}, '')`
+      }
 
-      return this.escape(value)
+      return this.parameter(value)
     }).join(' || ')
   }
 }

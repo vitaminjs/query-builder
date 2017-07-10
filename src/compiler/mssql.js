@@ -12,17 +12,19 @@ export default class extends Compiler {
    * @override
    */
   quote (value) {
-    return (value === '*') ? value : `[${value.trim().replace(/\]/g, ']]')}]`
+    if (/\*|inserted|deleted/.test(value)) return value
+
+    return `[${value.trim().replace(/\]/g, ']]')}]`
   }
 
   /**
-   * @param {Object}
+   * @param {Object} query
    * @returns {String}
    * @override
    * @private
    */
-  compileSelectColumns ({ columns, limit, offset }) {
-    return this.compileTopClause({ limit, offset }) + super.compileSelectColumns({ columns })
+  compileSelectColumns (query) {
+    return this.compileTopClause(query) + super.compileSelectColumns(query)
   }
 
   /**
@@ -40,8 +42,8 @@ export default class extends Compiler {
    * @override
    * @private
    */
-  compileOrderByClause ({ orders, offset, limit }) {
-    let out = super.compileOrderByClause({ orders })
+  compileOrderByClause ({ offset, limit }) {
+    let out = super.compileOrderByClause(arguments[0])
 
     if (!out && offset) {
       // a dummy order to use with offset
@@ -60,7 +62,7 @@ export default class extends Compiler {
   }
 
   /**
-   * @param {Object}
+   * @param {Object} query
    * @returns {String}
    * @private
    */
@@ -69,15 +71,23 @@ export default class extends Compiler {
   }
 
   /**
+   * @param {Object} query
+   * @returns {String}
+   * @override
+   * @private
+   */
+  compileInsertClause ({ output }) {
+    return this.appendOutputClause(super.compileInsertClause(arguments[0]), output)
+  }
+
+  /**
    * @param {Object}
    * @returns {String}
    * @override
    * @private
    */
-  compileInsertTable (query) {
-    var sql = super.compileInsertTable(query)
-
-    return this.appendOutputClause(sql, query.getReturning())
+  compileSetClause ({ output }) {
+    return this.appendOutputClause(super.compileSetClause(arguments[0]), output)
   }
 
   /**
@@ -85,52 +95,26 @@ export default class extends Compiler {
    * @returns {String}
    * @override
    */
-  compileUpdateQuery (query) {
-    var table = this.escape(query.getTable())
-    var sql = `update ${table} ${this.compileUpdateValues(query)}`
-
-    if (query.hasReturning()) { sql = this.appendOutputClause(sql, query.getReturning()) }
-
-    if (query.hasConditions()) { sql += ` ${this.compileConditions(query)}` }
-
-    return sql
-  }
-
-  /**
-   * @param {Object}
-   * @returns {String}
-   * @override
-   */
-  compileDeleteQuery (query) {
-    var sql = `delete from ${this.escape(query.getTable())}`
-
-    if (query.hasReturning()) { sql = this.appendOutputClause(sql, query.getReturning(), 'deleted') }
-
-    if (query.hasConditions()) { sql += ` ${this.compileConditions(query)}` }
-
-    return sql
+  compileDeleteClause ({ output }) {
+    return this.appendOutputClause(super.compileDeleteClause(arguments[0]), output, 'deleted')
   }
 
   /**
    * @param {String} sql
-   * @param {String} prefix
    * @param {Array} columns
+   * @param {String} prefix
    * @returns {String}
    * @private
    */
-  appendOutputClause (sql, columns, prefix = 'inserted') {
+  appendOutputClause (sql, columns = [], prefix = 'inserted') {
     if (isEmpty(columns)) return sql
 
-    // add  the inserted or deleted prefix for each column
-    columns = columns.map(value => {
-      value = this.escape(value)
-
-      if (value.indexOf('inserted') > -1 || value.indexOf('deleted') > -1) { return value }
-
-      return `${prefix}.${value}`
+    // add the inserted or deleted prefix for each column
+    columns = columns.map((name) => {
+      return /^inserted|deleted/.test(name) ? name : `${prefix}.${name}`
     })
 
-    return `${sql} output ${columns.join(', ')}`
+    return `${sql} output ${this.columnize(columns)}`
   }
 
   /**
@@ -138,7 +122,7 @@ export default class extends Compiler {
    * @returns {String}
    * @override
    */
-  compileFunction ({ name, args = [], isDistinct = false }) {
+  compileFunction ({ name, args = [] }) {
     switch (name) {
       case 'trim':
         return `rtrim(ltrim(${this.parameter(first(args))}))`
@@ -170,27 +154,27 @@ export default class extends Compiler {
         return this.cast('getutcdate()', 'datetime2(0)', true)
 
       case 'length':
-        return super.compileFunction('len', args)
+        return super.compileFunction({ name: 'len', args })
 
       case 'strpos':
-        return super.compileFunction('charindex', reverse(args.slice()))
+        return super.compileFunction({ name: 'charindex', args: reverse(args.slice())})
 
       case 'repeat':
-        return super.compileFunction('replicate', args)
+        return super.compileFunction({ name: 'replicate', args })
 
       default:
-        return super.compileFunction({ name, args, isDistinct })
+        return super.compileFunction(arguments[0])
     }
   }
 
   /**
    * @param {String} part
-   * @param {Expression} expr
+   * @param {Any} value
    * @returns {String}
    * @private
    */
-  compileDatepartFunction (part, expr) {
-    return `datepart(${part}, ${this.parameter(expr)})`
+  compileDatepartFunction (part, value) {
+    return `datepart(${part}, ${this.parameter(value)})`
   }
 
   /**
@@ -202,11 +186,11 @@ export default class extends Compiler {
    */
   compileSubstringFunction (expr, start, length) {
     if (length == null) {
-      length = super.compileFunction('len', [expr])
+      length = super.compileFunction({ name: 'len', args: [expr]})
 
       return `substring(${this.parameter(expr)}, ${this.parameter(start)}, ${length})`
     }
 
-    return super.compileFunction('substring', [expr, start, length])
+    return super.compileFunction({ name: 'substring', args: [expr, start, length]})
   }
 }
