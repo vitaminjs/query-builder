@@ -74,7 +74,7 @@ export function cast (value, type) {
  * @returns {Literal}
  */
 export function esc (value) {
-  return raw(`'${value.replace("'", "''")}'`)
+  return raw(`'${value.replace(/'/g, "''")}'`)
 }
 
 /**
