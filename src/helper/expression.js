@@ -68,3 +68,19 @@ export function table (value) {
 export function cast (value, type) {
   return raw(`cast(? as ${type})`, value)
 }
+
+/**
+ * @param {String} value
+ * @returns {Literal}
+ */
+export function esc (value) {
+  return raw(`'${value.replace("'", "''")}'`)
+}
+
+/**
+ * @param {String} value
+ * @returns {Literal}
+ */
+export function val (value) {
+  return raw('?', value)
+}
