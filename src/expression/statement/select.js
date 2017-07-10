@@ -1,6 +1,6 @@
 
 import Statement from './base'
-import Identifier from '../identifier'
+import Literal from '../literal'
 
 import {
   useCTE,
@@ -64,7 +64,7 @@ export default class Select extends mixin(Statement) {
    * @return {Select}
    */
   addColumn (value) {
-    this.getColumns().push(Identifier.from(value))
+    this.getColumns().push(Literal.from(value))
     return this
   }
 
@@ -91,7 +91,7 @@ export default class Select extends mixin(Statement) {
    * @returns {Select}
    */
   addTable (value) {
-    this.getTables().push(Identifier.from(value))
+    this.getTables().push(Literal.from(value))
     return this
   }
 
@@ -109,7 +109,7 @@ export default class Select extends mixin(Statement) {
    * @returns {Select}
    */
   addGroup (value) {
-    this.getGroups().push(Identifier.from(value))
+    this.getGroups().push(Literal.from(value))
     return this
   }
 }

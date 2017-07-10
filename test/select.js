@@ -15,5 +15,16 @@ describe('test building select queries:', () => {
         sqlite: ''
       }
     )
+
+    support.test(
+      'accepts literal expressions',
+      qb.select(123, true, null),
+      {
+        pg: 'select 123, true, null',
+        mysql: 'select 123, true, null from dual',
+        mssql: 'select 123, true, null',
+        sqlite: 'select 123, true, null'
+      }
+    )
   })
 })
