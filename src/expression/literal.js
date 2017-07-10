@@ -25,7 +25,7 @@ export default class Literal extends Expression {
   static from (expr, ...args) {
     if (expr instanceof Expression) return expr
 
-    return new Literal(expr.toString(), args)
+    return new Literal(String(expr), args)
   }
 
   /**

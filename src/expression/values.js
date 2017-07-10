@@ -56,7 +56,7 @@ export default class Values extends Expression {
    * 
    */
   compileValues() {
-    var columns = query.getColumns().map(value => value.toString())
+    var columns = query.getColumns().map(value => String(value))
 
     return 'values ' + query.getValues().map(value => {
 

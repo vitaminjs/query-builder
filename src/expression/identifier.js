@@ -23,7 +23,7 @@ export default class Identifier extends Expression {
   static from (value) {
     if (value instanceof Expression) return value
 
-    let [expr, alias] = value.toString().split(' as ')
+    let [expr, alias] = String(value).split(' as ')
 
     return alias ? new Identifier(expr).as(alias) : new Identifier(expr)
   }
