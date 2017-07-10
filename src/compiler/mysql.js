@@ -1,117 +1,116 @@
 
-import Expression from '../expression'
 import Compiler from './base'
+import { isEmpty } from 'lodash'
+import Expression from '../expression'
 
 /**
  * @class MysqlCompiler
  */
 export default class extends Compiler {
-  
   /**
-   * Quotes a string so it can be safely used as a table or column name
-   * 
    * @param {String} value
    * @returns {String}
+   * @override
    */
-  quote(value) {
+  quote (value) {
     return (value === '*') ? value : '`' + value.trim().replace(/`/g, '``') + '`'
   }
-  
+
   /**
-   * 
-   * @param {Select} query
+   * @param {Object}
    * @returns {String}
+   * @override
+   * @private
    */
-  compileTables(query) {
-    if (! query.hasTables() ) return 'from dual'
-    
-    return super.compileTables(query)
+  compileFromClause ({ tables, joins }) {
+    if (isEmpty(tables)) return 'from dual'
+
+    return super.compileFromClause({ tables, joins })
   }
 
   /**
-   * 
-   * @param {Select} query
+   * @param {Object}
    * @returns {String}
+   * @override
+   * @private
    */
-  compileLimit(query) {
-    if ( query.hasOffset() && !query.hasLimit() )
-      return 'limit 18446744073709551615'
-    
-    return super.compileLimit(query)
+  compileLimitClause ({ limit, offset }) {
+    if (offset && !limit) {
+      return 'limit 18446744073709551615 offset ' + this.parameter(offset)
+    }
+
+    return super.compileLimitClause({ offset, limit })
   }
 
   /**
-   * 
-   * @param {Insert} query
+   * @param {Object}
    * @returns {String}
+   * @override
+   * @private
    */
-  compileInsertTable(query) {
+  compileInsertTable (query) {
     // compile default columns
-    if ( query.option('default values') === true )
-      return `${this.escape(query.getTable())} ()`
-    
+    if (query.option('default values') === true) { return `${this.escape(query.getTable())} ()` }
+
     return super.compileInsertTable(query)
   }
 
   /**
-   * 
-   * @param {Insert} query
+   * @param {Object}
    * @returns {String}
+   * @override
+   * @private
    */
-  compileInsertValues(query) {
+  compileInsertValues (query) {
     // compile default values
-    if ( query.option('default values') === true )
-      return 'values ()'
+    if (query.option('default values') === true) { return 'values ()' }
 
     return super.compileInsertValues(query)
   }
-  
+
   /**
-   * Compile the function name and its arguments
-   * 
-   * @param {String} name
-   * @param {Array} args
+   * @param {Object}
    * @returns {String}
+   * @override
    */
-  compileFunction(name, args = []) {
-    switch ( name ) {
+  compileFunction ({ name, args = [], isDistinct = false }) {
+    switch (name) {
       case 'concat':
         return this.compileConcatFunction(args)
-      
+
       case 'utc':
         return super.compileFunction('utc_timestamp', args)
-      
+
       case 'strpos':
         return super.compileFunction('instr', args)
-      
+
       default:
-        return super.compileFunction(name, args)
+        return super.compileFunction({ name, args, isDistinct })
     }
   }
-  
+
   /**
-   * 
    * @param {Array} args
    * @returns {String}
+   * @private
    */
-  compileConcatFunction(args) {
+  compileConcatFunction (args) {
     args = args.map(value => {
-      if ( value instanceof Expression )
-        return `coalesce(${value.compile(this)}, '')`
-      
+      if (value instanceof Expression) { return `coalesce(${value.compile(this)}, '')` }
+
       return this.escape(value)
     })
-    
+
     return `concat(${args.join(', ')})`
   }
 
   /**
-   * 
-   * @param {Query} query
+   * @param {Object}
    * @returns {String}
+   * @override
+   * @private
    */
-  compileWithClause(query) {
+  compileWithClause (query) {
     return ''
   }
-  
 }

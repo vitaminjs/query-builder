@@ -1,6 +1,6 @@
 
 import Expression from '../expression'
-import { extend, isString, isUndefined, isObject, isArray, isEmpty } from 'lodash'
+import { extend, compact, isString, isUndefined, isArray, isEmpty } from 'lodash'
 
 const defaultOptions = {
   autoQuoteIdentifiers: false
@@ -27,7 +27,7 @@ export default class Compiler {
   }
 
   /**
-   * @param {Expression} query
+   * @param {Expression} expr
    * @returns {Object}
    */
   build (expr) {
@@ -35,12 +35,153 @@ export default class Compiler {
   }
 
   /**
-   * @param {Object} query
+   * @param {Object}
    * @returns {String}
-   * @todo
    */
   compileSelectQuery (query) {
-    return ''
+    var components = [
+      this.compileWithClause(query),
+      this.compileSelectClause(query),
+      this.compileSelectColumns(query),
+      this.compileFromClause(query),
+      this.compileWhereClause(query),
+      this.compileGroupByClause(query),
+      this.compileOrderByClause(query),
+      this.compileLimitClause(query)
+    ]
+
+    return compact(components).join(' ')
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   * @private
+   */
+  compileWithClause () {
+    // TODO
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   * @private
+   */
+  compileSelectClause ({ isDistinct }) {
+    return 'select' + (isDistinct ? ' distinct' : '')
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   * @private
+   */
+  compileSelectColumns ({ columns }) {
+    return this.join(isEmpty(columns) ? ['*'] : columns)
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   * @private
+   */
+  compileFromClause ({ tables, joins = [] }) {
+    if (isEmpty(tables)) return ''
+
+    return ['from', this.join(tables), this.join(joins)].join(' ')
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   * @private
+   */
+  compileWhereClause ({ conditions }) {
+    return isEmpty(conditions) ? '' : 'where ' + this.join(conditions, ' ')
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   * @private
+   */
+  compileGroupByClause ({ groups, havingConditions }) {
+    if (isEmpty(groups)) return ''
+
+    let out = 'group by ' + this.join(groups)
+
+    if (!isEmpty(havingConditions)) {
+      out += ' having ' + this.join(havingConditions, ' ')
+    }
+
+    return out
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   * @private
+   */
+  compileOrderByClause ({ orders }) {
+    return isEmpty(orders) ? '' : 'order by ' + this.join(orders)
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   * @private
+   */
+  compileLimitClause ({ limit, offset }) {
+    let out = ''
+
+    if (limit) out += 'limit ' + this.parameter(limit)
+
+    if (offset) out += ' offset ' + this.parameter(offset)
+
+    return out.trim()
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   */
+  compileInsertQuery (query) {
+    let components = [
+      this.compileWithClause(query),
+      this.compileInsertClause(query),
+      this.compileInsertValues(query)
+    ]
+
+    return compact(components).join(' ')
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   */
+  compileUpdateQuery (query) {
+    let components = [
+      this.compileWithClause(query),
+      this.compileUpdateClause(query),
+      this.compileSetClause(query),
+      this.compileWhereClause(query)
+    ]
+
+    return compact(components).join(' ')
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   */
+  compileDeleteQuery (query) {
+    let components = [
+      this.compileWithClause(query),
+      this.compileDeleteClause(query),
+      this.compileWhereClause(query)
+    ]
+
+    return compact(components).join(' ')
   }
 
   /**
@@ -48,9 +189,7 @@ export default class Compiler {
    * @returns {String}
    */
   compileFunction ({ name, args = [], isDistinct = false }) {
-    let distinct = isDistinct ? 'distinct ' : ''
-
-    return `${name}(${distinct}${this.parameterize(args)})`
+    return `${name}(${isDistinct ? 'distinct ' : ''}${this.parameterize(args)})`
   }
 
   /**
@@ -72,7 +211,7 @@ export default class Compiler {
    * @returns {String}
    */
   compileCriteria ({ expr, prefix, negate }) {
-    return `${prefix}${negate ? ' not' : ''} (${this.escape(expr)})`
+    return `${prefix} ${negate ? `not (${this.escape(expr)})` : this.escape(expr)}`
   }
 
   /**
@@ -90,9 +229,11 @@ export default class Compiler {
    * @returns {String}
    */
   compileLiteral ({ expr, values }) {
-    values = values.slice()
+    let i = 0
 
-    return expr.replace(/\??/g, () => this.parameterize(values.shift()))
+    return expr.replace(/\?(\d*)/g, (_, p) => {
+      return this.parameterize(values[p ? p - 1 : i++])
+    })
   }
 
   /**
@@ -104,9 +245,7 @@ export default class Compiler {
 
     // compile the table name columns
     if (columns.length > 0) {
-      let ids = columns.map((name) => this.compileIdentifier({ name }))
-
-      alias += ` (${ids.join(', ')})`
+      alias += ` (${this.columnize(columns)})`
     }
 
     return `${this.escape(value)} as ${alias}`
@@ -121,11 +260,21 @@ export default class Compiler {
   }
 
   /**
+   * @param {Any} value
+   * @param {String} type
+   * @param {Boolean} isLiteral
+   * @returns {String}
+   */
+  cast (value, type, isLiteral = false) {
+    return `cast(${isLiteral ? value : this.parameter(value)} as ${type})`
+  }
+
+  /**
    * @param {Array} columns
    * @returns {String}
    */
   columnize (columns) {
-    return columns.map((expr) => this.escape(expr)).join(', ')
+    return columns.map((name) => this.compileIdentifier({ name })).join(', ')
   }
 
   /**
@@ -134,7 +283,8 @@ export default class Compiler {
    */
   parameterize (value) {
     if (!isArray(value)) return this.parameter(value)
-    // TODO
+
+    return value.map((item) => this.parameter(item)).join(', ')
   }
 
   /**
@@ -142,12 +292,14 @@ export default class Compiler {
    * @param {Boolean} replaceUndefined
    * @returns {String}
    */
-  parameter (value, replaceUndefined = false) {
+  parameter (value, setDefault = false) {
+    if (value === '*') return value
+
     // escape expressions
     if (value instanceof Expression) return value.compile(this)
 
     // replace undefined values with `default` placeholder
-    if (replaceUndefined && isUndefined(value)) return 'default'
+    if (setDefault && isUndefined(value)) return 'default'
 
     return this.addBinding(value).placeholder()
   }
@@ -155,15 +307,15 @@ export default class Compiler {
   /**
    * @param {Any} value
    * @returns {Compiler}
+   * @throws {TypeError}
    */
   addBinding (value) {
-    if (isUndefined(value) || isObject(value)) {
-      throw new TypeError('Invalid parameter value')
+    if (!isUndefined(value)) {
+      this.bindings.push(value)
+      return this
     }
 
-    this.bindings.push(value)
-
-    return this
+    throw new TypeError('Invalid parameter value')
   }
 
   /**
@@ -187,5 +339,15 @@ export default class Compiler {
     if (isString(value)) value = `'${value.replace(/'/g, "''")}'`
 
     return value
+  }
+
+  /**
+   * @param {Array} list
+   * @param {String} glue
+   * @returns {String}
+   * @private
+   */
+  join (list, glue = ', ') {
+    return list.map((value) => this.escape(value)).join(glue)
   }
 }

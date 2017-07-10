@@ -1,95 +1,88 @@
 
-import { isEmpty, first } from 'lodash'
 import Compiler from './base'
+import { isEmpty, first } from 'lodash'
 
 /**
  * @class PostgreCompiler
  */
 export default class extends Compiler {
-  
   /**
-   * 
-   * @param {Object} options
    * @constructor
    */
-  constructor(options = {}) {
-    super(options)
+  constructor () {
+    super()
 
     this.paramCount = 1
   }
-  
+
   /**
-   * Default parameter placeholder
-   * 
-   * @type {String}
+   * @returns {String}
    */
-  get placeholder() {
+  placeholder () {
     return '$' + this.paramCount++
   }
 
   /**
-   * 
-   * @param {Insert} query
+   * @param {Object}
    * @returns {String}
+   * @override
    */
-  compileInsertQuery(query) {
+  compileInsertQuery (query) {
     var sql = super.compileInsertQuery(query)
 
     return this.appendReturningClause(sql, query.getReturning())
   }
 
   /**
-   * 
-   * @param {Update} query
+   * @param {Object}
    * @returns {String}
+   * @override
    */
-  compileUpdateQuery(query) {
+  compileUpdateQuery (query) {
     var sql = super.compileUpdateQuery(query)
 
     return this.appendReturningClause(sql, query.getReturning())
   }
 
   /**
-   * 
-   * @param {Delete} query
+   * @param {Object}
    * @returns {String}
+   * @override
    */
-  compileDeleteQuery(query) {
+  compileDeleteQuery (query) {
     var sql = super.compileDeleteQuery(query)
 
     return this.appendReturningClause(sql, query.getReturning())
   }
-  
+
   /**
-   * Compile the function name and its arguments
-   * 
-   * @param {String} name
-   * @param {Array} args
+   * @param {Object}
    * @returns {String}
+   * @override
    */
-  compileFunction(name, args = []) {
-    switch ( name ) {
+  compileFunction ({ name, args = [], isDistinct = false }) {
+    switch (name) {
       case 'now':
-        return "localtimestamp(0)"
-      
+        return 'localtimestamp(0)'
+
       case 'current_date':
-        return "current_date"
-      
+        return 'current_date'
+
       case 'current_time':
         return `current_time(0)`
-      
+
       case 'utc':
         return "current_timestamp(0) at time zone 'UTC'"
-      
+
       case 'space':
         return `repeat(' ', ${this.parameter(first(args))})`
-      
+
       case 'date':
         return this.cast(first(args), 'date')
-      
+
       case 'time':
         return this.cast(first(args), 'time(0)')
-      
+
       case 'day':
       case 'hour':
       case 'year':
@@ -97,31 +90,29 @@ export default class extends Compiler {
       case 'minute':
       case 'second':
         return this.compileExtractFunction(name, first(args))
-      
+
       default:
-        return super.compileFunction(name, args)
+        return super.compileFunction({ name, args, isDistinct })
     }
   }
 
   /**
-   * 
    * @param {String} part
    * @param {Any} expr
    * @returns {String}
+   * @private
    */
-  compileExtractFunction(part, expr) {
+  compileExtractFunction (part, expr) {
     return `extract(${part} from ${this.parameter(expr)})`
   }
 
   /**
-   * 
    * @param {String} sql
    * @param {Array} columns
    * @returns {String}
    * @private
    */
-  appendReturningClause(sql, columns) {
+  appendReturningClause (sql, columns) {
     return isEmpty(columns) ? sql : `${sql} returning ${this.columnize(columns)}`
   }
-  
 }

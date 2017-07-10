@@ -1,67 +1,65 @@
 
-import { isUndefined, first } from 'lodash'
-import Expression from '../expression'
 import Compiler from './base'
+import Expression from '../expression'
+import { isUndefined, first } from 'lodash'
 
 /**
  * @class SqliteCompiler
  */
 export default class extends Compiler {
-  
   /**
-   * 
-   * @param {Select} query
+   * @param {Object}
    * @returns {String}
+   * @override
+   * @private
    */
-  compileLimit(query) {
-    if ( query.hasOffset() && !query.hasLimit() )
-      return 'limit -1'
-    
-    return super.compileLimit(query)
+  compileLimitClause ({ limit, offset }) {
+    if (offset && !limit) {
+      return 'limit -1 offset ' + this.parameter(offset)
+    }
+
+    return super.compileLimitClause({ limit, offset })
   }
 
   /**
-   * 
    * @param {Any} value
-   * @param {Boolean} replaceUndefined
+   * @param {Boolean} setDefault
    * @returns {String}
+   * @override
    */
-  parameter(value, replaceUndefined = false) {
+  parameter (value, setDefault = false) {
     // sqlite does not support the `default` keyword,
     // so we replace undefined values with `null` instead
-    if ( replaceUndefined && isUndefined(value) )
-      return 'null'
+    if (setDefault && isUndefined(value)) return 'null'
 
-    return super.parameter(value, replaceUndefined)
+    return super.parameter(value)
   }
-  
+
   /**
-   * Compile the function name and its arguments
-   * 
-   * @param {String} name
-   * @param {Array} args
+   * @param {Object}
    * @returns {String}
+   * @override
    */
-  compileFunction(name, args = []) {
-    switch ( name ) {
+  compileFunction ({ name, args = [], isDistinct = false }) {
+    switch (name) {
       case 'concat':
         return this.compileConcatFunction(args)
-      
+
       case 'now':
         return "datetime('now', 'localtime')"
-      
+
       case 'utc':
         return "datetime('now', 'utc')"
-      
+
       case 'current_date':
         return "date('now', 'localtime')"
-      
+
       case 'current_time':
         return "time('now', 'localtime')"
-      
+
       case 'day':
         return this.compileExtractFunction('%d', first(args))
-      
+
       case 'hour':
         return this.compileExtractFunction('%H', first(args))
 
@@ -76,47 +74,47 @@ export default class extends Compiler {
 
       case 'second':
         return this.compileExtractFunction('%S', first(args))
-        
+
       case 'left':
         return this.compileLeftFunction(...args)
-      
+
       case 'right':
         return this.compileRightFunction(...args)
-      
+
       case 'repeat':
         return this.compileRepeatFunction(...args)
-      
+
       case 'space':
         return this.compileRepeatFunction(' ', first(args))
-      
+
       case 'rand':
-        return '(random() / 18446744073709551616 + 0.5)'
-      
+        return '(random() / 18446744073709551616 + .5)'
+
       case 'strpos':
         return super.compileFunction('instr', args)
-      
+
       default:
-        return super.compileFunction(name, args)
+        return super.compileFunction({ name, args, isDistinct })
     }
   }
 
   /**
-   * 
    * @param {String} part
    * @param {Any} expr
    * @returns {String}
+   * @private
    */
-  compileExtractFunction(part, expr) {
+  compileExtractFunction (part, expr) {
     return this.cast(`strftime('${part}', ${this.parameter(expr)})`, 'integer', true)
   }
 
   /**
-   * 
    * @param {String|Expression} expr
    * @param {Integer} count
    * @returns {String}
+   * @private
    */
-  compileRepeatFunction(expr, count) {
+  compileRepeatFunction (expr, count) {
     var n = this.parameter(count)
 
     // we use an indexed placeholder instead of a new parameter
@@ -125,42 +123,40 @@ export default class extends Compiler {
 
     // escape spaces to support also the missing function `space(n)`
     var s = (expr === ' ') ? this.escape(expr) : this.parameter(expr)
-    
-    return `replace(substr(quote(zeroblob((${n} + 1) / 2)), 3, ${n+i}), '0', ${s})`
+
+    return `replace(substr(quote(zeroblob((${n} + 1) / 2)), 3, ${n + i}), '0', ${s})`
   }
-  
+
   /**
-   * 
    * @param {Expression} expr
    * @param {Integer} length
    * @returns {String}
+   * @private
    */
-  compileLeftFunction(expr, length) {
+  compileLeftFunction (expr, length) {
     return `substr(${this.parameter(expr)}, 1, ${this.parameter(length)})`
   }
-  
+
   /**
-   * 
    * @param {Expression} expr
    * @param {Integer} length
    * @returns {String}
+   * @private
    */
-  compileRightFunction(expr, length) {
+  compileRightFunction (expr, length) {
     return `substr(${this.parameter(expr)}, -${this.parameter(length)})`
   }
-  
+
   /**
-   * 
    * @param {Array} args
    * @returns {String}
+   * @private
    */
-  compileConcatFunction(args) {
+  compileConcatFunction (args) {
     return args.map(value => {
-      if ( value instanceof Expression )
-        return `coalesce(${value.compile(this)}, '')`
-      
+      if (value instanceof Expression) { return `coalesce(${value.compile(this)}, '')` }
+
       return this.escape(value)
     }).join(' || ')
   }
-  
 }
