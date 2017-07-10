@@ -1,48 +1,47 @@
 
-import Expression, { Literal } from '../expression'
 import { func } from './expression'
 
-/**
- * @param {Array} args
- * @return {Function}
- */
-export function count (...args) {
-  if (!args.length) args = ['*']
+// /**
+//  * @param {Array} args
+//  * @return {Function}
+//  */
+// export function count (...args) {
+//   if (!args.length) args = ['*']
 
-  return func('count', ...args)
-}
+//   return func('count', ...args)
+// }
 
-/**
- * @param {String|argsession} args
- * @return {Function}
- */
-export function sum (...args) {
-  return func('sum', ...args)
-}
+// /**
+//  * @param {String|argsession} args
+//  * @return {Function}
+//  */
+// export function sum (...args) {
+//   return func('sum', ...args)
+// }
 
-/**
- * @param {String|argsession} args
- * @return {Function}
- */
-export function avg (...args) {
-  return func('avg', ...args)
-}
+// /**
+//  * @param {String|argsession} args
+//  * @return {Function}
+//  */
+// export function avg (...args) {
+//   return func('avg', ...args)
+// }
 
-/**
- * @param {String|argsession} args
- * @return {Function}
- */
-export function min (...args) {
-  return func('min', ...args)
-}
+// /**
+//  * @param {String|argsession} args
+//  * @return {Function}
+//  */
+// export function min (...args) {
+//   return func('min', ...args)
+// }
 
-/**
- * @param {String|argsession} args
- * @return {Function}
- */
-export function max (...args) {
-  return func('max', ...args)
-}
+// /**
+//  * @param {String|argsession} args
+//  * @return {Function}
+//  */
+// export function max (...args) {
+//   return func('max', ...args)
+// }
 
 /**
  *

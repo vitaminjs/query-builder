@@ -261,8 +261,8 @@ export default class Compiler {
    * @param {Object}
    * @returns {String}
    */
-  compileFunction ({ name, args = [], isDistinct = false }) {
-    return `${name}(${isDistinct ? 'distinct ' : ''}${this.parameterize(args)})`
+  compileFunction ({ name, args = [] }) {
+    return `${name}(${this.parameterize(args)})`
   }
 
   /**
