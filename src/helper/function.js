@@ -1,50 +1,7 @@
 
 import { func } from './expression'
 
-// /**
-//  * @param {Array} args
-//  * @return {Function}
-//  */
-// export function count (...args) {
-//   if (!args.length) args = ['*']
-
-//   return func('count', ...args)
-// }
-
-// /**
-//  * @param {String|argsession} args
-//  * @return {Function}
-//  */
-// export function sum (...args) {
-//   return func('sum', ...args)
-// }
-
-// /**
-//  * @param {String|argsession} args
-//  * @return {Function}
-//  */
-// export function avg (...args) {
-//   return func('avg', ...args)
-// }
-
-// /**
-//  * @param {String|argsession} args
-//  * @return {Function}
-//  */
-// export function min (...args) {
-//   return func('min', ...args)
-// }
-
-// /**
-//  * @param {String|argsession} args
-//  * @return {Function}
-//  */
-// export function max (...args) {
-//   return func('max', ...args)
-// }
-
 /**
- *
  * @param {Any} expr
  * @returns {Func}
  */
@@ -53,7 +10,6 @@ export function abs (expr) {
 }
 
 /**
- *
  * @param {Any} x
  * @param {Integer} y
  * @returns {Func}
@@ -72,15 +28,13 @@ export function rand () {
 }
 
 /**
- *
- * @see `RAND`
+ * @alias `RAND`
  */
 export function random () {
   return rand(...arguments)
 }
 
 /**
- *
  * @param {String|Expression} expr
  * @return {Func}
  */
@@ -89,15 +43,13 @@ export function upper (expr) {
 }
 
 /**
- *
- * @see `UPPER`
+ * @alias `UPPER`
  */
 export function ucase () {
   return upper(...arguments)
 }
 
 /**
- *
  * @param {String|Expression} expr
  * @return {Func}
  */
@@ -106,15 +58,13 @@ export function lower (expr) {
 }
 
 /**
- *
- * @see `LOWER`
+ * @alias `LOWER`
  */
 export function lcase () {
   return lower(...arguments)
 }
 
 /**
- *
  * @param {String|Expression} args
  * @returns {Func}
  */
@@ -123,7 +73,6 @@ export function concat (...args) {
 }
 
 /**
- *
  * @param {String|Expression} expr
  * @returns {Func}
  */
@@ -132,15 +81,13 @@ export function length (expr) {
 }
 
 /**
- *
- * @see `LENGTH`
+ * @alias `LENGTH`
  */
 export function len () {
   return length(...arguments)
 }
 
 /**
- *
  * @param {String|Expresion} expr
  * @param {Any} pattern
  * @param {Any} replacement
@@ -151,7 +98,6 @@ export function replace (expr, pattern, replacement) {
 }
 
 /**
- *
  * @param {String|Expression} expr
  * @param {Integer} start
  * @param {Integer} length
@@ -166,15 +112,13 @@ export function substr (expr, start, length) {
 }
 
 /**
- *
- * @see `SUBSTR`
+ * @alias `SUBSTR`
  */
 export function substring () {
   return substr(...arguments)
 }
 
 /**
- *
  * @param {String|Expression} expr
  * @param {Integer} length
  * @returns {Func}
@@ -184,7 +128,6 @@ export function left (expr, length) {
 }
 
 /**
- *
  * @param {String|Expression} expr
  * @param {Integer} length
  * @returns {Func}
@@ -194,7 +137,6 @@ export function right (expr, length) {
 }
 
 /**
- *
  * @param {String|Expresion} expr
  * @returns {Func}
  */
@@ -203,7 +145,6 @@ export function trim (expr) {
 }
 
 /**
- *
  * @param {String|Expresion} expr
  * @returns {Func}
  */
@@ -212,7 +153,6 @@ export function ltrim (expr) {
 }
 
 /**
- *
  * @param {String|Expresion} expr
  * @returns {Func}
  */
@@ -221,7 +161,6 @@ export function rtrim (expr) {
 }
 
 /**
- *
  * @param {String|Expresion} str
  * @param {String|Expresion} substr
  * @returns {Func}
@@ -231,15 +170,13 @@ export function strpos (str, substr) {
 }
 
 /**
- *
- * @see `STRPOS`
+ * @alias `STRPOS`
  */
 export function position () {
   return strpos(...arguments)
 }
 
 /**
- *
  * @param {String|Expression} expr
  * @param {Integer} count
  * @returns {Func}
@@ -249,7 +186,6 @@ export function repeat (expr, count) {
 }
 
 /**
- *
  * @param {Integer} length
  * @returns {Func}
  */
@@ -267,8 +203,7 @@ export function now () {
 }
 
 /**
- *
- * @see `NOW`
+ * @alias `NOW`
  */
 export function datetime () {
   return now()
@@ -284,7 +219,6 @@ export function utc () {
 }
 
 /**
- *
  * @param {Any} expr
  * @returns {Func}
  */
@@ -302,15 +236,13 @@ export function today () {
 }
 
 /**
- *
- * @see `TODAY`
+ * @alias `TODAY`
  */
 export function curdate () {
   return today()
 }
 
 /**
- *
  * @param {Any} expr
  * @returns {Func}
  */
@@ -319,7 +251,6 @@ export function time (expr) {
 }
 
 /**
- *
  * @returns {Func}
  */
 export function clock () {
@@ -327,7 +258,6 @@ export function clock () {
 }
 
 /**
- *
  * @returns {Func}
  */
 export function curtime () {
@@ -335,7 +265,6 @@ export function curtime () {
 }
 
 /**
- *
  * @param {String|Expression} expr
  * @returns {Func}
  */
@@ -344,7 +273,6 @@ export function day (expr) {
 }
 
 /**
- *
  * @param {String|Expression} expr
  * @returns {Func}
  */
@@ -353,7 +281,6 @@ export function month (expr) {
 }
 
 /**
- *
  * @param {String|Expression} expr
  * @returns {Func}
  */
@@ -362,7 +289,6 @@ export function year (expr) {
 }
 
 /**
- *
  * @param {String|Expression} expr
  * @returns {Func}
  */
@@ -371,7 +297,6 @@ export function hour (expr) {
 }
 
 /**
- *
  * @param {String|Expression} expr
  * @returns {Func}
  */
@@ -380,7 +305,6 @@ export function minute (expr) {
 }
 
 /**
- *
  * @param {String|Expression} expr
  * @returns {Func}
  */

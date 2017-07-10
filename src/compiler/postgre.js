@@ -7,10 +7,11 @@ import { isEmpty, first } from 'lodash'
  */
 export default class extends Compiler {
   /**
+   * @param {Object} options
    * @constructor
    */
-  constructor () {
-    super()
+  constructor (options) {
+    super(options)
 
     this.paramCount = 1
   }

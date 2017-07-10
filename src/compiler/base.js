@@ -7,7 +7,7 @@ import {
   compact,
   isArray,
   isEmpty,
-  isString, 
+  isString,
   isUndefined
 } from 'lodash'
 
@@ -23,7 +23,7 @@ export default class Compiler {
    * @param {Object} options
    * @constructor
    */
-  constructor (options = {}) {
+  constructor (options) {
     this.bindings = []
     this.options = extend({}, defaultOptions, options)
   }
@@ -94,10 +94,16 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileFromClause ({ tables, joins = [] }) {
+  compileFromClause ({ tables = [], joins }) {
     if (isEmpty(tables)) return ''
 
-    return ['from', this.join(tables), this.join(joins)].join(' ')
+    let out = 'from ' + this.join(tables)
+
+    if (!isEmpty(joins)) {
+      out += ` ${this.join(joins, ' ')}`
+    }
+
+    return out
   }
 
   /**
@@ -272,9 +278,13 @@ export default class Compiler {
   compileJoin ({ table, conditions, columns }) {
     let sql = `${this.type} join ${this.escape(table)}`
 
-    if (!isEmpty(conditions)) sql += ' on ' + this.compileConditions(conditions)
+    if (!isEmpty(conditions)) {
+      sql += ' on ' + this.compileConditions(conditions)
+    }
 
-    if (!isEmpty(columns)) sql += ` using (${this.columnize(columns)})`
+    if (!isEmpty(columns) && isEmpty(conditions)) {
+      sql += ` using (${this.columnize(columns)})`
+    }
 
     return sql
   }
@@ -397,7 +407,7 @@ export default class Compiler {
    * @returns {String}
    */
   quote (value) {
-    return value === '*' ? value : `"${value.trim().replace(/"/g, '""')}"`
+    return (value === '*') ? value : `"${value.replace(/"/g, '""')}"`
   }
 
   /**

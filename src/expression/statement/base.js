@@ -24,12 +24,11 @@ export default class Statement extends Expression {
   }
 
   /**
-   *
    * @param {String} name
    * @param {Array} columns
    * @returns {Alias}
    */
   as (name, ...columns) {
-    return new Alias(new Literal('(?)', this), name, ...columns)
+    return new Alias(new Literal('(?)', [this]), name, columns)
   }
 }
