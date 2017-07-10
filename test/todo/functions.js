@@ -3,7 +3,7 @@
 var support = require('./support')
 var __      = require('../lib')
 
-describe("test SQL functions:", () => {
+describe.skip("test SQL functions:", () => {
   
   support.test(
     "test upper()",

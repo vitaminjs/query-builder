@@ -45,6 +45,8 @@ export default class Select extends mixin(Statement) {
    * @override
    */
   compile (compiler) {
+    if (!(this.columns || this.tables)) return ''
+
     return compiler.compileSelectQuery(this)
   }
 
