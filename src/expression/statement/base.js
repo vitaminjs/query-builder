@@ -31,4 +31,13 @@ export default class Statement extends Expression {
   as (name, ...columns) {
     return new Alias(new Literal('(?)', [this]), name, columns)
   }
+
+  /**
+   * @param {String} name
+   * @param {Array} columns
+   * @returns {Alias}
+   */
+  asCTE (name, ...columns) {
+    return this.as(name, ...columns).forCTE()
+  }
 }

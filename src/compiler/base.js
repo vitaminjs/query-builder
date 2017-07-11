@@ -68,7 +68,9 @@ export default class Compiler {
    * @private
    */
   compileWithClause ({ commonTables }) {
-    // TODO
+    if (isEmpty(commonTables)) return ''
+
+    return 'with ' + this.join(commonTables)
   }
 
   /**
@@ -94,7 +96,7 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileFromClause ({ tables = [], joins }) {
+  compileFromClause ({ tables, joins }) {
     if (isEmpty(tables)) return ''
 
     let out = 'from ' + this.join(tables)
@@ -112,7 +114,9 @@ export default class Compiler {
    * @private
    */
   compileWhereClause ({ conditions }) {
-    return isEmpty(conditions) ? '' : 'where ' + this.join(conditions, ' ')
+    if (isEmpty(conditions)) return ''
+
+    return 'where ' + this.compileConditions(conditions)
   }
 
   /**
@@ -126,7 +130,7 @@ export default class Compiler {
     let out = 'group by ' + this.join(groups)
 
     if (!isEmpty(havingConditions)) {
-      out += ' having ' + this.join(havingConditions, ' ')
+      out += ' having ' + this.compileConditions(havingConditions)
     }
 
     return out
@@ -323,7 +327,7 @@ export default class Compiler {
    * @param {Object}
    * @returns {String}
    */
-  compileAlias ({ value, name, columns, isCTE = false }) {
+  compileAlias ({ value, name, columns, isCTE }) {
     let expr = this.escape(value)
     let alias = this.compileIdentifier({ name })
 
@@ -340,7 +344,7 @@ export default class Compiler {
    * @returns {String}
    */
   compileConditions (value) {
-    return value.map((cnd) => this.escape(cnd)).join(' ').substr(3).trim()
+    return this.join(value, ' ').substr(3).trim()
   }
 
   /**
