@@ -57,7 +57,7 @@ export function column (value) {
  * @returns {Table}
  */
 export function table (value) {
-  return new Table(value)
+  return new Table(id(value))
 }
 
 /**

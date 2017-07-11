@@ -340,6 +340,16 @@ export default class Compiler {
   }
 
   /**
+   * @param {Object}
+   * @returns {String}
+   */
+  compileTable ({ name, joins }) {
+    if (isEmpty(joins)) return this.escape(name)
+
+    return `(${this.escape(name)} ${this.join(joins, ' ')})`
+  }
+
+  /**
    * @param {Array} value
    * @returns {String}
    */
