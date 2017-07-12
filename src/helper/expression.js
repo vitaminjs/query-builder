@@ -2,6 +2,7 @@
 import {
   Table,
   Alias,
+  Order,
   Column,
   Literal,
   Identifier,
@@ -46,10 +47,18 @@ export function func (name, ...args) {
 
 /**
  * @param {String} value
- * @returns {Column}
+ * @returns {Order}
  */
-export function column (value) {
-  return new Column(value)
+export function asc (value) {
+  return new Order(id(value)).asc()
+}
+
+/**
+ * @param {String} value
+ * @returns {Order}
+ */
+export function desc (value) {
+  return new Order(id(value)).desc()
 }
 
 /**
