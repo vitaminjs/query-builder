@@ -18,7 +18,7 @@ export default function (field = 'commonTables') {
      * @param {Expression} cte
      * @returns {Expression}
      */
-    withCTE (...cte) {
+    with (...cte) {
       cte.forEach((value) => this[`get${upperFirst(field)}`]().push(value))
       return this
     }
