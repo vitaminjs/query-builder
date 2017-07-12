@@ -1,5 +1,6 @@
 
 import mixin from './use-many'
+import Literal from '../literal'
 import { upperFirst } from 'lodash'
 
 /**
@@ -26,7 +27,7 @@ export default function (field = 'orders') {
      * @returns {Expression}
      */
     addOrder (value) {
-      this[`get${upperFirst(field)}`]().push(value)
+      this[`get${upperFirst(field)}`]().push(Literal.from(value))
       return this
     }
   }
