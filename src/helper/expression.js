@@ -6,7 +6,7 @@ import {
   Column,
   Literal,
   Identifier,
-  Function as Func
+  Function as $Function
 } from '../expression'
 
 /**
@@ -33,7 +33,7 @@ export function id (value) {
  * @returns {Alias}
  */
 export function alias (expr, name, ...columns) {
-  return new Alias(expr, name, columns)
+  return new Alias(raw(expr), name, columns)
 }
 
 /**
@@ -42,7 +42,7 @@ export function alias (expr, name, ...columns) {
  * @returns {Function}
  */
 export function func (name, ...args) {
-  return new Func(name, args)
+  return new $Function(name, args)
 }
 
 /**
@@ -83,7 +83,7 @@ export function cast (value, type) {
  * @returns {Literal}
  */
 export function esc (value) {
-  return raw(`'${value.replace(/'/g, "''")}'`)
+  return raw(`'${String(value).replace(/'/g, "''")}'`)
 }
 
 /**
