@@ -5,90 +5,57 @@ import Expression from './base'
  * @class OrderExpression
  */
 export default class Order extends Expression {
-  
   /**
-   * @param {Column} expr
+   * @param {Expression} expr
+   * @param {String} direction
    * @constructor
    */
-  constructor(expr, direction = 'asc') {
+  constructor (expr, direction = 'asc') {
     super()
-    
-    this.column = expr
+
+    this.expr = expr
+    this.nulls = false
     this.direction = direction
   }
 
   /**
-   * 
-   * @returns {String}
-   */
-  getName() {
-    return this.column.getName()
-  }
-
-  /**
-   * 
    * @returns {Order}
    */
-  asc() {
+  asc () {
     this.direction = 'asc'
     return this
   }
 
   /**
-   * 
    * @returns {Order}
    */
-  desc() {
+  desc () {
     this.direction = 'desc'
     return this
   }
 
   /**
-   * 
    * @returns {Order}
    */
-  nullsFirst() {
-    // TODO
+  nullsFirst () {
+    this.nulls = 'first'
+    return this
   }
 
   /**
-   * 
    * @returns {Order}
    */
-  nullsLast() {
-    // TODO
+  nullsLast () {
+    this.nulls = 'last'
+    return this
   }
   
   /**
-   * 
    * @param {Compiler} compiler
    * @returns {String}
+   * @override
    */
-  compile(compiler) {
-    // TODO compile nulls first or last
-    return this.column.compile(compiler) +' '+ this.direction
+  compile (compiler) {
+    return compiler.compileOrder(this)
   }
-  
-  /**
-   * 
-   * @param {Any} expr
-   * @returns {Boolean}
-   */
-  isEqual(expr) {
-    if ( isString(expr) )
-      return expr === this.getName()
-
-    return super.isEqual() || (
-      expr instanceof Order && expr.getName() === this.getName() 
-    )
-  }
-
-  /**
-   * 
-   * @returns {String}
-   */
-  toString() {
-    return this.getName()
-  }
-  
 }

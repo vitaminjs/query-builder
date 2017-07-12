@@ -36,6 +36,7 @@ export default class Table extends mixin()(Expression) {
 
   /**
    * @returns {Identifier}
+   * @override
    */
   clone () {
     return new Table(this.name).setJoins(this.getJoins())
