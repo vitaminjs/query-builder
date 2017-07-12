@@ -262,6 +262,7 @@ export default class Compiler {
   /**
    * @param {Object}
    * @returns {String}
+   * @private
    */
   compileDeleteClause ({ table }) {
     return 'delete from ' + this.escape(table)
@@ -350,8 +351,21 @@ export default class Compiler {
   }
 
   /**
+   * @param {Object}
+   * @returns {String}
+   */
+  compileOrder ({ expr, direction, nulls }) {
+    let out = `${this.escape(expr)} ${direction === 'desc' ? 'desc' : 'asc'}`
+
+    if (nulls === false) return out
+
+    return `${this.escape(expr)} is ${nulls === 'last' ? 'not ' : ''}null, ${out}`
+  }
+
+  /**
    * @param {Array} value
    * @returns {String}
+   * @private
    */
   compileConditions (value) {
     return this.join(value, ' ').substr(3).trim()
@@ -362,6 +376,7 @@ export default class Compiler {
    * @param {String} type
    * @param {Boolean} isLiteral
    * @returns {String}
+   * @private
    */
   cast (value, type, isLiteral = false) {
     return `cast(${isLiteral ? value : this.parameter(value)} as ${type})`
@@ -370,6 +385,7 @@ export default class Compiler {
   /**
    * @param {Array} columns
    * @returns {String}
+   * @private
    */
   columnize (columns) {
     return columns.map((name) => this.compileIdentifier({ name })).join(', ')
@@ -378,6 +394,7 @@ export default class Compiler {
   /**
    * @param {Any} value
    * @returns {String}
+   * @private
    */
   parameterize (value) {
     if (!isArray(value)) return this.parameter(value)
@@ -389,6 +406,7 @@ export default class Compiler {
    * @param {Any} value
    * @param {Boolean} replaceUndefined
    * @returns {String}
+   * @private
    */
   parameter (value, setDefault = false) {
     if (value === '*') return value
@@ -406,6 +424,7 @@ export default class Compiler {
    * @param {Any} value
    * @returns {Compiler}
    * @throws {TypeError}
+   * @private
    */
   addBinding (value) {
     if (!isUndefined(value)) {
@@ -419,6 +438,7 @@ export default class Compiler {
   /**
    * @param {String} value
    * @returns {String}
+   * @private
    */
   quote (value) {
     return (value === '*') ? value : `"${value.replace(/"/g, '""')}"`
@@ -427,6 +447,7 @@ export default class Compiler {
   /**
    * @param {Any} value
    * @returns {String}
+   * @private
    */
   escape (value) {
     if (value === '*') return value

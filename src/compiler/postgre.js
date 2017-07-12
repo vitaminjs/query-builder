@@ -110,4 +110,19 @@ export default class extends Compiler {
   appendReturningClause (sql, columns) {
     return isEmpty(columns) ? sql : `${sql} returning ${this.columnize(columns)}`
   }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   * @private
+   */
+  compileOrder ({ expr, direction, nulls }) {
+    let out = `${this.escape(expr)} ${direction === 'desc' ? 'desc' : 'asc'}`
+
+    if (nulls !== false) {
+      out += ` nulls ${nulls === 'last' ? 'last' : 'first'}`
+    }
+
+    return out
+  }
 }
