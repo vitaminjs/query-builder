@@ -1,68 +1,44 @@
 
-import { isArray, isEmpty } from 'lodash'
+import Alias from './alias'
+import Literal from './literal'
 import Expression from './base'
 
 /**
  * @class ValuesExpression
  */
 export default class Values extends Expression {
-
   /**
-   * 
-   * @param {Array} values
+   * @param {Array} data
    * @constructor
    */
-  constructor(values) {
+  constructor(data) {
     super()
 
-    this.columns = []
-    this.values = values
+    this.values = data
   }
 
   /**
-   * 
    * @param {String} name
    * @param {Array} columns
    */
   as(name, ...columns) {
-    this.columns = columns
-
-    return super.as(name)
+    return new Alias(new Literal('(?)', [this]), name, columns)
   }
-  
+
   /**
-   * 
+   * @param {String} name
+   * @param {Array} columns
+   * @returns {Alias}
+   */
+  asCTE (name, ...columns) {
+    return this.as(name, ...columns).forCTE()
+  }
+
+  /**
    * @param {Compiler}
    * @returns {String}
    */
   compile(compiler) {
-    let expr = `values ${compiler.parameterize(this.values)}`
-
-    if (! this.alias ) return expr
-
-    let name = compiler.quote(this.alias)
-    
-    // compile the table name columns
-    if (! isEmpty(this.columns) ) {
-      let columns = this.columns.map(value => compiler.quote(value))
-
-      name += ` (${columns.join(', ')})`
-    }
-
-    return `(${expr}) as ${name}`
+    return compiler.compileValues(this)
   }
-
-  /**
-   * 
-   */
-  compileValues() {
-    var columns = query.getColumns().map(value => String(value))
-
-    return 'values ' + query.getValues().map(value => {
-
-      return `(${columns.map(key => this.parameter(value[key], true)).join(', ')})`
-
-    }).join(', ')
-  }
-
 }

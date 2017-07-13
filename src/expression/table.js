@@ -35,7 +35,7 @@ export default class Table extends mixin()(Expression) {
   }
 
   /**
-   * @returns {Identifier}
+   * @returns {Table}
    * @override
    */
   clone () {
