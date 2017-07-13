@@ -1,6 +1,8 @@
 /* global describe */
 
-var qb = require('../lib')
+var id = require('../lib').id
+var raw = require('../lib').raw
+var qb = require('../lib').default
 var support = require('./support')
 
 describe('test building select queries:', () => {
@@ -29,7 +31,7 @@ describe('test building select queries:', () => {
 
     support.test(
       'accepts raw expressions',
-      qb.select(qb.raw('(1 + ?) as operation', 2)),
+      qb.select(raw('(1 + ?) as operation', 2)),
       {
         pg: 'select (1 + $1) as operation',
         mysql: 'select (1 + ?) as operation from dual',
@@ -54,7 +56,7 @@ describe('test building select queries:', () => {
 
     support.test(
       'selects distinct columns',
-      qb.select('foo', qb.id('bar')).distinct(),
+      qb.select('foo', id('bar')).distinct(),
       {
         pg: 'select distinct foo, "bar"',
         mysql: 'select distinct foo, `bar` from dual',
@@ -78,7 +80,7 @@ describe('test building select queries:', () => {
 
     support.test(
       'adds a table expression',
-      qb.selectFrom(qb.id('schema.table').as('alias')),
+      qb.selectFrom(id('schema.table').as('alias')),
       {
         pg: 'select * from "schema"."table" as "alias"',
         mysql: 'select * from `schema`.`table` as `alias`',
@@ -111,7 +113,7 @@ describe('test building select queries:', () => {
 
     support.test(
       'accepts raw expressions',
-      qb.selectFrom(qb.raw('schema.table as t')),
+      qb.selectFrom(raw('schema.table as t')),
       {
         pg: 'select * from schema.table as t',
         mysql: 'select * from schema.table as t',
