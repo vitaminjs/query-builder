@@ -1,4 +1,5 @@
 
+import Union from '../union'
 import mixin from './use-many'
 import { upperFirst } from 'lodash'
 
@@ -6,7 +7,7 @@ import { upperFirst } from 'lodash'
  * @param {String} field
  * @returns {Function}
  */
-export default function (field = 'output') {
+export default function (field = 'unions') {
   /**
    * @param {Class} parent
    * @returns {Class}
@@ -16,9 +17,17 @@ export default function (field = 'output') {
      * @param {String[]} columns
      * @returns {Expression}
      */
-    returning (...columns) {
-      columns.forEach((value) => this[`get${upperFirst(field)}`]().push(value))
+    union (query, filter = 'distinct') {
+      this[`get${upperFirst(field)}`]().push(new Union(query, filter))
       return this
+    }
+
+    /**
+     * @param {Expression} query
+     * @returns {Expression}
+     */
+    unionAll (query) {
+      return this.union(query, 'all')
     }
   }
 }

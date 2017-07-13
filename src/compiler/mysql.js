@@ -73,6 +73,20 @@ export default class extends Compiler {
    * @returns {String}
    * @override
    */
+  compileUnion ({ query, filter }) {
+    if (!query.limit || !query.offset || isEmpty(query.orders)) {
+      return super.compileUnion(arguments[0])
+    }
+
+    // wrap the query with parentheses
+    return `union ${filter === 'all' ? 'all ' : ''}(${this.escape(query)})`
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   * @override
+   */
   compileFunction ({ name, args = [] }) {
     switch (name) {
       case 'concat':

@@ -10,6 +10,7 @@ import {
   useLimit,
   useOffset,
   useOrders,
+  useUnions,
   useConditions
 } from '../mixin'
 
@@ -19,6 +20,7 @@ const mixin = compose(
   useLimit(),
   useOffset(),
   useOrders(),
+  useUnions(),
   useConditions(),
   useMany('tables'),
   useMany('groups'),

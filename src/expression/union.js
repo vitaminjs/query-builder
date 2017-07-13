@@ -7,10 +7,10 @@ import Expression from './base'
 export default class Union extends Expression {
   /**
    * @param {Expression} query
-   * @param {String} all
+   * @param {String} filter
    * @constructor
    */
-  constructor(query, filter = 'distinct') {
+  constructor (query, filter = 'distinct') {
     super()
 
     this.query = query
@@ -31,5 +31,21 @@ export default class Union extends Expression {
    */
   clone () {
     return new Union(this.query, this.filter)
+  }
+
+  /**
+   * @returns {Union}
+   */
+  all () {
+    this.filter = 'all'
+    return this
+  }
+
+  /**
+   * @returns {Union}
+   */
+  distinct () {
+    this.filter = 'distinct'
+    return this
   }
 }

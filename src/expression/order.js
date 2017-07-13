@@ -49,7 +49,7 @@ export default class Order extends Expression {
     this.nulls = 'last'
     return this
   }
-  
+
   /**
    * @param {Compiler} compiler
    * @returns {String}

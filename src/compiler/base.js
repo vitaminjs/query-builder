@@ -56,6 +56,7 @@ export default class Compiler {
       this.compileFromClause(query),
       this.compileWhereClause(query),
       this.compileGroupByClause(query),
+      this.compileUnionClause(query),
       this.compileOrderByClause(query),
       this.compileLimitClause(query)
     ]
@@ -135,6 +136,14 @@ export default class Compiler {
     }
 
     return out
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   */
+  compileUnionClause ({ unions = [] }) {
+    return this.join(unions, ' ')
   }
 
   /**
@@ -373,6 +382,14 @@ export default class Compiler {
     }
 
     return 'values ' + values.map((value) => `(${this.parameterize(value)})`).join(', ')
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   */
+  compileUnion ({ query, filter }) {
+    return 'union ' + (filter === 'all' ? 'all ' : '') + this.escape(query)
   }
 
   /**
