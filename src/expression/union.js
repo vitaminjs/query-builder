@@ -5,42 +5,31 @@ import Expression from './base'
  * @class UnionExpression
  */
 export default class Union extends Expression {
-  
   /**
-   * @param {SubQuery} query
-   * @param {Boolean} all
+   * @param {Expression} query
+   * @param {String} all
    * @constructor
    */
-  constructor(query, all = false) {
+  constructor(query, filter = 'distinct') {
     super()
-    
-    if (! (query instanceof Expression) )
-      throw new TypeError("Invalid union expression")
-    
+
     this.query = query
-    this.all = all
+    this.filter = filter
   }
-  
+
   /**
-   * 
    * @param {Compiler} compiler
    * @returns {String}
    */
-  compile(compiler) {
-    return 'union ' + (this.all ? 'all ' : '') + this.query.compile(compiler)
+  compile (compiler) {
+    return compiler.compileUnion(this)
   }
-  
+
   /**
-   * 
-   * @param {Any} expr
-   * @returns {Boolean}
+   * @returns {Union}
+   * @override
    */
-  isEqual(expr) {
-    return super.isEqual() || (
-      expr instanceof Union &&
-      expr.all === this.all &&
-      this.query.isEqual(expr.query)
-    )
+  clone () {
+    return new Union(this.query, this.filter)
   }
-  
 }
