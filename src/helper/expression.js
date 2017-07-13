@@ -4,6 +4,7 @@ import {
   Alias,
   Order,
   Column,
+  Values,
   Literal,
   Identifier,
   Function as $Function
@@ -92,4 +93,12 @@ export function esc (value) {
  */
 export function val (value) {
   return raw('?', value)
+}
+
+/**
+ * @param {Array} data
+ * @returns {Values}
+ */
+export function values (data) {
+  return new Values(data)
 }
