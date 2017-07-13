@@ -3,6 +3,7 @@ import Expression from '../expression'
 
 import {
   each,
+  first,
   extend,
   compact,
   isArray,
@@ -360,6 +361,18 @@ export default class Compiler {
     if (nulls === false) return out
 
     return `${this.escape(expr)} is ${nulls === 'last' ? 'not ' : ''}null, ${out}`
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   */
+  compileValues ({ values = [] }) {
+    if (!isArray(first(values))) {
+      return `values (${this.parameterize(values)})`
+    }
+
+    return 'values ' + values.map((value) => `(${this.parameterize(value)})`).join(', ')
   }
 
   /**
