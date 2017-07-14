@@ -1,4 +1,5 @@
 
+import Result from './result'
 import Expression from '../expression'
 
 import {
@@ -38,10 +39,10 @@ export default class Compiler {
 
   /**
    * @param {Expression} expr
-   * @returns {Object}
+   * @returns {Result}
    */
   build (expr) {
-    return { sql: expr.compile(this), params: this.bindings }
+    return new Result(expr.compile(this), this.bindings)
   }
 
   /**
@@ -294,7 +295,7 @@ export default class Compiler {
     let sql = `${this.type} join ${this.escape(table)}`
 
     if (!isEmpty(conditions)) {
-      sql += ' on ' + this.compileConditions(conditions)
+      sql += ` on (${this.compileConditions(conditions)})`
     }
 
     if (!isEmpty(columns) && isEmpty(conditions)) {
