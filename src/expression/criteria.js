@@ -1,7 +1,7 @@
 
 import Expression from './base'
 import Literal from './literal'
-import { isPlainObject } from 'lodash'
+import { isPlainObject, isArray } from 'lodash'
 
 export default class Criteria extends Expression {
   /**
@@ -26,17 +26,26 @@ export default class Criteria extends Expression {
   static from (expr, ...args) {
     if (expr instanceof Criteria) return expr
 
-    if (isPlainObject(expr)) {
-      let obj = expr
-
-      expr = Object.keys(obj).map((field) => {
-        args.push(obj[field])
-
-        return `${field} = ?`
-      }).join(' and ')
-    }
+    if (isPlainObject(expr)) return this.fromObject(expr)
 
     return new Criteria(Literal.from(expr, ...args))
+  }
+
+  /**
+   * @param {Object} obj
+   * @returns {Criteria}
+   */
+  fromObject (obj) {
+    let args = []
+    let expr = Object.keys(obj).map((key) => {
+      let value = obj[key]
+
+      args.push(value)
+
+      return isArray(value) ? `${key} in (?)` : `${key} = ?`
+    })
+
+    return new Criteria(Literal.from(expr.join(' and '), ...args))
   }
 
   /**
