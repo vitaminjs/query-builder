@@ -9,6 +9,7 @@ export { default as useLimit } from './use-limit'
 export { default as useUnions } from './use-unions'
 export { default as useOffset } from './use-offset'
 export { default as useOrders } from './use-orders'
+export { default as useGroups } from './use-groups'
 export { default as useReturning } from './use-returning'
 export { default as useConditions } from './use-conditions'
 

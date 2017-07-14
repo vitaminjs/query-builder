@@ -19,7 +19,10 @@ export default function (field = 'commonTables') {
      * @returns {Expression}
      */
     with (...cte) {
-      cte.forEach((value) => this[`get${upperFirst(field)}`]().push(value))
+      cte.forEach((value) => {
+        this[`get${upperFirst(field)}`]().push(value)
+      })
+
       return this
     }
   }

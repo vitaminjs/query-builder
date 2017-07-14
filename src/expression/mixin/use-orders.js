@@ -18,16 +18,10 @@ export default function (field = 'orders') {
      * @returns {Expression}
      */
     orderBy (...columns) {
-      columns.forEach((value) => this.addOrder(value))
-      return this
-    }
+      columns.forEach((value) => {
+        this[`get${upperFirst(field)}`]().push(Literal.from(value))
+      })
 
-    /**
-     * @param {Any} value
-     * @returns {Expression}
-     */
-    addOrder (value) {
-      this[`get${upperFirst(field)}`]().push(Literal.from(value))
       return this
     }
   }
