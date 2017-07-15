@@ -339,8 +339,7 @@ export default class Compiler {
    * @param {Object}
    * @returns {String}
    */
-  compileAlias ({ value, name, columns, isCTE }) {
-    let expr = this.escape(value)
+  compileAlias ({ value, name, columns }) {
     let alias = this.compileIdentifier({ name })
 
     // compile the table name columns
@@ -348,7 +347,7 @@ export default class Compiler {
       alias += ` (${this.columnize(columns)})`
     }
 
-    return isCTE ? `${alias} as ${expr}` : `${expr} as ${alias}`
+    return `${this.escape(value)} as ${alias}`
   }
 
   /**
@@ -391,6 +390,20 @@ export default class Compiler {
    */
   compileUnion ({ query, filter }) {
     return 'union ' + (filter === 'all' ? 'all ' : '') + this.escape(query)
+  }
+
+  /**
+   * @param {Object}
+   * @returns {String}
+   */
+  compileCommonTable ({ query, name, columns }) {
+    let alias = this.compileIdentifier({ name })
+
+    if (!isEmpty(columns)) {
+      alias += ` (${this.columnize(columns)})`
+    }
+
+    return `${alias} as ${this.escape(query)}`
   }
 
   /**

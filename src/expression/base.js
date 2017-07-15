@@ -15,7 +15,7 @@ export default class Expression {
    * @returns {Expression}
    */
   clone () {
-    return new this.constructor(...arguments)
+    return new this.constructor()
   }
 
   /**

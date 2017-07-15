@@ -1,6 +1,7 @@
 
 import Alias from '../alias'
 import Expression from '../base'
+import CommonTable from '../cte'
 import Literal from '../literal'
 import { isString } from 'lodash'
 import Compiler, { createCompiler } from '../../compiler'
@@ -35,9 +36,9 @@ export default class Statement extends Expression {
   /**
    * @param {String} name
    * @param {Array} columns
-   * @returns {Alias}
+   * @returns {CommonTable}
    */
   asCTE (name, ...columns) {
-    return this.as(name, ...columns).forCTE()
+    return new CommonTable(this, name, ...columns)
   }
 }
