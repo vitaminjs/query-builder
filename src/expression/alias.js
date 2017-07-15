@@ -16,16 +16,7 @@ export default class Alias extends Expression {
 
     this.name = name
     this.value = value
-    this.isCTE = false
     this.columns = columns
-  }
-
-  /**
-   * @returns {Alias}
-   */
-  forCTE () {
-    this.isCTE = true
-    return this
   }
 
   /**
@@ -35,5 +26,13 @@ export default class Alias extends Expression {
    */
   compile (compiler) {
     return compiler.compileAlias(this)
+  }
+
+  /**
+   * @returns {Alias}
+   * @override
+   */
+  clone () {
+    return new Alias(this.value, this.name, this.columns)
   }
 }

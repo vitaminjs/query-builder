@@ -91,6 +91,7 @@ export default class Criteria extends Expression {
 
   /**
    * @returns {Criteria}
+   * @override
    */
   clone () {
     return new Criteria(this.expr.clone(), this.prefix, this.negate)

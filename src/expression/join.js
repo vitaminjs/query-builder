@@ -42,4 +42,20 @@ export default class Join extends mixin(Expression) {
   compile (compiler) {
     return compiler.compileJoin(this)
   }
+
+  /**
+   * @returns {Join}
+   * @override
+   */
+  clone () {
+    // we cannot use `new Join(this.table, this.type)` here,
+    // because join is using mixins
+
+    let join = super.clone()
+
+    join.table = this.table
+    join.type = this.type
+
+    return join
+  }
 }

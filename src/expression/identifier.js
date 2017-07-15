@@ -47,6 +47,7 @@ export default class Identifier extends Expression {
 
   /**
    * @returns {Identifier}
+   * @override
    */
   clone () {
     return new Identifier(this.name)

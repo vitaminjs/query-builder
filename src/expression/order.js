@@ -8,13 +8,14 @@ export default class Order extends Expression {
   /**
    * @param {Expression} expr
    * @param {String} direction
+   * @param {Boolean|String} nulls
    * @constructor
    */
-  constructor (expr, direction = 'asc') {
+  constructor (expr, direction = 'asc', nulls = false) {
     super()
 
     this.expr = expr
-    this.nulls = false
+    this.nulls = nulls
     this.direction = direction
   }
 
@@ -57,5 +58,13 @@ export default class Order extends Expression {
    */
   compile (compiler) {
     return compiler.compileOrder(this)
+  }
+
+  /**
+   * @returns {Order}
+   * @override
+   */
+  clone () {
+    return new Order(this.expr, this.direction, this.nulls)
   }
 }

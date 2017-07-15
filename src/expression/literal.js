@@ -39,6 +39,7 @@ export default class Literal extends Expression {
 
   /**
    * @returns {Literal}
+   * @override
    */
   clone () {
     return new Literal(this.expr, this.values.slice())

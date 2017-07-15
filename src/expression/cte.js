@@ -43,6 +43,7 @@ export default class CommonTable extends Expression {
 
   /**
    * @returns {CommonTable}
+   * @override
    */
   clone () {
     return new CommonTable(this.query, this.name, this.columns)

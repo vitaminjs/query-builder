@@ -5,7 +5,7 @@ import Expression from './base'
 /**
  * @class FunctionExpression
  */
-export default class Function extends Expression {
+export default class Function$ extends Expression {
   /**
    * @param {String} name
    * @param {Array} args
@@ -37,9 +37,10 @@ export default class Function extends Expression {
   }
 
   /**
-   * @returns {Function}
+   * @returns {Function$}
+   * @override
    */
   clone () {
-    return new this.constructor(this.name, this.args.slice())
+    return new Function$(this.name, this.args.slice())
   }
 }

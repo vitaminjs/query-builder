@@ -11,7 +11,7 @@ export default class Values extends Expression {
    * @param {Array} data
    * @constructor
    */
-  constructor(data) {
+  constructor (data) {
     super()
 
     this.values = data
@@ -21,7 +21,7 @@ export default class Values extends Expression {
    * @param {String} name
    * @param {Array} columns
    */
-  as(name, ...columns) {
+  as (name, ...columns) {
     return new Alias(new Literal('(?)', [this]), name, columns)
   }
 
@@ -38,7 +38,15 @@ export default class Values extends Expression {
    * @param {Compiler}
    * @returns {String}
    */
-  compile(compiler) {
+  compile (compiler) {
     return compiler.compileValues(this)
+  }
+
+  /**
+   * @returns {Expression}
+   * @override
+   */
+  clone () {
+    return new Values(this.data)
   }
 }
