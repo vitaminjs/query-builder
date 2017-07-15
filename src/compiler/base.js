@@ -291,8 +291,8 @@ export default class Compiler {
    * @param {Object}
    * @returns {String}
    */
-  compileJoin ({ table, conditions, columns }) {
-    let sql = `${this.type} join ${this.escape(table)}`
+  compileJoin ({ table, type, conditions, columns }) {
+    let sql = `${type} join ${this.escape(table)}`
 
     if (!isEmpty(conditions)) {
       sql += ` on (${this.compileConditions(conditions)})`
@@ -440,8 +440,6 @@ export default class Compiler {
    * @private
    */
   parameter (value, setDefault = false) {
-    if (value === '*') return value
-
     // escape expressions
     if (value instanceof Expression) return value.compile(this)
 

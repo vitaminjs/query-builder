@@ -33,7 +33,7 @@ export default class extends Compiler {
    * @private
    */
   compileTopClause ({ limit, offset }) {
-    return (!limit || offset) ? '' : `top(${this.parameter(limit)}) `
+    return (!limit || offset) ? '' : `top (${this.parameter(limit)}) `
   }
 
   /**
@@ -54,7 +54,7 @@ export default class extends Compiler {
       out += ` offset ${this.parameter(offset)} rows`
     }
 
-    if (limit) {
+    if (limit && offset) {
       out += ` fetch next ${this.parameter(limit)} rows only`
     }
 

@@ -15,7 +15,7 @@ export default class {
   /**
    * @returns {String}
    */
-  toString() {
+  toString () {
     let i = 0
 
     return this.sql.replace(/\?|\$(\d*)/g, (_, p) => {

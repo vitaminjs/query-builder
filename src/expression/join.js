@@ -27,12 +27,12 @@ export default class Join extends mixin(Expression) {
   /**
    * @param {Any} table
    * @param {String} type
-   * @returns {Join}
+   * @returns {Expression}
    */
   static from (table, type = 'inner') {
     if (table instanceof Literal) return table
 
-    return new Join(table, type)
+    return new Join(Literal.from(table), type)
   }
 
   /**

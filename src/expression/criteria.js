@@ -1,7 +1,8 @@
 
 import Expression from './base'
 import Literal from './literal'
-import { isPlainObject, isArray } from 'lodash'
+import { Select } from './statement'
+import { isPlainObject, isArray, isNull } from 'lodash'
 
 export default class Criteria extends Expression {
   /**
@@ -35,14 +36,20 @@ export default class Criteria extends Expression {
    * @param {Object} obj
    * @returns {Criteria}
    */
-  fromObject (obj) {
+  static fromObject (obj) {
     let args = []
     let expr = Object.keys(obj).map((key) => {
       let value = obj[key]
 
+      if (isNull(value)) return `${key} is null`
+
       args.push(value)
 
-      return isArray(value) ? `${key} in (?)` : `${key} = ?`
+      if (isArray(value) || (value instanceof Select)) {
+        return `${key} in (?)`
+      }
+
+      return `${key} = ?`
     })
 
     return new Criteria(Literal.from(expr.join(' and '), ...args))
