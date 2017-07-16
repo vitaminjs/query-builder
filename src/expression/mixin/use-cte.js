@@ -1,6 +1,6 @@
 
 import mixin from './use-many'
-import CommonTable from '../cte'
+import Literal from '../literal'
 import { upperFirst } from 'lodash'
 
 /**
@@ -21,7 +21,7 @@ export default function (field = 'commonTables') {
      */
     with (...cte) {
       cte.forEach((value) => {
-        this[`get${upperFirst(field)}`]().push(CommonTable.from(value))
+        this[`get${upperFirst(field)}`]().push(Literal.from(value))
       })
 
       return this

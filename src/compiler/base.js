@@ -403,7 +403,7 @@ export default class Compiler {
       alias += ` (${this.columnize(columns)})`
     }
 
-    return `${alias} as ${this.escape(query)}`
+    return `${alias} as (${this.escape(query)})`
   }
 
   /**

@@ -11,6 +11,7 @@ import {
   useOffset,
   useOrders,
   useUnions,
+  useGroups,
   useConditions
 } from '../mixin'
 
@@ -21,9 +22,9 @@ const mixin = compose(
   useOffset(),
   useOrders(),
   useUnions(),
+  useGroups(),
   useConditions(),
   useMany('tables'),
-  useMany('groups'),
   useMany('columns'),
   useConditions('havingConditions', 'having')
 )
@@ -47,7 +48,7 @@ export default class Select extends mixin(Statement) {
    * @override
    */
   compile (compiler) {
-    if (!(this.columns || this.tables)) return ''
+    if (!(this.hasColumns() || this.hasTables())) return ''
 
     return compiler.compileSelectQuery(this)
   }
@@ -57,16 +58,7 @@ export default class Select extends mixin(Statement) {
    * @returns {Select}
    */
   select (...columns) {
-    columns.forEach((value) => this.addColumn(value))
-    return this
-  }
-
-  /**
-   * @param {Any} value
-   * @return {Select}
-   */
-  addColumn (value) {
-    this.getColumns().push(Literal.from(value))
+    columns.forEach((value) => this.getColumns().push(Literal.from(value)))
     return this
   }
 
@@ -84,34 +76,7 @@ export default class Select extends mixin(Statement) {
    * @returns {Select}
    */
   from (...tables) {
-    tables.forEach((value) => this.addTable(value))
-    return this
-  }
-
-  /**
-   * @param {Any} value
-   * @returns {Select}
-   */
-  addTable (value) {
-    this.getTables().push(Literal.from(value))
-    return this
-  }
-
-  /**
-   * @param {Any} columns
-   * @returns {Select}
-   */
-  groupBy (...columns) {
-    columns.forEach((value) => this.addGroup(value))
-    return this
-  }
-
-  /**
-   * @param {Any} value
-   * @returns {Select}
-   */
-  addGroup (value) {
-    this.getGroups().push(Literal.from(value))
+    tables.forEach((value) => this.getTables().push(Literal.from(value)))
     return this
   }
 }

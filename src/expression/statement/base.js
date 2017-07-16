@@ -39,6 +39,6 @@ export default class Statement extends Expression {
    * @returns {CommonTable}
    */
   asCTE (name, ...columns) {
-    return new CommonTable(this, name, ...columns)
+    return new CommonTable(this, name, columns)
   }
 }

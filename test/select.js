@@ -169,7 +169,7 @@ describe('test building select queries:', function () {
       }
     )
 
-    support.test(
+    support.skip(
       'adds a join with a sub query',
       qb.selectFrom('table1').crossJoin(qb.selectFrom('table2').as('t2')),
       {
@@ -443,6 +443,29 @@ describe('test building select queries:', function () {
         400,
         500
       ]
+    )
+  })
+
+  describe('test with():', function () {
+    support.test(
+      'using a common table expression within select query',
+      qb.select('*').with(qb.selectFrom('foo').asCTE('cte')),
+      {
+        pg: 'with "cte" as (select * from foo) select *',
+        mysql: 'select * from dual', // not yet supported
+        mssql: 'with [cte] as (select * from foo) select *',
+        sqlite: 'with "cte" as (select * from foo) select *'
+      }
+    )
+
+    support.test(
+      'using multiple cte within select query',
+      qb.select('*').with(qb.selectFrom('foo').asCTE('cte1')).with(qb.selectFrom('bar').asCTE('cte2', 'a', 'b')),
+      {
+        pg: 'with "cte1" as (select * from foo), "cte2" ("a", "b") as (select * from bar) select *',
+        mssql: 'with [cte1] as (select * from foo), [cte2] ([a], [b]) as (select * from bar) select *',
+        sqlite: 'with "cte1" as (select * from foo), "cte2" ("a", "b") as (select * from bar) select *'
+      }
     )
   })
 })
