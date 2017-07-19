@@ -1,51 +1,63 @@
 
 import Expression from './base'
+import Literal from './literal'
+import { compose, useMany, useConditions } from './mixin'
+
+const mixin = compose(
+  useConditions(),
+  useMany('columns')
+)
 
 /**
  * @class JoinExpression
  */
-export default class Join extends Expression {
-  
+export default class Join extends mixin(Expression) {
   /**
-   * 
-   * @param {String|Table} table
+   * @param {Any} table
    * @param {String} type
-   * @param {Criteria} crirteria
    * @constructor
    */
-  constructor(table, type = 'inner', criteria = null) {
+  constructor (table, type = 'inner') {
     super()
-    
+
     this.type = type
     this.table = table
-    this.criteria = criteria
   }
-  
+
   /**
-   * 
+   * @param {Any} table
+   * @param {String} type
+   * @returns {Expression}
+   */
+  static from (table, type = 'inner') {
+    if (table instanceof Join) return table
+
+    if (table instanceof Literal) return table
+
+    return new Join(Literal.from(table), type)
+  }
+
+  /**
    * @param {Compiler} compiler
    * @returns {String}
    */
-  compile(compiler) {
-    var sql = this.type +' join '+ this.table.compile(compiler)
-    
-    if ( this.criteria != null )
-      sql += ' on ' + this.criteria.compile(compiler)
-    
-    return sql
+  compile (compiler) {
+    return compiler.compileJoin(this)
   }
-  
+
   /**
-   * 
-   * @param {Any} expr
-   * @returns {Boolean}
+   * @returns {Join}
+   * @override
    */
-  isEqual(expr) {
-    return super.isEqual() || (
-      expr instanceof Join && 
-      expr.type === this.type &&
-      this.table.isEqual(expr.table)
-    )
+  clone () {
+    // we cannot use `new Join(this.table, this.type)` here,
+    // because join is using mixins
+
+    let join = super.clone()
+
+    join.table = this.table
+    join.type = this.type
+
+    return join
   }
-  
 }
