@@ -51,7 +51,7 @@ export default class Builder {
   compile (compiler) {
     switch (this.type) {
       case 'select': {
-        if (this.hasTable() || this.hasColumns() || this.hasCommonTables()) {
+        if (this.hasTable() || this.hasResults() || this.hasCommonTables()) {
           return compiler.compileSelectQuery(this.query)
         }
 

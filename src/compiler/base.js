@@ -70,10 +70,10 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileWithClause ({ commonTables }) {
-    if (isEmpty(commonTables)) return ''
+  compileWithClause ({ cte }) {
+    if (isEmpty(cte)) return ''
 
-    return 'with ' + this.join(commonTables)
+    return 'with ' + this.join(cte)
   }
 
   /**
@@ -81,8 +81,8 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileSelectClause ({ isDistinct }) {
-    return 'select' + (isDistinct ? ' distinct' : '')
+  compileSelectClause ({ distinct }) {
+    return 'select' + (distinct ? ' distinct' : '')
   }
 
   /**
@@ -99,7 +99,7 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileFromClause ({ table, joins }) {
+  compileFromClause ({ table, join: joins }) {
     if (!table) return ''
 
     let out = 'from ' + this.escape(table)
@@ -116,10 +116,10 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileWhereClause ({ conditions }) {
-    if (isEmpty(conditions)) return ''
+  compileWhereClause ({ where }) {
+    if (isEmpty(where)) return ''
 
-    return 'where ' + this.compileConditions(conditions)
+    return 'where ' + this.compileConditions(where)
   }
 
   /**
@@ -127,13 +127,13 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileGroupByClause ({ groups, havingConditions }) {
-    if (isEmpty(groups)) return ''
+  compileGroupByClause ({ group, having }) {
+    if (isEmpty(group)) return ''
 
-    let out = 'group by ' + this.join(groups)
+    let out = 'group by ' + this.join(group)
 
-    if (!isEmpty(havingConditions)) {
-      out += ' having ' + this.compileConditions(havingConditions)
+    if (!isEmpty(having)) {
+      out += ' having ' + this.compileConditions(having)
     }
 
     return out
@@ -143,8 +143,8 @@ export default class Compiler {
    * @param {Object}
    * @returns {String}
    */
-  compileUnionClause ({ unions = [] }) {
-    return this.join(unions, ' ')
+  compileUnionClause ({ union = [] }) {
+    return this.join(union, ' ')
   }
 
   /**
@@ -152,8 +152,8 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileOrderByClause ({ orders }) {
-    return isEmpty(orders) ? '' : 'order by ' + this.join(orders)
+  compileOrderByClause ({ order }) {
+    return isEmpty(order) ? '' : 'order by ' + this.join(order)
   }
 
   /**

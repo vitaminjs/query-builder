@@ -12,7 +12,7 @@ export default class extends Compiler {
    * @override
    */
   quote (value) {
-    if (/\*|inserted|deleted/.test(value)) return value
+    if (/\*|inserted|deleted/i.test(value)) return value
 
     return `[${value.trim().replace(/\]/g, ']]')}]`
   }
@@ -111,7 +111,7 @@ export default class extends Compiler {
 
     // add the inserted or deleted prefix for each column
     columns = columns.map((name) => {
-      return /^inserted|deleted/.test(name) ? name : `${prefix}.${name}`
+      return /^inserted|deleted/i.test(name) ? name : `${prefix}.${name}`
     })
 
     return `${sql} output ${this.columnize(columns)}`
