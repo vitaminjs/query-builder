@@ -7,31 +7,31 @@ import Literal from './literal'
  */
 export default class CommonTable extends Expression {
   /**
-   * @param {Statement} query
+   * @param {Any} expr
    * @param {String} name
    * @param {Array} columns
    * @constructor
    */
-  constructor (query, name, columns = []) {
+  constructor (expr, name, columns = []) {
     super()
 
     this.name = name
-    this.query = query
+    this.expr = expr
     this.columns = columns
   }
 
   /**
-   * @param {Expression} query
+   * @param {Any} expr
    * @param {String} name
    * @param {Array} columns
    * @returns {Expression}
    */
-  static from (query, name, columns = []) {
-    if (query instanceof CommonTable) return query
+  static from (expr, name, columns = []) {
+    if (expr instanceof Literal && !name) return expr
 
-    if (query instanceof Literal) return query
+    if (expr instanceof CommonTable) return expr
 
-    return new CommonTable(query, name, columns)
+    return new CommonTable(expr, name, columns)
   }
 
   /**
@@ -48,6 +48,6 @@ export default class CommonTable extends Expression {
    * @override
    */
   clone () {
-    return new CommonTable(this.query, this.name, this.columns)
+    return new CommonTable(this.expr, this.name, this.columns)
   }
 }

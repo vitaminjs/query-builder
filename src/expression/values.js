@@ -26,15 +26,6 @@ export default class Values extends Expression {
   }
 
   /**
-   * @param {String} name
-   * @param {Array} columns
-   * @returns {Alias}
-   */
-  asCTE (name, ...columns) {
-    return this.as(name, ...columns).forCTE()
-  }
-
-  /**
    * @param {Compiler}
    * @returns {String}
    */
