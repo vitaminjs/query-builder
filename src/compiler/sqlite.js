@@ -18,7 +18,7 @@ export default class extends Compiler {
       return 'limit -1 offset ' + this.parameter(offset)
     }
 
-    return super.compileLimitClause({ limit, offset })
+    return super.compileLimitClause(arguments[0])
   }
 
   /**

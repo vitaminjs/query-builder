@@ -7,7 +7,7 @@ import Identifier from './expression/identifier'
  * @param {String|Object} arg
  * @returns {Builder}
  */
-module.exports = function factory (arg) {
+export default function factory (arg) {
   if (isString(arg)) {
     arg = { 'table': Identifier.from(arg) }
   }
@@ -20,6 +20,3 @@ export * from './helper/function'
 
 // export expressions
 export * from './helper/expression'
-
-// export queries
-// export * from './helper/statement'

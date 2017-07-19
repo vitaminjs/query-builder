@@ -1,7 +1,6 @@
 
 import Expression from './base'
 import Literal from './literal'
-import { Select } from './statement'
 import { isPlainObject, isArray, isNull } from 'lodash'
 
 export default class Criteria extends Expression {
@@ -45,11 +44,7 @@ export default class Criteria extends Expression {
 
       args.push(value)
 
-      if (isArray(value) || (value instanceof Select)) {
-        return `${key} in (?)`
-      }
-
-      return `${key} = ?`
+      return isArray(value) ? `${key} in (?)` : `${key} = ?`
     })
 
     return new Criteria(Literal.from(expr.join(' and '), ...args))

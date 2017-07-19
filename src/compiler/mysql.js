@@ -22,10 +22,10 @@ export default class extends Compiler {
    * @override
    * @private
    */
-  compileFromClause ({ tables, joins }) {
-    if (isEmpty(tables)) return 'from dual'
+  compileFromClause ({ table }) {
+    if (!table) return 'from dual'
 
-    return super.compileFromClause({ tables, joins })
+    return super.compileFromClause(arguments[0])
   }
 
   /**
@@ -39,7 +39,7 @@ export default class extends Compiler {
       return 'limit 18446744073709551615 offset ' + this.parameter(offset)
     }
 
-    return super.compileLimitClause({ offset, limit })
+    return super.compileLimitClause(arguments[0])
   }
 
   /**
@@ -48,11 +48,11 @@ export default class extends Compiler {
    * @override
    * @private
    */
-  compileInsertClause ({ table, columns, values }) {
+  compileInsertClause ({ table, values }) {
     // compile default columns
     if (isEmpty(values)) return `insert into ${this.escape(table)} ()`
 
-    return super.compileInsertClause({ table, columns })
+    return super.compileInsertClause(arguments[0])
   }
 
   /**
@@ -61,11 +61,11 @@ export default class extends Compiler {
    * @override
    * @private
    */
-  compileInsertValues ({ select, values, columns }) {
+  compileInsertValues ({ values }) {
     // compile default values
     if (isEmpty(values)) return 'values ()'
 
-    return super.compileInsertValues({ select, values, columns })
+    return super.compileInsertValues(arguments[0])
   }
 
   /**

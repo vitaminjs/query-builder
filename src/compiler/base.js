@@ -1,6 +1,5 @@
 
 import Result from './result'
-import { isFunction } from 'lodash'
 
 import {
   each,
@@ -10,6 +9,7 @@ import {
   isArray,
   isEmpty,
   isString,
+  isFunction,
   isUndefined
 } from 'lodash'
 
@@ -90,8 +90,8 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileSelectColumns ({ columns }) {
-    return this.join(isEmpty(columns) ? ['*'] : columns)
+  compileSelectColumns ({ select }) {
+    return this.join(isEmpty(select) ? ['*'] : select)
   }
 
   /**
@@ -99,10 +99,10 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileFromClause ({ tables, joins }) {
-    if (isEmpty(tables)) return ''
+  compileFromClause ({ table, joins }) {
+    if (!table) return ''
 
-    let out = 'from ' + this.join(tables)
+    let out = 'from ' + this.escape(table)
 
     if (!isEmpty(joins)) {
       out += ` ${this.join(joins, ' ')}`

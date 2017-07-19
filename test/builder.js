@@ -1,6 +1,7 @@
 /* global describe */
 
-var qb = require('../lib')
+var id = require('../lib').id
+var qb = require('../lib').default
 var support = require('./support')
 
 describe('test query builder:', function () {
@@ -28,12 +29,15 @@ describe('test query builder:', function () {
 
   support.test(
     'inits with a query object',
-    qb({ select: [ qb.id('foo') ], table: qb.id('bar'), limit: 15 }),
+    qb({ select: [ id('foo') ], table: id('bar'), limit: 15 }),
     {
-      pg: 'select "foo" from "bar"',
-      mysql: 'select `foo` from `bar`',
-      mssql: 'select [foo] from [bar]',
-      sqlite: 'select "foo" from "bar"'
-    }
+      pg: 'select "foo" from "bar" limit $1',
+      mysql: 'select `foo` from `bar` limit ?',
+      mssql: 'select top (?) [foo] from [bar]',
+      sqlite: 'select "foo" from "bar" limit ?'
+    },
+    [
+      15
+    ]
   )
 })
