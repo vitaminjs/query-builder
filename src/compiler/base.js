@@ -1,6 +1,6 @@
 
 import Result from './result'
-import Expression from '../expression'
+import { isFunction } from 'lodash'
 
 import {
   each,
@@ -38,7 +38,7 @@ export default class Compiler {
   }
 
   /**
-   * @param {Expression} expr
+   * @param {Compilable} expr
    * @returns {Result}
    */
   build (expr) {
@@ -396,14 +396,14 @@ export default class Compiler {
    * @param {Object}
    * @returns {String}
    */
-  compileCommonTable ({ query, name, columns }) {
+  compileCommonTable ({ expr, name, columns }) {
     let alias = this.compileIdentifier({ name })
 
     if (!isEmpty(columns)) {
       alias += ` (${this.columnize(columns)})`
     }
 
-    return `${alias} as (${this.escape(query)})`
+    return `${alias} as (${this.escape(expr)})`
   }
 
   /**
@@ -454,7 +454,7 @@ export default class Compiler {
    */
   parameter (value, setDefault = false) {
     // escape expressions
-    if (value instanceof Expression) return value.compile(this)
+    if (isFunction(value.compile)) return value.compile(this)
 
     // replace undefined values with `default` placeholder
     if (setDefault && isUndefined(value)) return 'default'
@@ -495,7 +495,7 @@ export default class Compiler {
     if (value === '*') return value
 
     // escape expressions
-    if (value instanceof Expression) return value.compile(this)
+    if (isFunction(value.compile)) return value.compile(this)
 
     if (isString(value)) value = `'${value.replace(/'/g, "''")}'`
 
