@@ -27,6 +27,8 @@ export default class CommonTable extends Expression {
    * @returns {Expression}
    */
   static from (query, name, columns = []) {
+    if (query instanceof CommonTable) return query
+
     if (query instanceof Literal) return query
 
     return new CommonTable(query, name, columns)

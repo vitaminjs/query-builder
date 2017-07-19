@@ -30,6 +30,8 @@ export default class Join extends mixin(Expression) {
    * @returns {Expression}
    */
   static from (table, type = 'inner') {
+    if (table instanceof Join) return table
+
     if (table instanceof Literal) return table
 
     return new Join(Literal.from(table), type)
