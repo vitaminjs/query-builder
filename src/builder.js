@@ -1,6 +1,6 @@
 
 import Compiler, { createCompiler } from './compiler'
-import { last, assign, isString, isEmpty } from 'lodash'
+import { last, assign, chain, keys, castArray, isString, isEmpty } from 'lodash'
 import { Join, Alias, Union, Literal, Criteria, CommonTable } from './expression'
 
 export default class Builder {
@@ -11,6 +11,22 @@ export default class Builder {
   constructor (query) {
     this.type = 'select'
     this.query = assign({}, query)
+  }
+
+  /**
+   * @param {String} value
+   * @returns {Builder}
+   */
+  setType (value) {
+    this.type = value
+    return this
+  }
+
+  /**
+   * @returns {String}
+   */
+  getType () {
+    return this.type
   }
 
   /**
@@ -34,10 +50,35 @@ export default class Builder {
    */
   compile (compiler) {
     switch (this.type) {
-      case 'select': return compiler.compileSelectQuery(this.query)
-      case 'insert': return compiler.compileInsertQuery(this.query)
-      case 'update': return compiler.compileUpdateQuery(this.query)
-      case 'delete': return compiler.compileDeleteQuery(this.query)
+      case 'select': {
+        if (this.hasTable() || this.hasColumns() || this.hasCommonTables()) {
+          return compiler.compileSelectQuery(this.query)
+        }
+
+        return ''
+      }
+
+      case 'insert': {
+        if (this.hasTable() && this.hasValues()) {
+          return compiler.compileInsertQuery(this.query)
+        }
+
+        return ''
+      }
+
+      case 'update': {
+        if (this.hasTable() && this.hasValues()) {
+          return compiler.compileUpdateQuery(this.query)
+        }
+
+        return ''
+      }
+
+      case 'delete': {
+        if (!this.hasTable()) return ''
+
+        return compiler.compileDeleteQuery(this.query)
+      }
     }
 
     throw new TypeError('Unknown query type')
@@ -51,32 +92,29 @@ export default class Builder {
   }
 
   /**
+   * @returns {Literal}
+   */
+  toExpression () {
+    return new Literal('(?)', [this])
+  }
+
+  /**
    * @param {String} name
    * @param {Array} columns
    * @returns {Alias}
    */
   as (name, ...columns) {
-    return new Alias(new Literal('(?)', [this]), name, columns)
+    return new Alias(this.toExpression(), name, columns)
   }
 
   /**
+   * @param {Any} expr
    * @param {String} name
    * @param {Array} columns
-   * @returns {CommonTable}
-   */
-  asCTE (name, ...columns) {
-    return new CommonTable(this, name, ...columns)
-  }
-
-  /**
-   * @param {Any} cte
    * @returns {Builder}
    */
-  with (...cte) {
-    cte.forEach((value) => {
-      this.getCommonTables().push(Literal.from(value))
-    })
-
+  with (expr, name, ...columns) {
+    this.getCommonTables().push(CommonTable.from(expr, name, columns))
     return this
   }
 
@@ -118,9 +156,13 @@ export default class Builder {
    */
   select (...columns) {
     columns.forEach((value) => {
-      if (value !== '*') {
-        this.getResults().push(Literal.from(value))
+      if (value === '*') return
+
+      if (value instanceof Builder) {
+        value = value.toExpression()
       }
+
+      this.getResults().push(Literal.from(value))
     })
 
     return this
@@ -176,14 +218,6 @@ export default class Builder {
   }
 
   /**
-   * @param {Any} table
-   * @returns {Builder}
-   */
-  into (table) {
-    return this.setTable(table)
-  }
-
-  /**
    * @returns {Expression}
    */
   getTable () {
@@ -209,6 +243,10 @@ export default class Builder {
    * @returns {Builder}
    */
   setTable (value) {
+    if (value instanceof Builder) {
+      value = value.toExpression()
+    }
+
     this.query.table = Literal.from(value)
     return this
   }
@@ -219,6 +257,10 @@ export default class Builder {
    * @returns {Builder}
    */
   join (table, type = 'inner') {
+    if (table instanceof Builder) {
+      table = new Join(table.toExpression(), type)
+    }
+
     this.getJoins().push(Join.from(table, type))
     return this
   }
@@ -257,16 +299,16 @@ export default class Builder {
   }
 
   /**
-   * @param {Any} key criterion operand
-   * @param {Any} value criterion value
+   * @param {Any} condition
+   * @param {Array} args
    * @returns {Builder}
    * @throws {TypeError}
    */
-  on (key, value) {
+  on (condition, ...args) {
     let expr = last(this.getJoins())
 
     if (expr instanceof Join) {
-      expr.where(key, value)
+      expr.where(condition, ...args)
       return this
     }
 
@@ -274,16 +316,16 @@ export default class Builder {
   }
 
   /**
-   * @param {Any} key criterion operand
-   * @param {Any} value criterion value
+   * @param {Any} condition
+   * @param {Array} args
    * @returns {Builder}
    * @throws {TypeError}
    */
-  orOn (key, value) {
+  orOn (condition, ...args) {
     let expr = last(this.getJoins())
 
     if (expr instanceof Join) {
-      expr.orWhere(key, value)
+      expr.orWhere(condition, ...args)
       return this
     }
 
@@ -529,7 +571,7 @@ export default class Builder {
    * @returns {Builder}
    */
   union (query, filter = 'distinct') {
-    this.getUnions().push(Union.from(...arguments))
+    this.getUnions().push(Union.from(query, filter))
     return this
   }
 
@@ -729,5 +771,153 @@ export default class Builder {
   setOutput (value) {
     this.query.output = value
     return this
+  }
+
+  /**
+   * @returns {Array|Builder}
+   */
+  getValues () {
+    if (!this.hasValues()) this.resetValues()
+
+    return this.query.values
+  }
+
+  /**
+   * @returns {Boolean}
+   */
+  hasValues () {
+    return !isEmpty(this.query.values)
+  }
+
+  /**
+   * @returns {Builder}
+   */
+  resetValues () {
+    return this.setValues([])
+  }
+
+  /**
+   * @param {Array|Builder} value
+   * @returns {Builder}
+   */
+  setValues (value) {
+    this.query.values = value
+    return this
+  }
+
+  /**
+   * @returns {Array}
+   */
+  getColumns () {
+    if (!this.hasColumns()) this.resetColumns()
+
+    return this.query.columns
+  }
+
+  /**
+   * @returns {Boolean}
+   */
+  hasColumns () {
+    return !isEmpty(this.query.columns)
+  }
+
+  /**
+   * @returns {Builder}
+   */
+  resetColumns () {
+    return this.setColumns([])
+  }
+
+  /**
+   * @param {Array} value
+   * @returns {Builder}
+   */
+  setColumns (value) {
+    this.query.columns = value
+    return this
+  }
+
+  /**
+   * @param {Any} data
+   * @returns {Builder}
+   */
+  insert (data) {
+    return this.setType('insert').setValues(data)
+  }
+
+  /**
+   * @param {Any} table
+   * @param {Array} columns
+   * @returns {Builder}
+   */
+  into (table, ...columns) {
+    if (!isEmpty(columns)) this.setColumns(columns)
+
+    return this.setTable(table)
+  }
+
+  /**
+   * @param {Any} table
+   * @param {Array} columns
+   * @returns {Builder}
+   */
+  insertInto (table, ...columns) {
+    return this.setType('insert').into(table, ...columns)
+  }
+
+  /**
+   * @param {Any} data
+   * @returns {Builder}
+   */
+  values (data) {
+    if (data instanceof Builder) return this.setValues(data)
+
+    data = castArray(data)
+
+    if (!this.hasColumns()) {
+      this.setColumns(chain(data).map(keys).flatten().uniq().value())
+    }
+
+    return this.setValues(data)
+  }
+
+  /**
+   * @returns {Builder}
+   */
+  defaultValues () {
+    return this.resetValues()
+  }
+
+  /**
+   * @param {Any} table
+   * @returns {Builder}
+   */
+  update (table) {
+    if (table) this.setTable(table)
+
+    return this.setType('update')
+  }
+
+  /**
+   * @param {String|Object} key
+   * @param {Any} value
+   * @returns {Builder}
+   */
+  set (key, value) {
+    let data = isString(key) ? { [key]: value } : key
+
+    this.getValues().push(data)
+
+    return this.setType('update')
+  }
+
+  /**
+   * @param {Any} table
+   * @returns {Builder}
+   */
+  delete (table) {
+    if (table) this.setTable(table)
+
+    return this.setType('delete')
   }
 }
