@@ -34,7 +34,7 @@ export default class Values extends Expression {
   }
 
   /**
-   * @returns {Expression}
+   * @returns {Values}
    * @override
    */
   clone () {

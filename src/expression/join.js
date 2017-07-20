@@ -1,17 +1,12 @@
 
 import Expression from './base'
 import Literal from './literal'
-import { compose, useMany, useConditions } from './mixin'
-
-const mixin = compose(
-  useConditions(),
-  useMany('columns')
-)
+import Criteria from './criteria'
 
 /**
  * @class JoinExpression
  */
-export default class Join extends mixin(Expression) {
+export default class Join extends Expression {
   /**
    * @param {Any} table
    * @param {String} type
@@ -21,7 +16,9 @@ export default class Join extends mixin(Expression) {
     super()
 
     this.type = type
+    this.columns = []
     this.table = table
+    this.conditions = []
   }
 
   /**
@@ -50,14 +47,108 @@ export default class Join extends mixin(Expression) {
    * @override
    */
   clone () {
-    // we cannot use `new Join(this.table, this.type)` here,
-    // because join is using mixins
+    return new Join(this.table, this.type)
+      .setColumns(this.columns.slice())
+      .setConditions(this.conditions.slice())
+  }
 
-    let join = super.clone()
+  /**
+   * @returns {Array}
+   */
+  getColumns () {
+    return this.columns
+  }
 
-    join.table = this.table
-    join.type = this.type
+  /**
+   * @returns {Boolean}
+   */
+  hasColumns () {
+    return this.columns.length > 0
+  }
 
-    return join
+  /**
+   * @returns {Join}
+   */
+  resetColumns () {
+    return this.setColumns([])
+  }
+
+  /**
+   * @param {Array} value
+   * @returns {Join}
+   */
+  setColumns (value) {
+    this.columns = value
+    return this
+  }
+
+  /**
+   * @param {String} expr
+   * @param {Array} args
+   * @returns {Join}
+   */
+  where (expr, ...args) {
+    this.getConditions().push(Criteria.from(...arguments))
+    return this
+  }
+
+  /**
+   * @param {String} expr
+   * @param {Array} args
+   * @returns {Join}
+   */
+  orWhere (expr, ...args) {
+    this.getConditions().push(Criteria.from(...arguments).or())
+    return this
+  }
+
+  /**
+   * @param {String} expr
+   * @param {Array} args
+   * @returns {Join}
+   */
+  whereNot (expr, ...args) {
+    this.getConditions().push(Criteria.from(...arguments).not())
+    return this
+  }
+
+  /**
+   * @param {String} expr
+   * @param {Array} args
+   * @returns {Join}
+   */
+  orWhereNot (expr, ...args) {
+    this.getConditions().push(Criteria.from(...arguments).or().not())
+    return this
+  }
+
+  /**
+   * @returns {Boolean}
+   */
+  hasConditions () {
+    return this.conditions.length > 0
+  }
+
+  /**
+   * @param {Array} value
+   * @returns {Join}
+   */
+  setConditions (value) {
+    this.conditions = value
+    return this
+  }
+
+  /**
+   * @returns {Join}
+   */
+  resetConditions () {
+    return this.setConditions([])
+  }
+
+  /**
+   * @returns {Array}
+   */
+  getConditions () {
+    return this.conditions
   }
 }
