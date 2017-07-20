@@ -46,8 +46,8 @@ export default class extends Compiler {
    * @returns {String}
    * @override
    */
-  compileDeleteClause ({ output }) {
-    return this.appendReturningClause(super.compileDeleteClause(arguments[0]), output)
+  compileDeleteQuery ({ output }) {
+    return this.appendReturningClause(super.compileDeleteQuery(arguments[0]), output)
   }
 
   /**

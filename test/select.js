@@ -462,4 +462,39 @@ describe('test building select queries:', function () {
       }
     )
   })
+
+  describe('test union():', function () {
+    support.test(
+      'creates a compound query',
+      qb().from('foo').union(qb().from('bar')),
+      {
+        pg: 'select * from foo union select * from bar',
+        mysql: 'select * from foo union select * from bar',
+        mssql: 'select * from foo union select * from bar',
+        sqlite: 'select * from foo union select * from bar'
+      }
+    )
+
+    support.test(
+      'creates a compound query with order by clause',
+      qb().from('foo').union(qb().from('bar')).orderBy('a_col'),
+      {
+        pg: 'select * from foo union select * from bar order by a_col',
+        mysql: 'select * from foo union select * from bar order by a_col',
+        mssql: 'select * from foo union select * from bar order by a_col',
+        sqlite: 'select * from foo union select * from bar order by a_col'
+      }
+    )
+
+    support.test(
+      'uses a compound query as a table expression',
+      qb().from(qb().from('foo').union(qb().from('bar'))),
+      {
+        pg: 'select * from (select * from foo union select * from bar)',
+        mysql: 'select * from (select * from foo union select * from bar)',
+        mssql: 'select * from (select * from foo union select * from bar)',
+        sqlite: 'select * from (select * from foo union select * from bar)'
+      }
+    )
+  })
 })

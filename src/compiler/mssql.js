@@ -23,17 +23,12 @@ export default class extends Compiler {
    * @override
    * @private
    */
-  compileSelectColumns (query) {
-    return this.compileTopClause(query) + super.compileSelectColumns(query)
-  }
+  compileSelectColumns ({ limit, offset, union }) {
+    let out = super.compileSelectColumns(arguments[0])
 
-  /**
-   * @param {Object}
-   * @returns {String}
-   * @private
-   */
-  compileTopClause ({ limit, offset }) {
-    return (!limit || offset) ? '' : `top (${this.parameter(limit)}) `
+    if (!limit || offset || !isEmpty(union)) return out
+
+    return `top (${this.parameter(limit)}) ${out}`
   }
 
   /**
@@ -42,19 +37,25 @@ export default class extends Compiler {
    * @override
    * @private
    */
-  compileOrderByClause ({ offset, limit }) {
+  compileOrderByClause ({ offset, limit, union }) {
+    let hasUnions = !isEmpty(union)
+    let hasLimitAndUnions = limit && hasUnions
     let out = super.compileOrderByClause(arguments[0])
 
-    if (!out && offset) {
+    if (!out && (offset || hasLimitAndUnions)) {
       // a dummy order to use with offset
       out = 'order by (select 0)'
     }
 
     if (offset) {
       out += ` offset ${this.parameter(offset)} rows`
+    } else if (hasLimitAndUnions) {
+      // we add a fake offset to construct the query
+      out += ` offset 0 rows`
+      offset = true
     }
 
-    if (limit && offset) {
+    if (limit && (offset || hasUnions)) {
       out += ` fetch next ${this.parameter(limit)} rows only`
     }
 
@@ -157,7 +158,7 @@ export default class extends Compiler {
         return super.compileFunction({ name: 'len', args })
 
       case 'strpos':
-        return super.compileFunction({ name: 'charindex', args: reverse(args.slice())})
+        return super.compileFunction({ name: 'charindex', args: reverse(args.slice()) })
 
       case 'repeat':
         return super.compileFunction({ name: 'replicate', args })
@@ -186,11 +187,11 @@ export default class extends Compiler {
    */
   compileSubstringFunction (expr, start, length) {
     if (length == null) {
-      length = super.compileFunction({ name: 'len', args: [expr]})
+      length = super.compileFunction({ name: 'len', args: [expr] })
 
       return `substring(${this.parameter(expr)}, ${this.parameter(start)}, ${length})`
     }
 
-    return super.compileFunction({ name: 'substring', args: [expr, start, length]})
+    return super.compileFunction({ name: 'substring', args: [expr, start, length] })
   }
 }
