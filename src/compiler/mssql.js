@@ -18,17 +18,23 @@ export default class extends Compiler {
   }
 
   /**
-   * @param {Object} query
+   * @param {Object}
    * @returns {String}
    * @override
    * @private
    */
-  compileSelectColumns ({ limit, offset, union }) {
-    let out = super.compileSelectColumns(arguments[0])
+  compileSelectClause ({ isDistinct, fields, limit, offset, unions }) {
+    if (limit && !offset && isEmpty(unions)) {
+      let parts = [
+        'select' + (isDistinct ? ' distinct' : ''),
+        'top ' + this.parameter(limit),
+        this.join(isEmpty(fields) ? ['*'] : fields)
+      ]
 
-    if (!limit || offset || !isEmpty(union)) return out
+      return parts.join(' ')
+    }
 
-    return `top (${this.parameter(limit)}) ${out}`
+    return super.compileSelectClause(arguments[0])
   }
 
   /**
@@ -37,8 +43,8 @@ export default class extends Compiler {
    * @override
    * @private
    */
-  compileOrderByClause ({ offset, limit, union }) {
-    let hasUnions = !isEmpty(union)
+  compileOrderByClause ({ offset, limit, unions }) {
+    let hasUnions = !isEmpty(unions)
     let hasLimitAndUnions = limit && hasUnions
     let out = super.compileOrderByClause(arguments[0])
 

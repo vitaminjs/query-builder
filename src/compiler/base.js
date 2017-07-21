@@ -53,7 +53,6 @@ export default class Compiler {
     var components = [
       this.compileWithClause(query),
       this.compileSelectClause(query),
-      this.compileSelectColumns(query),
       this.compileFromClause(query),
       this.compileWhereClause(query),
       this.compileGroupByClause(query),
@@ -81,8 +80,10 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileSelectClause ({ distinct }) {
-    return 'select' + (distinct ? ' distinct' : '')
+  compileSelectClause ({ isDistinct, fields }) {
+    if (isEmpty(fields)) fields = ['*']
+
+    return `select ${isDistinct ? 'distinct ' : ''}${this.join(fields)}`
   }
 
   /**
@@ -90,16 +91,7 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileSelectColumns ({ select }) {
-    return this.join(isEmpty(select) ? ['*'] : select)
-  }
-
-  /**
-   * @param {Object}
-   * @returns {String}
-   * @private
-   */
-  compileFromClause ({ table, join: joins }) {
+  compileFromClause ({ table, joins }) {
     if (!table) return ''
 
     let out = 'from ' + this.escape(table)
@@ -116,10 +108,10 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileWhereClause ({ where }) {
-    if (isEmpty(where)) return ''
+  compileWhereClause ({ wheres }) {
+    if (isEmpty(wheres)) return ''
 
-    return 'where ' + this.compileConditions(where)
+    return 'where ' + this.compileConditions(wheres)
   }
 
   /**
@@ -127,13 +119,13 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileGroupByClause ({ group, having }) {
-    if (isEmpty(group)) return ''
+  compileGroupByClause ({ groups, havings }) {
+    if (isEmpty(groups)) return ''
 
-    let out = 'group by ' + this.join(group)
+    let out = 'group by ' + this.join(groups)
 
-    if (!isEmpty(having)) {
-      out += ' having ' + this.compileConditions(having)
+    if (!isEmpty(havings)) {
+      out += ' having ' + this.compileConditions(havings)
     }
 
     return out
@@ -143,8 +135,8 @@ export default class Compiler {
    * @param {Object}
    * @returns {String}
    */
-  compileUnionClause ({ union = [] }) {
-    return this.join(union, ' ')
+  compileUnionClause ({ unions = [] }) {
+    return this.join(unions, ' ')
   }
 
   /**
@@ -152,8 +144,8 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileOrderByClause ({ order }) {
-    return isEmpty(order) ? '' : 'order by ' + this.join(order)
+  compileOrderByClause ({ orders }) {
+    return isEmpty(orders) ? '' : 'order by ' + this.join(orders)
   }
 
   /**
@@ -249,6 +241,11 @@ export default class Compiler {
   compileSetClause ({ values = [] }) {
     let expr = []
 
+    // throw an error when the values array is empty
+    if (isEmpty(values)) {
+      throw new TypeError('Empty values for update query')
+    }
+
     each(values.reduce(extend, {}), (value, key) => {
       expr.push(`${key} = ${this.parameter(value, true)}`)
     })
@@ -291,14 +288,14 @@ export default class Compiler {
    * @param {Object}
    * @returns {String}
    */
-  compileJoin ({ table, type, conditions, columns }) {
+  compileJoin ({ table, type, wheres, columns }) {
     let sql = `${type} join ${this.escape(table)}`
 
-    if (!isEmpty(conditions)) {
-      sql += ` on (${this.compileConditions(conditions)})`
+    if (!isEmpty(wheres)) {
+      sql += ` on (${this.compileConditions(wheres)})`
     }
 
-    if (!isEmpty(columns) && isEmpty(conditions)) {
+    if (!isEmpty(columns) && isEmpty(wheres)) {
       sql += ` using (${this.columnize(columns)})`
     }
 
