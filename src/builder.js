@@ -1,6 +1,6 @@
 
 import Compiler, { createCompiler } from './compiler'
-import { last, assign, chain, keys, castArray, isString, isEmpty } from 'lodash'
+import { last, assign, chain, keys, isString, isEmpty } from 'lodash'
 import { Join, Alias, Union, Literal, Criteria, CommonTable } from './expression'
 
 export default class Builder {
@@ -51,7 +51,7 @@ export default class Builder {
   compile (compiler) {
     switch (this.type) {
       case 'select': {
-        if (this.hasTable() || this.hasResults() || this.hasCommonTables()) {
+        if (this.hasTable() || this.hasFields() || this.hasCommonTables()) {
           return compiler.compileSelectQuery(this.query)
         }
 
@@ -75,9 +75,11 @@ export default class Builder {
       }
 
       case 'delete': {
-        if (!this.hasTable()) return ''
+        if (this.hasTable()) {
+          return compiler.compileDeleteQuery(this.query)
+        }
 
-        return compiler.compileDeleteQuery(this.query)
+        return ''
       }
     }
 
@@ -151,18 +153,18 @@ export default class Builder {
   }
 
   /**
-   * @param {Array} columns
+   * @param {Array} fields
    * @returns {Builder}
    */
-  select (...columns) {
-    columns.forEach((value) => {
+  select (...fields) {
+    fields.forEach((value) => {
       if (value === '*') return
 
       if (value instanceof Builder) {
         value = value.toExpression()
       }
 
-      this.getResults().push(Literal.from(value))
+      this.getFields().push(Literal.from(value))
     })
 
     return this
@@ -171,32 +173,32 @@ export default class Builder {
   /**
    * @returns {Array}
    */
-  getResults () {
-    if (!this.hasResults()) this.resetResults()
+  getFields () {
+    if (!this.hasFields()) this.resetFields()
 
-    return this.query.select
+    return this.query.fields
   }
 
   /**
    * @returns {Boolean}
    */
-  hasResults () {
-    return !isEmpty(this.query.select)
+  hasFields () {
+    return !isEmpty(this.query.fields)
   }
 
   /**
    * @returns {Builder}
    */
-  resetResults () {
-    return this.setResults([])
+  resetFields () {
+    return this.setFields([])
   }
 
   /**
    * @param {Array} value
    * @returns {Builder}
    */
-  setResults (value) {
-    this.query.select = value
+  setFields (value) {
+    this.query.fields = value
     return this
   }
 
@@ -352,7 +354,7 @@ export default class Builder {
    * @returns {Boolean}
    */
   hasJoins () {
-    return !isEmpty(this.query.join)
+    return !isEmpty(this.query.joins)
   }
 
   /**
@@ -360,7 +362,7 @@ export default class Builder {
    * @returns {Builder}
    */
   setJoins (value) {
-    this.query.join = value
+    this.query.joins = value
     return this
   }
 
@@ -377,7 +379,7 @@ export default class Builder {
   getJoins () {
     if (!this.hasJoins()) this.resetJoins()
 
-    return this.query.join
+    return this.query.joins
   }
 
   /**
@@ -465,7 +467,7 @@ export default class Builder {
    * @returns {Boolean}
    */
   hasGroups () {
-    return !isEmpty(this.query.group)
+    return !isEmpty(this.query.groups)
   }
 
   /**
@@ -473,7 +475,7 @@ export default class Builder {
    * @returns {Builder}
    */
   setGroups (value) {
-    this.query.group = value
+    this.query.groups = value
     return this
   }
 
@@ -490,7 +492,7 @@ export default class Builder {
   getGroups () {
     if (!this.hasGroups()) this.resetGroups()
 
-    return this.query.group
+    return this.query.groups
   }
 
   /**
@@ -537,7 +539,7 @@ export default class Builder {
    * @returns {Boolean}
    */
   hasHavingConditions () {
-    return !isEmpty(this.query.having)
+    return !isEmpty(this.query.havings)
   }
 
   /**
@@ -545,7 +547,7 @@ export default class Builder {
    * @returns {Builder}
    */
   setHavingConditions (value) {
-    this.query.having = value
+    this.query.havings = value
     return this
   }
 
@@ -562,7 +564,7 @@ export default class Builder {
   getHavingConditions () {
     if (!this.hasHavingConditions()) this.resetHavingConditions()
 
-    return this.query.having
+    return this.query.havings
   }
 
   /**
@@ -589,14 +591,14 @@ export default class Builder {
   getUnions () {
     if (!this.hasUnions()) this.resetUnions()
 
-    return this.query.union
+    return this.query.unions
   }
 
   /**
    * @returns {Boolean}
    */
   hasUnions () {
-    return !isEmpty(this.query.union)
+    return !isEmpty(this.query.unions)
   }
 
   /**
@@ -611,7 +613,7 @@ export default class Builder {
    * @returns {Builder}
    */
   setUnions (value) {
-    this.query.union = value
+    this.query.unions = value
     return this
   }
 
@@ -630,14 +632,14 @@ export default class Builder {
   getOrders () {
     if (!this.hasOrders()) this.resetOrders()
 
-    return this.query.order
+    return this.query.orders
   }
 
   /**
    * @returns {Boolean}
    */
   hasOrders () {
-    return !isEmpty(this.query.order)
+    return !isEmpty(this.query.orders)
   }
 
   /**
@@ -652,7 +654,7 @@ export default class Builder {
    * @returns {Builder}
    */
   setOrders (value) {
-    this.query.order = value
+    this.query.orders = value
     return this
   }
 
@@ -842,7 +844,7 @@ export default class Builder {
    * @returns {Builder}
    */
   insert (data) {
-    return this.setType('insert').setValues(data)
+    return this.setType('insert').values(data)
   }
 
   /**
@@ -866,13 +868,11 @@ export default class Builder {
   }
 
   /**
-   * @param {Any} data
+   * @param {Array} data
    * @returns {Builder}
    */
-  values (data) {
-    if (data instanceof Builder) return this.setValues(data)
-
-    data = castArray(data)
+  values (...data) {
+    if (data[0] instanceof Builder) return this.setValues(data[0])
 
     if (!this.hasColumns()) {
       this.setColumns(chain(data).map(keys).flatten().uniq().value())
