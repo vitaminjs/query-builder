@@ -16,9 +16,9 @@ export default class Join extends Expression {
     super()
 
     this.type = type
+    this.wheres = []
     this.columns = []
     this.table = table
-    this.conditions = []
   }
 
   /**
@@ -49,7 +49,7 @@ export default class Join extends Expression {
   clone () {
     return new Join(this.table, this.type)
       .setColumns(this.columns.slice())
-      .setConditions(this.conditions.slice())
+      .setConditions(this.wheres.slice())
   }
 
   /**
@@ -126,7 +126,7 @@ export default class Join extends Expression {
    * @returns {Boolean}
    */
   hasConditions () {
-    return this.conditions.length > 0
+    return this.wheres.length > 0
   }
 
   /**
@@ -134,7 +134,7 @@ export default class Join extends Expression {
    * @returns {Join}
    */
   setConditions (value) {
-    this.conditions = value
+    this.wheres = value
     return this
   }
 
@@ -149,6 +149,6 @@ export default class Join extends Expression {
    * @returns {Array}
    */
   getConditions () {
-    return this.conditions
+    return this.wheres
   }
 }
