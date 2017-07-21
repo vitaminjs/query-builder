@@ -23,7 +23,7 @@ export default class Insert extends mixin(Statement) {
    * @override
    */
   compile (compiler) {
-    return compiler.compileInsertQuery(this)
+    return this.hasValues() ? compiler.compileInsertQuery(this) : ''
   }
 
   /**
@@ -71,16 +71,5 @@ export default class Insert extends mixin(Statement) {
    */
   from (table, ...columns) {
     return this.select(new Select().from(table).setColumns(columns))
-  }
-
-  /**
-   * @param {String|Expression} table
-   * @param {String|Expression} columns
-   * @returns {Insert}
-   */
-  into (table, ...columns) {
-    if (!isEmpty(columns)) this.setColumns(columns)
-
-    return this.setTable(table)
   }
 }

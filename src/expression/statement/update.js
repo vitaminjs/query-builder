@@ -29,7 +29,7 @@ export default class Update extends mixin(Statement) {
    * @override
    */
   compile (compiler) {
-    return compiler.compileUpdateQuery(this)
+    return this.hasValues() ? compiler.compileUpdateQuery(this) : ''
   }
 
   /**

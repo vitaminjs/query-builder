@@ -21,12 +21,4 @@ export default class Delete extends mixin(Statement) {
   compile (compiler) {
     return compiler.compileDeleteQuery(this)
   }
-
-  /**
-   * @param {String|Expression} value
-   * @returns {Delete}
-   */
-  from (value) {
-    return this.setTable(value)
-  }
 }
