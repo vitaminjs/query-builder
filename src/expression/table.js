@@ -3,6 +3,7 @@ import Join from './join'
 import Alias from './alias'
 import { last } from 'lodash'
 import Expression from './base'
+import { Select, Delete, Update, Insert } from './statement'
 
 /**
  * @class TableExpression
@@ -165,5 +166,13 @@ export default class Table extends Expression {
    */
   getJoins () {
     return this.joins
+  }
+
+  /**
+   * @param {Array} fields
+   * @returns {Select}
+   */
+  select (...fields) {
+    return new Select(this).setFields(fields)
   }
 }
