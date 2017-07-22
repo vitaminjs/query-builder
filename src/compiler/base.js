@@ -197,9 +197,9 @@ export default class Compiler {
    * @returns {String}
    * @private
    */
-  compileInsertValues ({ select, values, columns }) {
+  compileInsertValues ({ values, columns }) {
     // compile select query as insert values
-    if (select) return this.escape(select)
+    if (!isArray(values)) return this.escape(values)
 
     // compile default values
     if (isEmpty(values)) return 'default values'
@@ -451,7 +451,7 @@ export default class Compiler {
    */
   parameter (value, setDefault = false) {
     // escape expressions
-    if (isFunction(value.compile)) return value.compile(this)
+    if (value && isFunction(value.compile)) return value.compile(this)
 
     // replace undefined values with `default` placeholder
     if (setDefault && isUndefined(value)) return 'default'

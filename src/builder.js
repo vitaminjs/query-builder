@@ -59,7 +59,7 @@ export default class Builder {
       }
 
       case 'insert': {
-        if (this.hasTable() && this.hasValues()) {
+        if (this.hasTable()) {
           return compiler.compileInsertQuery(this.query)
         }
 
@@ -843,8 +843,8 @@ export default class Builder {
    * @param {Any} data
    * @returns {Builder}
    */
-  insert (data) {
-    return this.setType('insert').values(data)
+  insert (...data) {
+    return this.setType('insert').values(...data)
   }
 
   /**

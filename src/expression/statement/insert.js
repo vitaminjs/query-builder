@@ -23,7 +23,7 @@ export default class Insert extends mixin(Statement) {
    * @override
    */
   compile (compiler) {
-    return this.hasValues() ? compiler.compileInsertQuery(this) : ''
+    return compiler.compileInsertQuery(this)
   }
 
   /**
