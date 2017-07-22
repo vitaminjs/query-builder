@@ -3,7 +3,7 @@ import Join from './join'
 import Alias from './alias'
 import { last } from 'lodash'
 import Expression from './base'
-import { Select, Delete, Update, Insert } from './statement'
+import { Select } from './statement'
 
 /**
  * @class TableExpression

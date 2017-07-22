@@ -207,7 +207,7 @@ export default class Builder {
    * @returns {Builder}
    */
   distinct (flag = true) {
-    this.query.distinct = flag
+    this.query.isDistinct = flag
     return this
   }
 
@@ -426,7 +426,7 @@ export default class Builder {
    * @returns {Boolean}
    */
   hasConditions () {
-    return !isEmpty(this.query.where)
+    return !isEmpty(this.query.wheres)
   }
 
   /**
@@ -434,7 +434,7 @@ export default class Builder {
    * @returns {Builder}
    */
   setConditions (value) {
-    this.query.where = value
+    this.query.wheres = value
     return this
   }
 
@@ -451,7 +451,7 @@ export default class Builder {
   getConditions () {
     if (!this.hasConditions()) this.resetConditions()
 
-    return this.query.where
+    return this.query.wheres
   }
 
   /**

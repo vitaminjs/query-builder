@@ -15,6 +15,8 @@ export default class Statement extends Expression {
    * @constructor
    */
   constructor (table) {
+    super()
+
     this.cte = []
     this.table = Literal.from(table)
   }
@@ -50,7 +52,7 @@ export default class Statement extends Expression {
     }
 
     this.table = Literal.from(value)
-    
+
     return this
   }
 

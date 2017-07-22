@@ -29,7 +29,7 @@ describe('test query builder:', function () {
 
   support.test(
     'inits with a query object',
-    qb({ select: [ id('foo') ], table: id('bar'), limit: 15 }),
+    qb({ fields: [ id('foo') ], table: id('bar'), limit: 15 }),
     {
       pg: 'select "foo" from "bar" limit $1',
       mysql: 'select `foo` from `bar` limit ?',

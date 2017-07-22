@@ -27,7 +27,7 @@ export default class extends Compiler {
     if (limit && !offset && isEmpty(unions)) {
       let parts = [
         'select' + (isDistinct ? ' distinct' : ''),
-        'top ' + this.parameter(limit),
+        `top (${this.parameter(limit)})`,
         this.join(isEmpty(fields) ? ['*'] : fields)
       ]
 

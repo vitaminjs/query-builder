@@ -74,7 +74,8 @@ export default class extends Compiler {
    * @override
    */
   compileUnion ({ query, filter }) {
-    if (!query.limit && !query.offset && isEmpty(query.order)) {
+    // if (!query.limit && !query.offset && isEmpty(query.order)) {
+    if (!query.hasLimit() && !query.hasOffset() && !query.hasOrders()) {
       return super.compileUnion(arguments[0])
     }
 
