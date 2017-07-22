@@ -1,5 +1,5 @@
 
-import Compiler from './base'
+import Compiler from '../compiler'
 import { isEmpty, reverse, first } from 'lodash'
 
 /**

@@ -1,5 +1,7 @@
 
-import Result from './result'
+import Expression from './expression'
+import Result from './compiler/result'
+import Statement from './expression/statement'
 
 import {
   each,
@@ -9,7 +11,7 @@ import {
   isArray,
   isEmpty,
   isString,
-  isFunction,
+  isBoolean,
   isUndefined
 } from 'lodash'
 
@@ -199,7 +201,7 @@ export default class Compiler {
    */
   compileInsertValues ({ values, columns }) {
     // compile select query as insert values
-    if (!isArray(values)) return this.escape(values)
+    if (values instanceof Statement) return values.compile(this)
 
     // compile default values
     if (isEmpty(values)) return 'default values'
@@ -246,8 +248,8 @@ export default class Compiler {
       throw new TypeError('Empty values for update query')
     }
 
-    each(values.reduce(extend, {}), (value, key) => {
-      expr.push(`${key} = ${this.parameter(value, true)}`)
+    each(values.reduce(extend, {}), (value, name) => {
+      expr.push(`${this.compileIdentifier({ name })} = ${this.parameter(value, true)}`)
     })
 
     return 'set ' + expr.join(', ')
@@ -451,7 +453,7 @@ export default class Compiler {
    */
   parameter (value, setDefault = false) {
     // escape expressions
-    if (value && isFunction(value.compile)) return value.compile(this)
+    if (value instanceof Expression) return this.escape(value)
 
     // replace undefined values with `default` placeholder
     if (setDefault && isUndefined(value)) return 'default'
@@ -491,10 +493,15 @@ export default class Compiler {
   escape (value) {
     if (value === '*') return value
 
-    // escape expressions
-    if (isFunction(value.compile)) return value.compile(this)
+    // wrap statements
+    if (value instanceof Statement) return `(${value.compile(this)})`
 
-    if (isString(value)) value = `'${value.replace(/'/g, "''")}'`
+    // escape expressions
+    if (value instanceof Expression) return value.compile(this)
+
+    if (isString(value)) return `'${value.replace(/'/g, "''")}'`
+
+    if (isBoolean(value)) return Number(value)
 
     return value
   }

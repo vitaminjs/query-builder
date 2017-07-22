@@ -1,7 +1,7 @@
 
-import Expression from './base'
 import Literal from './literal'
 import Criteria from './criteria'
+import Expression from '../expression'
 
 /**
  * @class JoinExpression

@@ -25,7 +25,7 @@ export default class {
 
   /**
    * @param {Any} value
-   * @returns {Any}
+   * @returns {String}
    * @private
    */
   escape (value) {

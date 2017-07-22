@@ -2,20 +2,19 @@
 import Join from '../join'
 import Union from '../union'
 import { last } from 'lodash'
-import Statement from './base'
 import Literal from '../literal'
 import Criteria from '../criteria'
+import Statement from '../statement'
 
 /**
  * @class SelectStatement
  */
 export default class Select extends Statement {
   /**
-   * @param {Any} table
    * @constructor
    */
-  constructor (table) {
-    super(table)
+  constructor () {
+    super()
 
     this.joins = []
     this.unions = []
@@ -35,7 +34,7 @@ export default class Select extends Statement {
    * @override
    */
   compile (compiler) {
-    if (this.hasFields() || this.hasCommonTables()) {
+    if (this.table || this.hasFields() || this.hasCTE()) {
       return compiler.compileSelectQuery(this)
     }
 
@@ -511,8 +510,7 @@ export default class Select extends Statement {
   }
 
   /**
-   * @param {Integer} value
-   * @returns {Select}
+   * @alias `setLimit`
    */
   take (value) {
     return this.setLimit(value)
@@ -549,8 +547,7 @@ export default class Select extends Statement {
   }
 
   /**
-   * @param {Integer} value
-   * @returns {Select}
+   * @alias `setOffset`
    */
   skip (value) {
     return this.setOffset(value)

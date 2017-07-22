@@ -1,6 +1,6 @@
 
 import Select from './select'
-import Statement from './base'
+import Statement from '../statement'
 import { isArray, chain, keys } from 'lodash'
 import { compose, useCTE, useOne, useMany, useReturning } from '../mixin'
 

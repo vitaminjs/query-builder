@@ -1,5 +1,5 @@
 
-import Compiler from './base'
+import Compiler from '../compiler'
 import Expression from '../expression'
 import { isUndefined, first } from 'lodash'
 

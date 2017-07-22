@@ -1,6 +1,6 @@
 
 import Alias from './alias'
-import Expression from './base'
+import Expression from '../expression'
 
 /**
  * @class FunctionExpression

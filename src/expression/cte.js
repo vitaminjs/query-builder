@@ -1,6 +1,6 @@
 
-import Expression from './base'
 import Literal from './literal'
+import Expression from '../expression'
 
 /**
  * @class CommonTableExpression

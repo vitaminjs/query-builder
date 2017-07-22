@@ -2,8 +2,8 @@
 import Join from './join'
 import Alias from './alias'
 import { last } from 'lodash'
-import Expression from './base'
 import { Select } from './statement'
+import Expression from '../expression'
 
 /**
  * @class TableExpression

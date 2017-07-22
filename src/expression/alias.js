@@ -1,5 +1,5 @@
 
-import Expression from './base'
+import Expression from '../expression'
 
 /**
  * @class AliasExpression

@@ -1,6 +1,6 @@
 
-import Compiler from './base'
 import { isEmpty } from 'lodash'
+import Compiler from '../compiler'
 import Expression from '../expression'
 
 /**

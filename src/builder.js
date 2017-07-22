@@ -8,9 +8,9 @@ export default class Builder {
    * @param {Object} query
    * @constructor
    */
-  constructor (query) {
+  constructor (query = {}) {
+    this.query = query
     this.type = 'select'
-    this.query = assign({}, query)
   }
 
   /**
@@ -90,7 +90,7 @@ export default class Builder {
    * @returns {Builder}
    */
   clone () {
-    return new Builder(this.query)
+    return new Builder(assign({}, this.query))
   }
 
   /**

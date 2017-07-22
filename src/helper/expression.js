@@ -3,7 +3,6 @@ import {
   Table,
   Alias,
   Order,
-  Column,
   Values,
   Literal,
   Identifier,

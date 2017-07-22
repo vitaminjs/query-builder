@@ -1,7 +1,7 @@
 
 import Alias from './alias'
 import Literal from './literal'
-import Expression from './base'
+import Expression from '../expression'
 
 /**
  * @class ValuesExpression
