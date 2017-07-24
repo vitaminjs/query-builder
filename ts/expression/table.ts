@@ -1,6 +1,7 @@
 
 import Join from './join'
 import Alias from './alias'
+import Values from './values'
 import Expression from '../expression'
 import Select from './statement/select'
 import Delete from './statement/delete'
@@ -98,11 +99,17 @@ export default class Table extends Expression {
     return new Delete(this)
   }
   
-  public update (key: string | {}, value?): Update {
-    return new Update(this).set(key, value)
+  public update (key: string, value): Update;
+  public update (obj: {}): Update;
+  public update (one, two?) {
+    return new Update(this).set(one, two)
   }
   
-  public insert (values?: {}[]): Insert {
-    return new Insert(this).setValues(values || [])
+  public insert (select: ISelect): Insert;
+  public insert (values: {}[]): Insert;
+  public insert (values: {}): Insert;
+  public insert (): Insert;
+  public insert (data?) {
+    return new Insert(this).setValues(data ? Values.from(data) : null)
   }
 }

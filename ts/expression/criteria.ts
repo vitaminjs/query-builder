@@ -16,7 +16,10 @@ export default class Criteria extends Expression {
     this.value = value
   }
   
-  public static from (value, args = []): Criteria {
+  public static from (expr: string, args: any[]): Criteria;
+  public static from (expr: Criteria): Criteria;
+  public static from (obj: {}): Criteria;
+  public static from (value, args = []) {
     if (value instanceof Criteria) return value
     
     if (isPlainObject(value)) return this.fromObject(value)
@@ -24,7 +27,7 @@ export default class Criteria extends Expression {
     return new Criteria(Literal.from(value, args))
   }
   
-  public static fromObject (obj) {
+  public static fromObject (obj: {}): Criteria {
     let args = []
     let expr = Object.keys(obj).map((key) => {
       let value = obj[key]

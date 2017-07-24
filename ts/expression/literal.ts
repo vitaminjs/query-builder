@@ -13,7 +13,9 @@ export default class Literal extends Expression {
     this.args = args
   }
   
-  public static from (value, args = []): IExpression {
+  public static from (expr: string, args: any[]): IExpression;
+  public static from (expr: IExpression): IExpression;
+  public static from (value, args = []) {
     if (value instanceof Expression) return value
     
     return new Literal(String(value), args)
