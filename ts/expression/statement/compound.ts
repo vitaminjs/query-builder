@@ -4,7 +4,7 @@ import Literal from '../literal'
 import Statement from '../statement'
 
 export default class Compound extends Statement {
-  public source: IStatement
+  public source: ISelect
   
   public unions: Union[]
   
@@ -14,7 +14,7 @@ export default class Compound extends Statement {
   
   public limit: any
   
-  public  constructor (source: IStatement) {
+  public  constructor (source: ISelect) {
     super(null)
     
     this.unions = []

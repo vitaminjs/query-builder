@@ -6,7 +6,7 @@ import Criteria from '../criteria'
 import Statement from '../statement'
 import Identifier from '../identifier'
 
-export default class Select extends Statement {
+export default class Select extends Statement implements ISelect {
   public fields: IExpression[]
   
   public conditions: Criteria[]
@@ -54,7 +54,7 @@ export default class Select extends Statement {
   }
   
   public into (table, ...columns: string[]): Insert {
-    return new Insert(Identifier.from(table)).setColumns(columns).setSelect(this)
+    return new Insert(Identifier.from(table)).setColumns(columns).setValues(this)
   }
   
   public hasFields (): boolean {
@@ -89,7 +89,7 @@ export default class Select extends Statement {
     return this.offset != null
   }
   
-  public union (query, filter = 'distinct'): Compound {
+  public union (query, filter = 'distinct') {
     return new Compound(this).union(query, filter)
   }
   

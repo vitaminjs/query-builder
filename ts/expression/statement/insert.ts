@@ -1,11 +1,9 @@
 
-import { chain, keys } from 'lodash'
+import Values from '../values'
 import Statement from '../statement'
 
 export default class Insert extends Statement {
-  public values: {}[]
-  
-  public select: IStatement
+  public values: IExpression
   
   public results: string[]
   
@@ -14,13 +12,12 @@ export default class Insert extends Statement {
   public constructor (table, cte = []) {
     super(table, cte)
     
-    this.values = []
     this.results = []
     this.columns = []
   }
   
   public compile (compiler: ICompiler): string {
-    if (this.hasTable && (this.hasValues() || this.hasSelect())) {
+    if (this.hasTable() && this.hasValues()) {
       return compiler.compileInsertStatement(this)
     }
     
@@ -31,39 +28,28 @@ export default class Insert extends Statement {
     return new Insert(this.table, this.cte)
       .setColumns(this.columns.slice())
       .setResults(this.results.slice())
-      .setValues(this.values.slice())
-      .setSelect(this.select)
+      .setValues(this.values)
   }
   
   public hasValues (): boolean {
-    return this.values.length > 0
+    return this.values != null
   }
   
-  public setValues (value: {}[]): Insert {
+  public setValues (value: ISelect): Insert;
+  public setValues (value: Values): Insert;
+  public setValues (value) {
     this.values = value
     
-    if (!this.hasColumns()) {
-      let columns = chain(value).map(keys).flatten().uniq().value()
-      
-      this.setColumns(columns)
+    if (!this.hasColumns() && value instanceof Values) {
+      this.setColumns(value.columns.slice())
     }
     
     return this
   }
   
   public defaultValues (): Insert {
-    this.select = null
-    this.values = []
+    this.values = null
     return this
-  }
-  
-  public setSelect (query: IStatement): Insert {
-    this.select = query
-    return this
-  }
-  
-  public hasSelect (): boolean {
-    return this.select != null
   }
   
   public using (...columns: string[]): Insert {
