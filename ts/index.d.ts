@@ -15,14 +15,16 @@ interface IExpression extends IComparable, IClonable, ICompilable {}
 
 interface IStatement extends IExpression {}
 
+interface ISelect extends IStatement {}
+
 interface ICompiler {
-  compileInsertStatement (e: { table: IExpression; cte: IExpression[]; results: string[]; values: {}[]; select: IStatement; columns: string[] }): string
-  
   compileUpdateStatement (e: { table: IExpression; cte: IExpression[]; results: string[]; values: {}[]; conditions: IExpression[] }): string
+  
+  compileInsertStatement (e: { table: IExpression; cte: IExpression[]; results: string[]; values: IExpression; columns: string[] }): string
   
   compileDeleteStatement (e: { table: IExpression; cte: IExpression[]; results: string[]; conditions: IExpression[] }): string
   
-  compileCompoundStatement (e: { source: IStatement; unions: IExpression[], orders: IExpression[]; limit, offset }): string
+  compileCompoundStatement (e: { source: ISelect; unions: IExpression[], orders: IExpression[]; limit, offset }): string
   
   compileJoin (e: { table: IExpression; type: string; conditions: IExpression[]; columns: string[] }): string
   
@@ -42,7 +44,7 @@ interface ICompiler {
   
   compileIdentifier (e: { name: string }): string
   
-  compileValues (e: { data: any[] }): string
+  compileValues (e: { values: any[][] }): string
 
   build (e: IStatement): IResult
 }

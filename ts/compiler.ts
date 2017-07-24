@@ -3,8 +3,7 @@ import Expression from './expression'
 import Alias from './expression/alias'
 import Statement from './expression/statement'
 import {
-  assign, first, extend, each, compact, isBoolean,
-  isString, isArray, isEmpty, isUndefined
+  assign, extend, each, compact, isBoolean, isString, isArray, isEmpty, isUndefined
 } from 'lodash'
 
 export default abstract class Compiler implements ICompiler {
@@ -24,7 +23,7 @@ export default abstract class Compiler implements ICompiler {
   
   public abstract build (expr: IStatement): IResult
   
-  public compileInsertStatement(q: { table: IExpression; cte: IExpression[]; results: string[]; values: {}[]; select: IStatement; columns: string[] }): string {
+  public compileInsertStatement(q: { table: IExpression; cte: IExpression[]; results: string[]; values: IExpression; columns: string[] }): string {
     let components = [
       this.compileWithClause(q),
       this.compileInsertClause(q),
@@ -55,7 +54,7 @@ export default abstract class Compiler implements ICompiler {
     return compact(components).join(' ')
   }
   
-  public compileCompoundStatement({ source, unions }: { source: IStatement; unions: IExpression[]; orders: IExpression[]; limit: any; offset: any; }): string {
+  public compileCompoundStatement({ source, unions }: { source: ISelect; unions: IExpression[]; orders: IExpression[]; limit: any; offset: any; }): string {
     let components = [
       `${this.escape(source)} ${this.join(unions, ' ')}`,
       this.compileOrderByClause(arguments[0]),
@@ -97,12 +96,8 @@ export default abstract class Compiler implements ICompiler {
     return `${this.escape(value)} is ${nulls === 'last' ? 'not ' : ''}null, ${out}`
   }
   
-  public compileValues({ data }: { data: any[] }): string {
-    if (!isArray(first(data))) {
-      return `values (${this.parameterize(data)})`
-    }
-    
-    return 'values ' + data.map((value) => `(${this.parameterize(value)})`).join(', ')
+  public compileValues({ values }: { values: any[][] }): string {
+    return 'values ' + values.map((value) => `(${this.parameterize(value, true)})`).join(', ')
   }
   
   public compileCriteria({ value, prefix, negate }: { value: IExpression; prefix: string; negate: boolean; }): string {
@@ -143,16 +138,12 @@ export default abstract class Compiler implements ICompiler {
     return `insert into ${this.escape(table)} (${this.columnize(columns)})`
   }
   
-  protected compileInsertValues ({ values, columns, select }: { values: {}[]; select: IStatement; columns: string[] }): string {
-    // compile select query as insert values
-    if (select) return select.compile(this)
+  protected compileInsertValues ({ values }: { values: IExpression }): string {
+    return values ? this.escape(values) : 'default values'
 
-    // compile default values
-    if (isEmpty(values)) return 'default values'
-
-    return 'values ' + values.map((value) => {
-      return `(${columns.map((name) => this.parameter(value[name], true)).join(', ')})`
-    }).join(', ')
+    // return 'values ' + values.map((value) => {
+    //   return `(${columns.map((name) => this.parameter(value[name], true)).join(', ')})`
+    // }).join(', ')
   }
   
   protected compileUpdateClause ({ table }: { table: IExpression }): string {
@@ -229,10 +220,10 @@ export default abstract class Compiler implements ICompiler {
     return columns.map((name) => this.compileIdentifier({ name })).join(', ')
   }
   
-  protected parameterize (value: any): string {
-    if (!isArray(value)) return this.parameter(value)
+  protected parameterize (value: any, setDefault = false): string {
+    if (!isArray(value)) return this.parameter(value, setDefault)
     
-    return value.map((item) => this.parameter(item)).join(', ')
+    return value.map((item) => this.parameter(item, setDefault)).join(', ')
   }
   
   protected parameter (value: any, setDefault = false): string {
