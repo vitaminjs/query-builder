@@ -12,16 +12,18 @@ export default class Join extends Expression {
   
   public columns: string[]
   
-  public constructor (table: IExpression, type = 'inner', conditions = [], columns = []) {
+  public constructor (table: IExpression, type = 'inner') {
     super()
     
     this.type = type
+    this.columns = []
     this.table = table
-    this.columns = columns
-    this.conditions = conditions
+    this.conditions = []
   }
   
-  public static from (table, type = 'inner'): IExpression {
+  public static from (table: string, type: string): IExpression
+  public static from (table: IExpression): IExpression
+  public static from (table, type = 'inner') {
     if (table instanceof Join) return table
     
     if (table instanceof Literal) return table
@@ -34,7 +36,9 @@ export default class Join extends Expression {
   }
   
   public clone (): Join {
-    return new Join(this.table, this.type, this.conditions.slice(), this.columns.slice())
+    return new Join(this.table, this.type)
+      .setConditions(this.conditions.slice())
+      .setColumns(this.columns.slice())
   }
   
   public where (expr, ...args): Join {
@@ -60,8 +64,18 @@ export default class Join extends Expression {
   public hasConditions (): boolean {
     return this.conditions.length > 0
   }
+
+  public setConditions (value: Criteria[]): Join {
+    this.conditions = value
+    return this
+  }
   
   public hasColumns (): boolean {
     return this.columns.length > 0
+  }
+
+  public setColumns (value: string[]): Join {
+    this.columns = value
+    return this
   }
 }

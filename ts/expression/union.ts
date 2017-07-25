@@ -13,10 +13,12 @@ export default class Union extends Expression {
     this.filter = filter
   }
   
-  public static from (query, filter = 'distinct'): Union {
+  public static from (query: IExpression, filter: string): Union
+  public static from (query: IExpression): Union
+  public static from (query, filter = 'distinct') {
     if (query instanceof Union) return query
     
-    return new Union((query), filter)
+    return new Union(query, filter)
   }
   
   public all (): Union {

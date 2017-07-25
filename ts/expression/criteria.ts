@@ -1,5 +1,6 @@
 
 import Literal from './literal'
+import Statement from './statement'
 import Expression from '../expression'
 import { isPlainObject, isNull, isArray } from 'lodash'
 
@@ -16,9 +17,9 @@ export default class Criteria extends Expression {
     this.value = value
   }
   
-  public static from (expr: string, args: any[]): Criteria;
-  public static from (expr: Criteria): Criteria;
-  public static from (obj: {}): Criteria;
+  public static from (expr: string, args: any[]): Criteria
+  public static from (expr: Criteria): Criteria
+  public static from (obj: {}): Criteria
   public static from (value, args = []) {
     if (value instanceof Criteria) return value
     
@@ -36,7 +37,11 @@ export default class Criteria extends Expression {
       
       let p = '?' + args.push(value)
       
-      return isArray(value) ? `${key} in (${p})` : `${key} = ${p}`
+      if (isArray(value) || (value instanceof Statement)) {
+        return `${key} in (${p})`
+      }
+      
+      return `${key} = ${p}`
     })
     
     return new Criteria(new Literal(expr.join(' and '), args))

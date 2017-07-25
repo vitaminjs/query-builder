@@ -7,14 +7,14 @@ export default abstract class Statement extends Expression implements IStatement
   
   public cte: IExpression[]
   
-  public constructor (table?, cte = []) {
+  public constructor (table?: IExpression, cte = []) {
     super()
     
     this.cte = cte
     this.table = table
   }
   
-  public as (name, ...columns): Alias {
+  public as (name: string, ...columns: string[]): Alias {
     return new Alias(this, name, columns)
   }
   

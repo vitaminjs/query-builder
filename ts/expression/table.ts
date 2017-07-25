@@ -14,7 +14,7 @@ export default class Table extends Expression {
   
   public joins: IExpression[]
   
-  public constructor (name, joins = []) {
+  public constructor (name: IExpression, joins = []) {
     super()
     
     this.name = name
@@ -30,31 +30,44 @@ export default class Table extends Expression {
   }
   
   public clone (): Table {
-    return new Table(this.name, this.joins.slice())
+    return new Table(this.name).setJoins(this.joins.slice())
   }
   
-  public join (table, type = 'inner'): Table {
+  public join (table: string, type: string): Table
+  public join (table: IExpression): Table
+  public join (table, type = 'inner') {
     this.joins.push(Join.from(table, type))
     return this
   }
   
-  public innerJoin (table): Table {
+  public innerJoin (table: IExpression): Table
+  public innerJoin (table: string): Table
+  public innerJoin (table) {
     return this.join(table)
   }
   
-  public rightJoin (table): Table {
+  public rightJoin (table: IExpression): Table
+  public rightJoin (table: string): Table
+  public rightJoin (table) {
     return this.join(table, 'right')
   }
   
-  public leftJoin (table): Table {
+  public leftJoin (table: IExpression): Table
+  public leftJoin (table: string): Table
+  public leftJoin (table) {
     return this.join(table, 'left')
   }
   
-  public crossJoin (table): Table {
+  public crossJoin (table: IExpression): Table
+  public crossJoin (table: string): Table
+  public crossJoin (table) {
     return this.join(table, 'cross')
   }
   
-  public on (condition, ...args): Table {
+  public on (expr: string, args: any[]): Table
+  public on (expr: IExpression): Table
+  public on (obj: {}): Table
+  public on (condition, ...args) {
     let expr = last(this.joins)
     
     if (expr instanceof Join) {
@@ -65,7 +78,10 @@ export default class Table extends Expression {
     throw new TypeError('Trying to add conditions to an undefined join expression')
   }
   
-  public orOn (condition, ...args): Table {
+  public orOn (expr: string, args: any[]): Table
+  public orOn (expr: IExpression): Table
+  public orOn (obj: {}): Table
+  public orOn (condition, ...args) {
     let expr = last(this.joins)
     
     if (expr instanceof Join) {
@@ -90,25 +106,30 @@ export default class Table extends Expression {
   public hasJoins (): boolean {
     return this.joins.length > 0
   }
+
+  public setJoins (value: IExpression[]): Table {
+    this.joins = value
+    return this
+  }
   
   public select (...fields): Select {
-    return new Select(this, fields)
+    return new Select(this).setFields(fields)
   }
   
   public delete (): Delete {
     return new Delete(this)
   }
   
-  public update (key: string, value): Update;
-  public update (obj: {}): Update;
+  public update (key: string, value): Update
+  public update (obj: {}): Update
   public update (one, two?) {
     return new Update(this).set(one, two)
   }
   
-  public insert (select: ISelect): Insert;
-  public insert (values: {}[]): Insert;
-  public insert (values: {}): Insert;
-  public insert (): Insert;
+  public insert (select: ISelect): Insert
+  public insert (values: {}[]): Insert
+  public insert (values: {}): Insert
+  public insert (): Insert
   public insert (data?) {
     return new Insert(this).setValues(data ? Values.from(data) : null)
   }

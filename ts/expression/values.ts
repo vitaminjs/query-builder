@@ -15,9 +15,9 @@ export default class Values extends Expression {
     this.values = values
   }
 
-  public static from (values: ISelect): IExpression;
-  public static from (values: {}[]): IExpression;
-  public static from (values: {}): IExpression;
+  public static from (values: ISelect): IExpression
+  public static from (values: {}[]): IExpression
+  public static from (values: {}): IExpression
   public static from (values) {
     if (values instanceof Expression) return values
 

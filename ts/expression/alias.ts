@@ -2,13 +2,13 @@
 import Expression from '../expression'
 
 export default class Alias extends Expression {
-  public value: any
+  public value: IExpression
   
   public name: string
   
   public columns: string[]
   
-  public constructor (value: any, name: string, columns = []) {
+  public constructor (value: IExpression, name: string, columns = []) {
     super()
     
     this.name = name
