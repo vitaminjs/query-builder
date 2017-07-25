@@ -10,7 +10,7 @@ export default class Update extends Statement {
   
   public values: {}[]
   
-  public constructor (table, cte = []) {
+  public constructor (table: IExpression, cte = []) {
     super(table, cte)
     
     this.values = []
@@ -57,12 +57,12 @@ export default class Update extends Statement {
     return this.conditions.length > 0
   }
   
-  public setConditions (value): Update {
+  public setConditions (value: Criteria[]): Update {
     this.conditions = value
     return this
   }
   
-  public returning (...columns): Update {
+  public returning (...columns: string[]): Update {
     this.results.push(...columns)
     return this
   }
@@ -71,12 +71,14 @@ export default class Update extends Statement {
     return this.results.length > 0
   }
   
-  public setResults (value): Update {
+  public setResults (value: string[]): Update {
     this.results = value
     return this
   }
   
-  public set (key: string | {}, value?): Update {
+  public set (key: string, value): Update
+  public set (obj: {}): Update
+  public set (key, value?) {
     this.values.push(isString(key) ? { [key]: value } : key)
     return this
   }

@@ -7,7 +7,7 @@ export default class Delete extends Statement {
   
   public results: string[]
   
-  public constructor (table, cte = []) {
+  public constructor (table: IExpression, cte = []) {
     super(table, cte)
     
     this.results = []
@@ -48,12 +48,12 @@ export default class Delete extends Statement {
     return this.conditions.length > 0
   }
   
-  public setConditions (value): Delete {
+  public setConditions (value: Criteria[]): Delete {
     this.conditions = value
     return this
   }
   
-  public returning (...columns): Delete {
+  public returning (...columns: string[]): Delete {
     this.results.push(...columns)
     return this
   }
@@ -62,7 +62,7 @@ export default class Delete extends Statement {
     return this.results.length > 0
   }
   
-  public setResults (value): Delete {
+  public setResults (value: string[]): Delete {
     this.results = value
     return this
   }

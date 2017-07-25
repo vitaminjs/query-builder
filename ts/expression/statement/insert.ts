@@ -9,7 +9,7 @@ export default class Insert extends Statement {
   
   public columns: string[]
   
-  public constructor (table, cte = []) {
+  public constructor (table: IExpression, cte = []) {
     super(table, cte)
     
     this.results = []
@@ -35,8 +35,8 @@ export default class Insert extends Statement {
     return this.values != null
   }
   
-  public setValues (value: ISelect): Insert;
-  public setValues (value: Values): Insert;
+  public setValues (value: ISelect): Insert
+  public setValues (value: Values): Insert
   public setValues (value) {
     this.values = value
     
@@ -61,12 +61,12 @@ export default class Insert extends Statement {
     return this.columns.length > 0
   }
   
-  public setColumns (value): Insert {
+  public setColumns (value: string[]): Insert {
     this.columns = value
     return this
   }
   
-  public returning (...columns): Insert {
+  public returning (...columns: string[]): Insert {
     this.results.push(...columns)
     return this
   }
@@ -75,7 +75,7 @@ export default class Insert extends Statement {
     return this.results.length > 0
   }
   
-  public setResults (value): Insert {
+  public setResults (value: string[]): Insert {
     this.results = value
     return this
   }

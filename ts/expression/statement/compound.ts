@@ -38,12 +38,14 @@ export default class Compound extends Statement {
       .take(this.limit)
   }
   
-  public union (query, filter = 'distinct'): Compound {
+  public union (query: IExpression, filter: string): Compound
+  public union (query: IExpression): Compound
+  public union (query, filter = 'distinct') {
     this.unions.push(Union.from(query, filter))
     return this
   }
   
-  public unionAll (query): Compound {
+  public unionAll (query: IExpression): Compound {
     return this.union(query, 'all')
   }
   
