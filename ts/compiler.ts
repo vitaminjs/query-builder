@@ -1,4 +1,5 @@
 
+import Query from './compiler/query'
 import Expression from './expression'
 import Alias from './expression/alias'
 import Statement from './expression/statement'
@@ -7,7 +8,7 @@ import {
 } from 'lodash'
 
 export default abstract class Compiler implements ICompiler {
-  protected options: {
+  protected options = <ICompilerOptions>{
     autoQuoteIdentifiers: false
   }
   
@@ -17,11 +18,13 @@ export default abstract class Compiler implements ICompiler {
   
   protected bindings = []
   
-  public constructor (options = {}) {
+  public constructor (options = {} as ICompilerOptions) {
     assign(this.options, options)
   }
   
-  public abstract build (expr: IStatement): IResult
+  public build (expr: IStatement): IQuery {
+    return new Query(expr.compile(this), this.bindings)
+  }
   
   public compileInsertStatement(q: { table: IExpression; cte: IExpression[]; results: string[]; values: IExpression; columns: string[] }): string {
     let components = [
@@ -109,7 +112,7 @@ export default abstract class Compiler implements ICompiler {
   }
   
   public compileIdentifier ({ name }: { name: string }): string {
-    if (this.options.autoQuoteIdentifiers === false) return name
+    if (!this.options.autoQuoteIdentifiers) return name
     
     return name.split('.').map((part) => this.quote(part)).join('.')
   }
@@ -140,10 +143,6 @@ export default abstract class Compiler implements ICompiler {
   
   protected compileInsertValues ({ values }: { values: IExpression }): string {
     return values ? this.escape(values) : 'default values'
-
-    // return 'values ' + values.map((value) => {
-    //   return `(${columns.map((name) => this.parameter(value[name], true)).join(', ')})`
-    // }).join(', ')
   }
   
   protected compileUpdateClause ({ table }: { table: IExpression }): string {
