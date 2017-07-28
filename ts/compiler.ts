@@ -27,7 +27,17 @@ export default abstract class Compiler implements ICompiler {
   }
   
   public compileSelectStatement(q: ISelect): string {
-    throw new Error("Method not implemented.")
+    var components = [
+      this.compileWithClause(q),
+      this.compileSelectClause(q),
+      this.compileFromClause(q),
+      this.compileWhereClause(q),
+      this.compileGroupByClause(q),
+      this.compileOrderByClause(q),
+      this.compileLimitClause(q)
+    ]
+
+    return compact(components).join(' ')
   }
   
   public compileInsertStatement(q: IInsert): string {
@@ -137,6 +147,30 @@ export default abstract class Compiler implements ICompiler {
     return value.replace(/\?(\d*)/g, (_, p) => {
       return this.parameterize(args[p ? p - 1 : i++])
     })
+  }
+  
+  protected compileSelectClause ({ isDistinct, fields }: ISelect): string {
+    return `select ${isDistinct ? 'distinct ' : ''}${this.join(isEmpty(fields) ? ['*'] : fields)}`
+  }
+  
+  protected compileFromClause ({ table, joins }: ISelect): string {
+    if (!table) return ''
+    
+    if (isEmpty(joins)) {
+      return `from ${this.escape(table)}`
+    }
+    
+    return `from ${this.escape(table)} ${this.join(joins, ' ')}`
+  }
+  
+  protected compileGroupByClause ({ groups, havings }: ISelect): string {
+    if (isEmpty(groups)) return ''
+    
+    if (isEmpty(havings)) {
+      return `group by ${this.join(groups)}`
+    }
+    
+    return `group by ${this.join(groups)} having ${this.compileConditions(havings)}`
   }
   
   protected compileInsertClause ({ table, columns }: IInsert): string {
