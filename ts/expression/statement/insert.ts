@@ -2,7 +2,7 @@
 import Values from '../values'
 import Statement from '../statement'
 
-export default class Insert extends Statement {
+export default class Insert extends Statement implements IInsert {
   public values: IExpression
   
   public results: string[]
@@ -35,9 +35,9 @@ export default class Insert extends Statement {
     return this.values != null
   }
   
-  public setValues (value: ISelect): Insert
-  public setValues (value: Values): Insert
-  public setValues (value) {
+  // public setValues (value: ISelect): Insert
+  // public setValues (value: IValues): Insert
+  public setValues (value: IExpression): Insert {
     this.values = value
     
     if (!this.hasColumns() && value instanceof Values) {

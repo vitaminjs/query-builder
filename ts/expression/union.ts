@@ -1,7 +1,7 @@
 
 import Expression from '../expression'
 
-export default class Union extends Expression {
+export default class Union extends Expression implements IUnion {
   public query: IExpression
   
   public filter: string

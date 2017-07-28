@@ -3,7 +3,7 @@ import Union from '../union'
 import Literal from '../literal'
 import Statement from '../statement'
 
-export default class Compound extends Statement {
+export default class Compound extends Statement implements ICompound {
   public source: ISelect
   
   public unions: Union[]

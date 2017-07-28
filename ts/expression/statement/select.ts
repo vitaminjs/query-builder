@@ -1,12 +1,12 @@
 
 import Join from '../join'
+import { last } from 'lodash'
 import Insert from './insert'
 import Literal from '../literal'
 import Compound from './compound'
 import Criteria from '../criteria'
 import Statement from '../statement'
 import Identifier from '../identifier'
-import { last } from 'lodash'
 
 export default class Select extends Statement implements ISelect {
   public fields: IExpression[]

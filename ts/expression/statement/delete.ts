@@ -2,7 +2,7 @@
 import Criteria from '../criteria'
 import Statement from '../statement'
 
-export default class Delete extends Statement {
+export default class Delete extends Statement implements IDelete {
   public conditions: Criteria[]
   
   public results: string[]

@@ -9,7 +9,7 @@ import Update from './statement/update'
 import Insert from './statement/insert'
 import { last, castArray } from 'lodash'
 
-export default class Table extends Expression {
+export default class Table extends Expression implements ITable {
   public name: IExpression
   
   public joins: IExpression[]

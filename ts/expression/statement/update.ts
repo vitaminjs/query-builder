@@ -3,7 +3,7 @@ import Criteria from '../criteria'
 import Statement from '../statement'
 import { castArray, isString } from 'lodash'
 
-export default class Update extends Statement {
+export default class Update extends Statement implements IUpdate {
   public conditions: Criteria[]
   
   public results: string[]

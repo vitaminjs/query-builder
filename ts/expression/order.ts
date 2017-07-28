@@ -1,7 +1,7 @@
 
 import Expression from '../expression'
 
-export default class Order extends Expression {
+export default class Order extends Expression implements IOrder {
   public value: IExpression
   
   public direction: string

@@ -4,7 +4,7 @@ import Statement from './statement'
 import Expression from '../expression'
 import { isPlainObject, isNull, isArray } from 'lodash'
 
-export default class Criteria extends Expression {
+export default class Criteria extends Expression implements ICriteria {
   public value: IExpression
   
   public prefix: string

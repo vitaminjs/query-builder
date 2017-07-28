@@ -2,7 +2,7 @@
 import Alias from './alias'
 import Expression from '../expression'
 
-export default class Identifier extends Expression {
+export default class Identifier extends Expression implements IIdentifier {
   public name: string
   
   public constructor (name: string) {

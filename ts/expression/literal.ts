@@ -1,7 +1,7 @@
 
 import Expression from '../expression'
 
-export default class Literal extends Expression {
+export default class Literal extends Expression implements ILiteral {
   public value: string
   
   public args: any[]

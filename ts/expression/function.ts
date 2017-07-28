@@ -2,7 +2,7 @@
 import Alias from './alias'
 import Expression from '../expression'
 
-export default class Function extends Expression {
+export default class Function extends Expression implements IFunction {
   public name: string
   
   public args: any[]

@@ -1,7 +1,7 @@
 
 import Expression from '../expression'
 
-export default class Alias extends Expression {
+export default class Alias extends Expression implements IAlias {
   public value: IExpression
   
   public name: string

@@ -3,7 +3,7 @@ import Literal from './literal'
 import Criteria from './criteria'
 import Expression from '../expression'
 
-export default class Join extends Expression {
+export default class Join extends Expression implements IJoin {
   public table: IExpression
   
   public type: string
