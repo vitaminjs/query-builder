@@ -30,7 +30,7 @@ export default abstract class Compiler implements ICompiler {
     throw new Error("Method not implemented.")
   }
   
-  public compileInsertStatement(q: { table: IExpression; cte: IExpression[]; results: string[]; values: IExpression; columns: string[] }): string {
+  public compileInsertStatement(q: IInsert): string {
     let components = [
       this.compileWithClause(q),
       this.compileInsertClause(q),
@@ -40,7 +40,7 @@ export default abstract class Compiler implements ICompiler {
     return compact(components).join(' ')
   }
   
-  public compileUpdateStatement(q: { table: IExpression; cte: IExpression[]; conditions: IExpression[]; results: string[]; values: {}[]; }): string {
+  public compileUpdateStatement(q: IUpdate): string {
     let components = [
       this.compileWithClause(q),
       this.compileUpdateClause(q),
@@ -51,17 +51,17 @@ export default abstract class Compiler implements ICompiler {
     return compact(components).join(' ')
   }
   
-  public compileDeleteStatement(s: { table: IExpression; cte: IExpression[]; conditions: IExpression[]; results: string[]; }): string {
+  public compileDeleteStatement(q: IDelete): string {
     let components = [
-      this.compileWithClause(s),
-      this.compileDeleteClause(s),
-      this.compileWhereClause(s)
+      this.compileWithClause(q),
+      this.compileDeleteClause(q),
+      this.compileWhereClause(q)
     ]
     
     return compact(components).join(' ')
   }
   
-  public compileCompoundStatement({ source, unions }: { source: ISelect; unions: IExpression[]; orders: IExpression[]; limit: any; offset: any; }): string {
+  public compileCompoundStatement({ source, unions }: ICompound): string {
     let components = [
       `${this.escape(source)} ${this.join(unions, ' ')}`,
       this.compileOrderByClause(arguments[0]),
@@ -71,7 +71,7 @@ export default abstract class Compiler implements ICompiler {
     return compact(components).join(' ')
   }
   
-  public compileJoin({ table, type, conditions, columns }: { table: IExpression; type: string; conditions: IExpression[]; columns: string[]; }): string {
+  public compileJoin({ table, type, conditions, columns }: IJoin): string {
     let out = `${type} join ${this.escape(table)}`
     
     if (!isEmpty(conditions)) {
@@ -85,17 +85,17 @@ export default abstract class Compiler implements ICompiler {
     return out
   }
   
-  public compileTable({ name, joins }: { name: IExpression; joins: IExpression[]; }): string {
+  public compileTable({ name, joins }: ITable): string {
     if (isEmpty(joins)) return this.escape(name)
     
     return `(${this.escape(name)} ${this.join(joins, ' ')})`
   }
   
-  public compileUnion({ query, filter }: { query: IExpression; filter: string; }): string {
+  public compileUnion({ query, filter }: IUnion): string {
     return 'union ' + (filter === 'all' ? 'all ' : '') + this.escape(query)
   }
   
-  public compileOrder({ value, direction, nulls }: { value: IExpression; direction: string; nulls?: string }): string {
+  public compileOrder({ value, direction, nulls }: IOrder): string {
     let out = `${this.escape(value)} ${direction === 'desc' ? 'desc' : 'asc'}`
     
     if (!nulls) return out
@@ -103,26 +103,26 @@ export default abstract class Compiler implements ICompiler {
     return `${this.escape(value)} is ${nulls === 'last' ? 'not ' : ''}null, ${out}`
   }
   
-  public compileValues({ values }: { values: any[][] }): string {
+  public compileValues({ values }: IValues): string {
     return 'values ' + values.map((value) => `(${this.parameterize(value, true)})`).join(', ')
   }
   
-  public compileCriteria({ value, prefix, negate }: { value: IExpression; prefix: string; negate: boolean; }): string {
+  public compileCriteria({ value, prefix, negate }: ICriteria): string {
     return `${prefix} ${negate ? `not (${this.escape(value)})` : this.escape(value)}`
   }
   
-  public compileFunction({ name, args }: { name: string; args: any[] }): string {
+  public compileFunction({ name, args }: IFunction): string {
     return `${name}(${this.parameterize(args)})`
   }
   
-  public compileIdentifier ({ name }: { name: string }): string {
+  public compileIdentifier ({ name }: IIdentifier): string {
     if (!this.options.autoQuoteIdentifiers) return name
     
     return name.split('.').map((part) => this.quote(part)).join('.')
   }
   
-  public compileAlias({ value, name, columns }: { value: any; name: string; columns: string[] }): string {
-    let alias = this.compileIdentifier({ name })
+  public compileAlias({ value, name, columns }: IAlias): string {
+    let alias = this.compileIdentifier(<IIdentifier>{ name })
     
     if (!isEmpty(columns)) {
       alias += ` (${this.columnize(columns)})`
@@ -131,7 +131,7 @@ export default abstract class Compiler implements ICompiler {
     return `${this.escape(value)} as ${alias}`
   }
   
-  public compileLiteral({ value, args }: { value: string; args: any[] }): string {
+  public compileLiteral({ value, args }: ILiteral): string {
     let i = 0
     
     return value.replace(/\?(\d*)/g, (_, p) => {
@@ -139,31 +139,31 @@ export default abstract class Compiler implements ICompiler {
     })
   }
   
-  protected compileInsertClause ({ table, columns }: { table: IExpression; columns: string[] }): string {
+  protected compileInsertClause ({ table, columns }: IInsert): string {
     if (isEmpty(columns)) return 'insert into ' + this.escape(table)
     
     return `insert into ${this.escape(table)} (${this.columnize(columns)})`
   }
   
-  protected compileInsertValues ({ values }: { values: IExpression }): string {
+  protected compileInsertValues ({ values }: IInsert): string {
     return values ? this.escape(values) : 'default values'
   }
   
-  protected compileUpdateClause ({ table }: { table: IExpression }): string {
+  protected compileUpdateClause ({ table }: IUpdate): string {
     return 'update ' + this.escape(table)
   }
   
-  protected compileSetClause ({ values }: { values: {}[] }): string {
+  protected compileSetClause ({ values }: IUpdate): string {
     let expr = []
     
     each(values.reduce(extend, {}), (value, name: string) => {
-      expr.push(`${this.compileIdentifier({ name })} = ${this.parameter(value, true)}`)
+      expr.push(`${this.compileIdentifier(<IIdentifier>{ name })} = ${this.parameter(value, true)}`)
     })
 
     return 'set ' + expr.join(', ')
   }
   
-  protected compileLimitClause ({ limit, offset }: { limit: any, offset: any }): string {
+  protected compileLimitClause ({ limit, offset }: ILimitable): string {
     let out = ''
 
     if (limit) out += 'limit ' + this.parameter(limit)
@@ -173,21 +173,21 @@ export default abstract class Compiler implements ICompiler {
     return out.trim()
   }
   
-  protected compileOrderByClause ({ orders }: { orders: IExpression[] }): string {
+  protected compileOrderByClause ({ orders }: IOrderable): string {
     return isEmpty(orders) ? '' : 'order by ' + this.join(orders)
   }
   
-  protected compileDeleteClause ({ table }: { table: IExpression }): string {
+  protected compileDeleteClause ({ table }: IDelete): string {
     return 'delete from ' + this.escape(table)
   }
   
-  protected compileWhereClause ({ conditions }: { conditions: IExpression[] }): string {
+  protected compileWhereClause ({ conditions }: IConditional): string {
     if (isEmpty(conditions)) return ''
     
     return 'where ' + this.compileConditions(conditions)
   }
   
-  protected compileWithClause ({ cte }: { cte: IExpression[] }): string {
+  protected compileWithClause ({ cte }: IStatement): string {
     if (isEmpty(cte)) return ''
     
     return 'with ' + cte.map((value) => {
@@ -199,12 +199,12 @@ export default abstract class Compiler implements ICompiler {
     }).join(', ')
   }
   
-  protected compileCommonTable ({ value, name, columns }: { value: IExpression; name: string; columns: string[] }): string {
+  protected compileCommonTable ({ value, name, columns }: ICommonTable): string {
     if (isEmpty(columns)) {
-      return `${this.compileIdentifier({ name })} as ${this.escape(value)}`
+      return `${this.compileIdentifier(<IIdentifier>{ name })} as ${this.escape(value)}`
     }
     
-    return `${this.compileIdentifier({ name })} (${this.columnize(columns)}) as ${this.escape(value)}`
+    return `${this.compileIdentifier(<IIdentifier>{ name })} (${this.columnize(columns)}) as ${this.escape(value)}`
   }
   
   protected compileConditions (value): string {
@@ -220,7 +220,7 @@ export default abstract class Compiler implements ICompiler {
   }
   
   protected columnize (columns: string[]): string {
-    return columns.map((name) => this.compileIdentifier({ name })).join(', ')
+    return columns.map((name) => this.compileIdentifier(<IIdentifier>{ name })).join(', ')
   }
   
   protected parameterize (value: any, setDefault = false): string {
