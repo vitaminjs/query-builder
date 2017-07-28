@@ -57,8 +57,8 @@ export function abs (expr): IFunction {
   return func('abs', expr)
 }
 
-export function round (x, y: number): IFunction {
-  return func('round', x, y)
+export function round (expr, n: number): IFunction {
+  return func('round', expr, n)
 }
 
 /**
@@ -82,8 +82,8 @@ export function lower (expr): IFunction {
 
 export let lcase = lower
 
-export function concat (...args): IFunction {
-  return func('concat', ...args)
+export function concat (...parts): IFunction {
+  return func('concat', ...parts)
 }
 
 export function length (expr): IFunction {
@@ -96,7 +96,7 @@ export function replace (expr, pattern, replacement): IFunction {
   return func('replace', expr, pattern, replacement)
 }
 
-export function substr (expr, start, length?): IFunction {
+export function substr (expr, start: number, length?: number): IFunction {
   if (length == null)
     return func('substr', expr, start)
   
@@ -105,11 +105,11 @@ export function substr (expr, start, length?): IFunction {
 
 export let substring = substr
 
-export function left (expr, length): IFunction {
+export function left (expr, length: number): IFunction {
   return func('left', expr, length)
 }
 
-export function right (expr, length): IFunction {
+export function right (expr, length: number): IFunction {
   return func('right', expr, length)
 }
 
@@ -131,11 +131,11 @@ export function strpos (str, substr): IFunction {
 
 export let position = strpos
 
-export function repeat (expr, count): IFunction {
+export function repeat (expr, count: number): IFunction {
   return func('repeat', expr, count)
 }
 
-export function space (length): IFunction {
+export function space (length: number): IFunction {
   return func('space', length)
 }
 

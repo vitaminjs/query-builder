@@ -133,7 +133,7 @@ interface ICompiler {
   compileTable (e: ITable): string
   compileUnion (e: IUnion): string
   compileJoin (e: IJoin): string
-  build (e: IStatement): IQuery
+  toQuery (e: IStatement): IQuery
 }
 
 interface ICompilerOptions {

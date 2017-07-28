@@ -22,7 +22,7 @@ export default abstract class Compiler implements ICompiler {
     assign(this.options, options)
   }
   
-  public build (expr: IStatement): IQuery {
+  public toQuery (expr: IStatement): IQuery {
     return new Query(expr.compile(this), this.bindings)
   }
   

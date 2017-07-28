@@ -35,13 +35,13 @@ export default class Criteria extends Expression implements ICriteria {
       
       if (isNull(value)) return `${key} is null`
       
-      let p = '?' + args.push(value)
+      args.push(value)
       
-      if (isArray(value) || (value instanceof Statement)) {
-        return `${key} in (${p})`
-      }
+      if (isArray(value)) return `${key} in (?)`
       
-      return `${key} = ${p}`
+      if (value instanceof Statement) return `${key} in ?`
+      
+      return `${key} = ?`
     })
     
     return new Criteria(new Literal(expr.join(' and '), args))
