@@ -21,9 +21,7 @@ export default class Join extends Expression implements IJoin {
     this.conditions = []
   }
   
-  public static from (table: string, type: string): IExpression
-  public static from (table: IExpression): IExpression
-  public static from (table, type = 'inner') {
+  public static from (table: string | IExpression, type = 'inner'): IExpression {
     if (table instanceof Join) return table
     
     if (table instanceof Literal) return table

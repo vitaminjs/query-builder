@@ -13,9 +13,7 @@ export default class Literal extends Expression implements ILiteral {
     this.args = args
   }
   
-  public static from (expr: string, args: any[]): IExpression
-  public static from (expr: IExpression): IExpression
-  public static from (value, args = []) {
+  public static from (value: string | IExpression, args = []): IExpression {
     if (value instanceof Expression) return value
     
     return new Literal(String(value), args)

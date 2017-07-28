@@ -12,6 +12,7 @@ export default class Values extends Expression implements IValues {
   public constructor (values: any[][]) {
     super()
     
+    this.columns = []
     this.values = values
   }
 

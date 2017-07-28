@@ -80,6 +80,11 @@ export default class Select extends Statement implements ISelect {
     return this
   }
   
+  public from (table): Select {
+    this.table = Literal.from(table)
+    return this
+  }
+  
   public distinct (flag = true): Select {
     this.isDistinct = flag
     return this

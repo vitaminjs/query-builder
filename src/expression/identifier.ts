@@ -11,9 +11,7 @@ export default class Identifier extends Expression implements IIdentifier {
     this.name = name
   }
   
-  public static from (value: IExpression): IExpression
-  public static from (value: string): IExpression
-  public static from (value) {
+  public static from (value: string | IExpression): IExpression {
     if (value instanceof Expression) return value
     
     let [name, alias] = String(value).split(' as ')
