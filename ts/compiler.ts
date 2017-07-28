@@ -26,6 +26,10 @@ export default abstract class Compiler implements ICompiler {
     return new Query(expr.compile(this), this.bindings)
   }
   
+  public compileSelectStatement(q: ISelect): string {
+    throw new Error("Method not implemented.")
+  }
+  
   public compileInsertStatement(q: { table: IExpression; cte: IExpression[]; results: string[]; values: IExpression; columns: string[] }): string {
     let components = [
       this.compileWithClause(q),
@@ -230,7 +234,7 @@ export default abstract class Compiler implements ICompiler {
     if (value instanceof Expression) return this.escape(value)
     
     // replace undefined values with `default` placeholder
-    if (setDefault === true && isUndefined(value)) return 'default'
+    if (setDefault && isUndefined(value)) return 'default'
     
     if (isUndefined(value)) {
       throw new TypeError('Invalid parameter value')
