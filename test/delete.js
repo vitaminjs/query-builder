@@ -1,12 +1,12 @@
 /* global describe */
 
-var qb = require('../lib').default
 var support = require('./support')
+var { table } = require('../dist')
 
 describe('test building delete queries:', () => {
   support.test(
     'creates a basic delete query',
-    qb().delete('foo'),
+    table('foo').delete(),
     {
       pg: 'delete from foo',
       mysql: 'delete from foo',
@@ -17,7 +17,7 @@ describe('test building delete queries:', () => {
 
   support.test(
     'creates a conditional delete query',
-    qb().where('activated = ?', false).delete('accounts'),
+    table('accounts').delete().where('activated = ?', false),
     {
       pg: 'delete from accounts where activated = $1',
       mysql: 'delete from accounts where activated = ?',
@@ -31,7 +31,7 @@ describe('test building delete queries:', () => {
 
   support.test(
     'creates a basic delete query',
-    qb().delete('baz').where({ id: 1 }).returning('*'),
+    table('baz').delete().where({ id: 1 }).returning('*'),
     {
       pg: 'delete from baz where id = $1 returning *',
       mssql: 'delete from baz output deleted.* where id = ?'

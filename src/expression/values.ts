@@ -15,15 +15,14 @@ export default class Values extends Expression implements IValues {
     this.columns = []
     this.values = values
   }
-
-  public static from (values: ISelect): IExpression
+  
   public static from (values: {}[]): IExpression
   public static from (values: {}): IExpression
   public static from (values) {
     if (values instanceof Expression) return values
-
+    
     values = castArray(values) as {}[]
-
+    
     let columns = <string[]>chain(values).map(keys).flatten().uniq().value()
     
     return new Values(values.map((obj) => columns.map((key) => obj[key]))).setColumns(columns)

@@ -45,12 +45,16 @@ export function val (value): ILiteral {
   return raw('?', value)
 }
 
-export function values (data: any[][]): IValues {
+export function values (...data: any[][]): IValues {
   return new Values(data)
 }
 
 export function select (...fields): ISelect {
   return new Select().select(...fields)
+}
+
+export function selectFrom (table): ISelect {
+  return new Select(id(table))
 }
 
 export function abs (expr): IFunction {

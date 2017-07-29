@@ -35,8 +35,6 @@ export default class Insert extends Statement implements IInsert {
     return this.values != null
   }
   
-  // public setValues (value: ISelect): Insert
-  // public setValues (value: IValues): Insert
   public setValues (value: IExpression): Insert {
     this.values = value
     

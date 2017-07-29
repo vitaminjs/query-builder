@@ -60,9 +60,7 @@ export default class Select extends Statement implements ISelect {
       .take(this.limit)
   }
   
-  public into (table: IExpression, ...columns: string[]): Insert
-  public into (table: string, ...columns: string[]): Insert
-  public into (table, ...columns) {
+  public into (table: string | IExpression, ...columns: string[]): Insert {
     return new Insert(Identifier.from(table)).setColumns(columns).setValues(this)
   }
 

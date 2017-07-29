@@ -1,29 +1,17 @@
 /* global describe */
 
-var id = require('../lib').id
-var qb = require('../lib').default
 var support = require('./support')
+var { table, selectFrom } = require('../dist')
 
 describe('test building insert queries:', () => {
   support.test(
-    'returns empty string if the table name is missing',
-    qb().insert({ name: 'foo', age: 30 }),
-    {
-      pg: '',
-      mysql: '',
-      mssql: '',
-      sqlite: ''
-    }
-  )
-
-  support.test(
     'accepts a plain object data for single row insert',
-    qb().insert({ name: 'foo', age: 30 }).into('people'),
+    table('people').insert({ name: 'foo', age: 30 }),
     {
-      pg: 'insert into people ("name", "age") values ($1, $2)',
-      mysql: 'insert into people (`name`, `age`) values (?, ?)',
-      mssql: 'insert into people ([name], [age]) values (?, ?)',
-      sqlite: 'insert into people ("name", "age") values (?, ?)'
+      pg: 'insert into "people" ("name", "age") values ($1, $2)',
+      mysql: 'insert into `people` (`name`, `age`) values (?, ?)',
+      mssql: 'insert into [people] ([name], [age]) values (?, ?)',
+      sqlite: 'insert into "people" ("name", "age") values (?, ?)'
     },
     [
       'foo',
@@ -33,12 +21,12 @@ describe('test building insert queries:', () => {
 
   support.test(
     'accepts an array of plain objects for multirow insert',
-    qb().insert({ name: 'foo', age: 30 }, { name: 'bar', age: 40 }).into('people'),
+    table('people').insert({ name: 'foo', age: 30 }, { name: 'bar', age: 40 }),
     {
-      pg: 'insert into people ("name", "age") values ($1, $2), ($3, $4)',
-      mysql: 'insert into people (`name`, `age`) values (?, ?), (?, ?)',
-      mssql: 'insert into people ([name], [age]) values (?, ?), (?, ?)',
-      sqlite: 'insert into people ("name", "age") values (?, ?), (?, ?)'
+      pg: 'insert into "people" ("name", "age") values ($1, $2), ($3, $4)',
+      mysql: 'insert into `people` (`name`, `age`) values (?, ?), (?, ?)',
+      mssql: 'insert into [people] ([name], [age]) values (?, ?), (?, ?)',
+      sqlite: 'insert into "people" ("name", "age") values (?, ?), (?, ?)'
     },
     [
       'foo',
@@ -50,23 +38,23 @@ describe('test building insert queries:', () => {
 
   support.test(
     'inserts an new row with default values',
-    qb().insertInto(id('table')).defaultValues(),
+    table('foo').insert().defaultValues(),
     {
-      pg: 'insert into "table" default values',
-      mysql: 'insert into `table` () values ()',
-      mssql: 'insert into [table] default values',
-      sqlite: 'insert into "table" default values'
+      pg: 'insert into "foo" default values',
+      mysql: 'insert into `foo` () values ()',
+      mssql: 'insert into [foo] default values',
+      sqlite: 'insert into "foo" default values'
     }
   )
 
   support.test(
     'replaces missing bindings with default for multirow insert',
-    qb().insertInto('coords', 'y', 'x').values({ x: 20 }, { y: 40 }, { x: 10, y: 30 }),
+    table('coords').insert({ x: 20 }, { y: 40 }, { x: 10, y: 30 }).using('y', 'x'),
     {
-      pg: 'insert into coords ("y", "x") values (default, $1), ($2, default), ($3, $4)',
-      mysql: 'insert into coords (`y`, `x`) values (default, ?), (?, default), (?, ?)',
-      mssql: 'insert into coords ([y], [x]) values (default, ?), (?, default), (?, ?)',
-      sqlite: 'insert into coords ("y", "x") values (null, ?), (?, null), (?, ?)'
+      pg: 'insert into "coords" ("y", "x") values (default, $1), ($2, default), ($3, $4)',
+      mysql: 'insert into `coords` (`y`, `x`) values (default, ?), (?, default), (?, ?)',
+      mssql: 'insert into [coords] ([y], [x]) values (default, ?), (?, default), (?, ?)',
+      sqlite: 'insert into "coords" ("y", "x") values (null, ?), (?, null), (?, ?)'
     },
     [
       20,
@@ -78,10 +66,10 @@ describe('test building insert queries:', () => {
 
   support.test(
     'adds a returning clause',
-    qb().insert({ fname: 'foo', lname: 'bar' }).into('users').returning('id'),
+    table('users').insert({ fname: 'foo', lname: 'bar' }).returning('id'),
     {
-      pg: 'insert into users ("fname", "lname") values ($1, $2) returning "id"',
-      mssql: 'insert into users ([fname], [lname]) output inserted.[id] values (?, ?)'
+      pg: 'insert into "users" ("fname", "lname") values ($1, $2) returning "id"',
+      mssql: 'insert into [users] ([fname], [lname]) output inserted.[id] values (?, ?)'
     },
     [
       'foo',
@@ -90,13 +78,13 @@ describe('test building insert queries:', () => {
   )
 
   support.test(
-    'using a select query for values',
-    qb().insertInto('table', 'a', 'b').values(qb().from('another_table').limit(3)),
+    'using a select query as values',
+    selectFrom('another_table').limit(3).into('target', 'a', 'b'),
     {
-      pg: 'insert into table ("a", "b") select * from another_table limit $1',
-      mysql: 'insert into table (`a`, `b`) select * from another_table limit ?',
-      mssql: 'insert into table ([a], [b]) select top (?) * from another_table',
-      sqlite: 'insert into table ("a", "b") select * from another_table limit ?'
+      pg: 'insert into "target" ("a", "b") select * from another_table limit $1',
+      mysql: 'insert into `target` (`a`, `b`) select * from another_table limit ?',
+      mssql: 'insert into [target] ([a], [b]) select top (?) * from another_table',
+      sqlite: 'insert into "target" ("a", "b") select * from another_table limit ?'
     },
     [
       3

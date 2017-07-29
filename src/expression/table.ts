@@ -7,7 +7,7 @@ import Select from './statement/select'
 import Delete from './statement/delete'
 import Update from './statement/update'
 import Insert from './statement/insert'
-import { last, castArray } from 'lodash'
+import { last, castArray, isEmpty } from 'lodash'
 
 export default class Table extends Expression implements ITable {
   public name: IExpression
@@ -113,7 +113,7 @@ export default class Table extends Expression implements ITable {
   }
   
   public select (...fields): Select {
-    return new Select(this).setFields(fields)
+    return new Select(this).select(...fields)
   }
   
   public delete (): Delete {
@@ -123,14 +123,17 @@ export default class Table extends Expression implements ITable {
   public update (key: string, value): Update
   public update (obj: {}): Update
   public update (one, two?) {
+    if (!one) return new Update(this)
+    
     return new Update(this).set(one, two)
   }
   
-  public insert (select: ISelect): Insert
-  public insert (values: {}[]): Insert
-  public insert (values: {}): Insert
-  public insert (): Insert
-  public insert (data?) {
-    return new Insert(this).setValues(data ? Values.from(data) : null)
+  public insert (...data: {}[]): Insert {
+    let ins = new Insert(this)
+    
+    if (!isEmpty(data))
+      ins.setValues(Values.from(data))
+    
+    return ins
   }
 }
