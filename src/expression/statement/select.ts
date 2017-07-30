@@ -41,7 +41,7 @@ export default class Select extends Statement implements ISelect {
   
   public compile (compiler: ICompiler): string {
     if (this.hasTable() || this.hasFields() || this.hasCTE()) {
-      // return compiler.compileSelectStatement(this)
+      return compiler.compileSelectStatement(this)
     }
     
     return ''
@@ -61,9 +61,9 @@ export default class Select extends Statement implements ISelect {
   }
   
   public into (table: string | IExpression, ...columns: string[]): Insert {
-    return new Insert(Identifier.from(table)).setColumns(columns).setValues(this)
+    return new Insert(Identifier.from(table)).setValues(this).setColumns(columns)
   }
-
+  
   public select (...fields): Select {
     fields.forEach((value) => this.fields.push(Literal.from(value)))
     return this

@@ -48,13 +48,13 @@ describe('test building insert queries:', () => {
   )
 
   support.test(
-    'replaces missing bindings with default for multirow insert',
-    table('coords').insert({ x: 20 }, { y: 40 }, { x: 10, y: 30 }).using('y', 'x'),
+    'replaces missing bindings with defaults for multirow insert',
+    table('coords').insert({ x: 20 }, { y: 40 }, { x: 10, y: 30 }),
     {
-      pg: 'insert into "coords" ("y", "x") values (default, $1), ($2, default), ($3, $4)',
-      mysql: 'insert into `coords` (`y`, `x`) values (default, ?), (?, default), (?, ?)',
-      mssql: 'insert into [coords] ([y], [x]) values (default, ?), (?, default), (?, ?)',
-      sqlite: 'insert into "coords" ("y", "x") values (null, ?), (?, null), (?, ?)'
+      pg: 'insert into "coords" ("x", "y") values ($1, default), (default, $2), ($3, $4)',
+      mysql: 'insert into `coords` (`x`, `y`) values (?, default), (default, ?), (?, ?)',
+      mssql: 'insert into [coords] ([x], [y]) values (?, default), (default, ?), (?, ?)',
+      sqlite: 'insert into "coords" ("x", "y") values (?, null), (null, ?), (?, ?)'
     },
     [
       20,
@@ -79,7 +79,7 @@ describe('test building insert queries:', () => {
 
   support.test(
     'using a select query as values',
-    selectFrom('another_table').limit(3).into('target', 'a', 'b'),
+    selectFrom('another_table').take(3).into('target', 'a', 'b'),
     {
       pg: 'insert into "target" ("a", "b") select * from another_table limit $1',
       mysql: 'insert into `target` (`a`, `b`) select * from another_table limit ?',

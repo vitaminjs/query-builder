@@ -15,6 +15,8 @@ export default class Criteria extends Expression implements ICriteria {
     super()
     
     this.value = value
+    this.prefix = prefix
+    this.negate = negate
   }
   
   public static from (expr: string, args: any[]): Criteria

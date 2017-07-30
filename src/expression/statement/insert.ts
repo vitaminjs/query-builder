@@ -17,11 +17,7 @@ export default class Insert extends Statement implements IInsert {
   }
   
   public compile (compiler: ICompiler): string {
-    if (this.hasTable() && this.hasValues()) {
-      return compiler.compileInsertStatement(this)
-    }
-    
-    return ''
+    return this.hasTable() ? compiler.compileInsertStatement(this) : ''
   }
   
   public clone (): Insert {
@@ -47,11 +43,6 @@ export default class Insert extends Statement implements IInsert {
   
   public defaultValues (): Insert {
     this.values = null
-    return this
-  }
-  
-  public using (...columns: string[]): Insert {
-    this.columns.push(...columns)
     return this
   }
   

@@ -73,7 +73,8 @@ export default abstract class Compiler implements ICompiler {
   
   public compileCompoundStatement({ source, unions }: ICompound): string {
     let components = [
-      `${this.escape(source)} ${this.join(unions, ' ')}`,
+      this.escape(source, false),
+      this.join(unions, ' '),
       this.compileOrderByClause(arguments[0]),
       this.compileLimitClause(arguments[0])
     ]
@@ -102,7 +103,7 @@ export default abstract class Compiler implements ICompiler {
   }
   
   public compileUnion({ query, filter }: IUnion): string {
-    return 'union ' + (filter === 'all' ? 'all ' : '') + this.escape(query)
+    return 'union ' + (filter === 'all' ? 'all ' : '') + this.escape(query, false)
   }
   
   public compileOrder({ value, direction, nulls }: IOrder): string {
@@ -180,7 +181,7 @@ export default abstract class Compiler implements ICompiler {
   }
   
   protected compileInsertValues ({ values }: IInsert): string {
-    return values ? this.escape(values) : 'default values'
+    return values ? this.escape(values, false) : 'default values'
   }
   
   protected compileUpdateClause ({ table }: IUpdate): string {
@@ -234,11 +235,13 @@ export default abstract class Compiler implements ICompiler {
   }
   
   protected compileCommonTable ({ value, name, columns }: ICommonTable): string {
+    let alias = this.compileIdentifier(<IIdentifier>{ name })
+    
     if (isEmpty(columns)) {
-      return `${this.compileIdentifier(<IIdentifier>{ name })} as ${this.escape(value)}`
+      return `${alias} as ${this.escape(value)}`
     }
     
-    return `${this.compileIdentifier(<IIdentifier>{ name })} (${this.columnize(columns)}) as ${this.escape(value)}`
+    return `${alias} (${this.columnize(columns)}) as ${this.escape(value)}`
   }
   
   protected compileConditions (value): string {
@@ -257,13 +260,13 @@ export default abstract class Compiler implements ICompiler {
     return columns.map((name) => this.compileIdentifier(<IIdentifier>{ name })).join(', ')
   }
   
-  protected parameterize (value: any, setDefault = false): string {
+  protected parameterize (value, setDefault = false): string {
     if (!isArray(value)) return this.parameter(value, setDefault)
     
     return value.map((item) => this.parameter(item, setDefault)).join(', ')
   }
   
-  protected parameter (value: any, setDefault = false): string {
+  protected parameter (value, setDefault = false): string {
     // escape expressions
     if (value instanceof Expression) return this.escape(value)
     
@@ -280,11 +283,12 @@ export default abstract class Compiler implements ICompiler {
     return this.placeholder
   }
   
-  protected escape (value: any): string {
+  protected escape (value, wrapStatement = true): string {
     if (value === '*') return value
     
     // wrap statements
-    if (value instanceof Statement) return `(${value.compile(this)})`
+    if (wrapStatement && value instanceof Statement)
+      return `(${value.compile(this)})`
     
     // compile expressions
     if (value instanceof Expression) return value.compile(this)
