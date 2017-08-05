@@ -295,6 +295,6 @@ export default abstract class Compiler implements ICompiler {
     
     if (isBoolean(value)) value = Number(value)
     
-    return String(value).replace(/'/g, "''")
+    return `'${String(value).replace(/'/g, "''")}'`
   }
 }

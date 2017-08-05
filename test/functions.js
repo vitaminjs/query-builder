@@ -32,23 +32,23 @@ describe('test SQL functions:', function () {
 
   support.test(
     'test concat()',
-    concat(id('first_name'), ' ', id('last_name')),
+    concat(id('first_name'), esc(' '), id('last_name')),
     {
       pg: 'concat("first_name", \' \', "last_name")',
-      mysql: 'concat(coalesce(`first_name`, \'\'), \' \', coalesce(`last_name`, \'\'))',
+      mysql: 'concat(`first_name`, \' \', `last_name`)',
       mssql: 'concat([first_name], \' \', [last_name])',
-      sqlite: 'coalesce("first_name", \'\') || \' \' || coalesce("last_name", \'\')'
+      sqlite: '"first_name" || \' \' || "last_name"'
     }
   )
 
   support.test(
     'test length()',
-    length('foo'),
+    length(esc('foo')),
     {
-      pg: 'length(foo)',
-      mysql: 'length(foo)',
-      mssql: 'len(foo)',
-      sqlite: 'length(foo)'
+      pg: "length('foo')",
+      mysql: "length('foo')",
+      mssql: "len('foo')",
+      sqlite: "length('foo')"
     }
   )
 
@@ -170,18 +170,6 @@ describe('test SQL functions:', function () {
   )
 
   support.test(
-    'test repeat()',
-    repeat(esc('sql'), 3),
-    {
-      pg: 'repeat(\'sql\', $1)',
-      mysql: 'repeat(\'sql\', ?)',
-      mssql: 'replicate(\'sql\', ?)',
-      sqlite: "replace(substr(quote(zeroblob((? + 1) / 2)), 3, ?1), '0', 'sql')"
-    },
-    [ 3 ]
-  )
-
-  support.test(
     'test space()',
     space(5),
     {
@@ -202,7 +190,7 @@ describe('test SQL functions:', function () {
       pg: 'rand()',
       mysql: 'rand()',
       mssql: 'rand()',
-      sqlite: '(random() / 18446744073709551616 + 0.5)'
+      sqlite: '(random() / 18446744073709551616 + .5)'
     }
   )
 
@@ -280,7 +268,7 @@ describe('test SQL functions:', function () {
     'test date()',
     date(esc('2017-03-02 09:20:25')),
     {
-      pg: "cast('2017-03-02 09:20:25' as date)",
+      pg: "'2017-03-02 09:20:25'::date",
       mysql: "date('2017-03-02 09:20:25')",
       mssql: "cast('2017-03-02 09:20:25' as date)",
       sqlite: "date('2017-03-02 09:20:25')"
@@ -291,7 +279,7 @@ describe('test SQL functions:', function () {
     'test time()',
     time(id('created_at')),
     {
-      pg: 'cast("created_at" as time(0))',
+      pg: '"created_at"::time(0)',
       mysql: 'time(`created_at`)',
       mssql: 'cast([created_at] as time(0))',
       sqlite: 'time("created_at")'

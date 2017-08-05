@@ -59,8 +59,8 @@ describe('test building insert queries:', () => {
     [
       20,
       40,
-      30,
-      10
+      10,
+      30
     ]
   )
 
@@ -81,10 +81,10 @@ describe('test building insert queries:', () => {
     'using a select query as values',
     selectFrom('another_table').take(3).into('target', 'a', 'b'),
     {
-      pg: 'insert into "target" ("a", "b") select * from another_table limit $1',
-      mysql: 'insert into `target` (`a`, `b`) select * from another_table limit ?',
-      mssql: 'insert into [target] ([a], [b]) select top (?) * from another_table',
-      sqlite: 'insert into "target" ("a", "b") select * from another_table limit ?'
+      pg: 'insert into "target" ("a", "b") select * from "another_table" limit $1',
+      mysql: 'insert into `target` (`a`, `b`) select * from `another_table` limit ?',
+      mssql: 'insert into [target] ([a], [b]) select top (?) * from [another_table]',
+      sqlite: 'insert into "target" ("a", "b") select * from "another_table" limit ?'
     },
     [
       3
