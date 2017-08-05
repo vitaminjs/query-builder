@@ -87,6 +87,7 @@ interface ICommonTable extends IExpression {
 interface IStatement extends IExpression {
   table?: IExpression
   cte?: IExpression[]
+  toQuery: (dialect: string | ICompiler, options?: ICompilerOptions) => IQuery
 }
 
 interface ISelect extends IStatement, IConditional, IOrderable, ILimitable {

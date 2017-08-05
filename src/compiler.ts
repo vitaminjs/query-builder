@@ -2,7 +2,6 @@
 import Query from './compiler/query'
 import Expression from './expression'
 import Alias from './expression/alias'
-import Statement from './expression/statement'
 import {
   assign, extend, each, compact, isBoolean, isString, isArray, isEmpty, isUndefined
 } from 'lodash'
@@ -287,13 +286,14 @@ export default abstract class Compiler implements ICompiler {
     if (value === '*') return value
     
     // wrap statements
-    if (wrapStatement && value instanceof Statement)
+    // we can't use a direct 
+    if (wrapStatement && value && typeof value.toQuery === 'function')
       return `(${value.compile(this)})`
     
     // compile expressions
     if (value instanceof Expression) return value.compile(this)
     
-    if (isBoolean(value)) value = Number(value)
+    if (isBoolean(value)) return String(Number(value))
     
     return `'${String(value).replace(/'/g, "''")}'`
   }
