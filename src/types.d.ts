@@ -68,7 +68,7 @@ interface IFunction extends IExpression {
   args: any[]
 }
 
-interface IIdentifier extends IStatement {
+interface IIdentifier extends IExpression {
   name: string
 }
 

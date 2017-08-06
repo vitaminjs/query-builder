@@ -1,5 +1,6 @@
 
 import Alias from './alias'
+import Literal from './literal'
 import { isString } from 'lodash'
 import Compiler from '../compiler'
 import Expression from '../expression'
@@ -37,5 +38,10 @@ export default abstract class Statement extends Expression implements IStatement
   
   public hasCTE (): boolean {
     return this.cte.length > 0
+  }
+  
+  public addCTE (value: IExpression): IStatement {
+    this.cte.push(Literal.from(value))
+    return this
   }
 }
