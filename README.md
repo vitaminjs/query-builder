@@ -21,7 +21,7 @@ $ npm install --save vitamin-query
 
 ```js
 // import the query builder
-import { table, select } from 'vitamin-query'
+import { table, select, selectFrom } from 'vitamin-query'
 
 // Select query
 let query = table('employees').select('count(*)').where('salary between ? and (?1 * 2)', 1500).toQuery('pg')
@@ -29,10 +29,8 @@ assert.equal(query.sql, 'select count(*) from employees where salary between $1 
 assert.deepEqual(query.params, [ 1500, 1500 ])
 
 // Compound query
-let s1 = select('*').from('users').where('last_name is null')
-let s2 = select('*').from('users').where('first_name is null')
-let query = s1.union(s2).toQuery('pg')
-assert.equal(query.sql, 'select * from users where last_name is null union select * from users where first_name is null')
+let query = selectFrom('t').where('a is null').union(selectFrom('t').where('b is null')).toQuery('pg')
+assert.equal(query.sql, 'select * from t where a is null union select * from t where b is null')
 
 // Insert query
 let fred = { name: "Fred", score: 30 }
@@ -82,6 +80,7 @@ These Helpers are functions that return Expression instances:
 - **values**(data: any[][]): IValues
 - **id**(name: string): IIdentifier
 - **esc**(value: string): ILiteral
+- **selectFrom**(table): ISelect
 - **select**(...fields): ISelect
 - **val**(value): ILiteral
 - **desc**(expr): IOrder
