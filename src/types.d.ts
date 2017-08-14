@@ -22,8 +22,8 @@ interface IOrderable {
 }
 
 interface ILimitable {
-  offset: any
-  limit: any
+  offset: number | IExpression
+  limit: number | IExpression
 }
 
 interface ILiteral extends IExpression {
@@ -60,6 +60,7 @@ interface ITable extends IExpression {
 }
 
 interface IValues extends IExpression {
+  columns: string[]
   values: any[][]
 }
 
@@ -84,46 +85,37 @@ interface ICommonTable extends IExpression {
   value: any
 }
 
-interface IStatement extends IExpression {
-  table?: IExpression
-  cte?: IExpression[]
+interface IBuilder extends IClonable {
+  toExpression (): IExpression
   toQuery: (dialect: string | ICompiler, options?: ICompilerOptions) => IQuery
 }
 
-interface ISelect extends IStatement, IConditional, IOrderable, ILimitable {
-  havings: IExpression[]
+interface IStatement extends IExpression, IConditional, IOrderable, ILimitable {
+  type: "select" | "insert" | "update" | "delete" | "compound"
+  values: { [key: string]: any } | IExpression
+  results: IExpression[]
   groups: IExpression[]
-  fields: IExpression[]
+  havings: ICriteria[]
   joins: IExpression[]
-  isDistinct: boolean
-}
-
-interface IUpdate extends IStatement, IConditional {
-  results: string[]
-  values: {}[]
-}
-
-interface IInsert extends IStatement {
-  values: IExpression
-  results: string[]
+  source: IExpression
+  cte: IExpression[]
+  distinct: boolean
   columns: string[]
-}
-
-interface IDelete extends IStatement, IConditional {
-  results: string[]
-}
-
-interface ICompound extends IStatement, IOrderable, ILimitable {
-  unions: IExpression[]
-  source: ISelect
+  unions: IUnion[]
+  
+  isSelect(): boolean
+  isInsert(): boolean
+  isDelete(): boolean
+  isUpdate(): boolean
+  isCompound(): boolean
 }
 
 interface ICompiler {
-  compileCompoundStatement (e: ICompound): string
-  compileUpdateStatement (e: IUpdate): string
-  compileInsertStatement (e: IInsert): string
-  compileDeleteStatement (e: IDelete): string
-  compileSelectStatement(e: ISelect): string
+  compileCompoundStatement (e: IStatement): string
+  compileUpdateStatement (e: IStatement): string
+  compileInsertStatement (e: IStatement): string
+  compileDeleteStatement (e: IStatement): string
+  compileSelectStatement(e: IStatement): string
   compileIdentifier (e: IIdentifier): string
   compileCriteria (e: ICriteria): string
   compileFunction (e: IFunction): string
@@ -138,7 +130,7 @@ interface ICompiler {
 }
 
 interface ICompilerOptions {
-  autoQuoteIdentifiers?: boolean
+  autoQuoteIdentifiers: boolean
 }
 
 interface IQuery {

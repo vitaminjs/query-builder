@@ -1,7 +1,8 @@
 /* global it */
 
 var assert = require('assert')
-var createCompiler = require('../dist/compiler/factory').default
+var Builder = require('../../lib/builder').default
+var createCompiler = require('../../lib/compiler/factory').default
 
 var options = {
   autoQuoteIdentifiers: true
@@ -16,9 +17,11 @@ var options = {
 exports.test = function test (purpose, expr, dialects, params) {
   Object.keys(dialects).forEach(name => {
     it(name + ': ' + purpose, () => {
-      var compiler = createCompiler(name, options)
-      var query = compiler.toQuery(expr)
+      var query
       var expected = dialects[name]
+
+      if (expr instanceof Builder) query = expr.toQuery(name, options)
+      else query = createCompiler(name, options).toQuery(expr)
 
       assert.equal(query.sql, expected.sql || expected)
       assert.deepEqual(query.params, expected.params || params || [])

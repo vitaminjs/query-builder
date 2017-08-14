@@ -3,10 +3,6 @@ import Join from './join'
 import Alias from './alias'
 import Values from './values'
 import Expression from '../expression'
-import Select from './statement/select'
-import Delete from './statement/delete'
-import Update from './statement/update'
-import Insert from './statement/insert'
 import { last, castArray, isEmpty } from 'lodash'
 
 export default class Table extends Expression implements ITable {
@@ -110,30 +106,5 @@ export default class Table extends Expression implements ITable {
   public setJoins (value: IExpression[]): Table {
     this.joins = value
     return this
-  }
-  
-  public select (...fields): Select {
-    return new Select(this).select(...fields)
-  }
-  
-  public delete (): Delete {
-    return new Delete(this)
-  }
-  
-  public update (key: string, value): Update
-  public update (obj: {}): Update
-  public update (one, two?) {
-    if (!one) return new Update(this)
-    
-    return new Update(this).set(one, two)
-  }
-  
-  public insert (...data: {}[]): Insert {
-    let ins = new Insert(this)
-    
-    if (!isEmpty(data))
-      ins.setValues(Values.from(data))
-    
-    return ins
   }
 }

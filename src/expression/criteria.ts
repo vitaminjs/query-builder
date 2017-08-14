@@ -19,9 +19,9 @@ export default class Criteria extends Expression implements ICriteria {
     this.negate = negate
   }
   
+  public static from (obj: { [key: string]: any  }): Criteria
   public static from (expr: string, args: any[]): Criteria
   public static from (expr: Criteria): Criteria
-  public static from (obj: {}): Criteria
   public static from (value, args = []) {
     if (value instanceof Criteria) return value
     
@@ -30,7 +30,7 @@ export default class Criteria extends Expression implements ICriteria {
     return new Criteria(Literal.from(value, args))
   }
   
-  public static fromObject (obj: {}): Criteria {
+  public static fromObject (obj: { [key: string]: any  }): Criteria {
     let args = []
     let expr = Object.keys(obj).map((key) => {
       let value = obj[key]

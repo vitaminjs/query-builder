@@ -15,6 +15,7 @@ export default (dialect: string, options?: ICompilerOptions): ICompiler => {
     
     case 'pg':
     case 'postgre':
+    case 'postgres':
     case 'postgresql': return new PostgreSQL(options)
   }
     

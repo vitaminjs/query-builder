@@ -1,9 +1,11 @@
 
-import Query from './compiler/query'
+import Query from './query'
 import Expression from './expression'
 import Alias from './expression/alias'
+import Statement from './expression/statement'
 import {
-  assign, extend, each, compact, isBoolean, isString, isArray, isEmpty, isUndefined
+  assign, extend, each, compact, isFunction,
+  isBoolean, isString, isArray, isEmpty, isUndefined
 } from 'lodash'
 
 export default abstract class Compiler implements ICompiler {
@@ -25,52 +27,62 @@ export default abstract class Compiler implements ICompiler {
     return new Query(expr.compile(this), this.bindings)
   }
   
-  public compileSelectStatement(q: ISelect): string {
+  public compileSelectStatement({ source, results, cte }: IStatement): string {
+    if (!source && isEmpty(cte) && isEmpty(results)) return ''
+    
     var components = [
-      this.compileWithClause(q),
-      this.compileSelectClause(q),
-      this.compileFromClause(q),
-      this.compileWhereClause(q),
-      this.compileGroupByClause(q),
-      this.compileOrderByClause(q),
-      this.compileLimitClause(q)
+      this.compileWithClause(arguments[0]),
+      this.compileSelectClause(arguments[0]),
+      this.compileFromClause(arguments[0]),
+      this.compileWhereClause(arguments[0]),
+      this.compileGroupByClause(arguments[0]),
+      this.compileOrderByClause(arguments[0]),
+      this.compileLimitClause(arguments[0])
     ]
 
     return compact(components).join(' ')
   }
   
-  public compileInsertStatement(q: IInsert): string {
+  public compileInsertStatement({ source }: IStatement): string {
+    if (!source) return ''
+    
     let components = [
-      this.compileWithClause(q),
-      this.compileInsertClause(q),
-      this.compileInsertValues(q)
+      this.compileWithClause(arguments[0]),
+      this.compileInsertClause(arguments[0]),
+      this.compileInsertValues(arguments[0])
     ]
     
     return compact(components).join(' ')
   }
   
-  public compileUpdateStatement(q: IUpdate): string {
+  public compileUpdateStatement({ source, values }: IStatement): string {
+    if (!source || isEmpty(values)) return ''
+    
     let components = [
-      this.compileWithClause(q),
-      this.compileUpdateClause(q),
-      this.compileSetClause(q),
-      this.compileWhereClause(q)
+      this.compileWithClause(arguments[0]),
+      this.compileUpdateClause(arguments[0]),
+      this.compileSetClause(arguments[0]),
+      this.compileWhereClause(arguments[0])
     ]
 
     return compact(components).join(' ')
   }
   
-  public compileDeleteStatement(q: IDelete): string {
+  public compileDeleteStatement({ source }: IStatement): string {
+    if (!source) return ''
+    
     let components = [
-      this.compileWithClause(q),
-      this.compileDeleteClause(q),
-      this.compileWhereClause(q)
+      this.compileWithClause(arguments[0]),
+      this.compileDeleteClause(arguments[0]),
+      this.compileWhereClause(arguments[0])
     ]
     
     return compact(components).join(' ')
   }
   
-  public compileCompoundStatement({ source, unions }: ICompound): string {
+  public compileCompoundStatement({ source, unions }: IStatement): string {
+    if (!source && isEmpty(unions)) return ''
+    
     let components = [
       this.escape(source, false),
       this.join(unions, ' '),
@@ -149,21 +161,21 @@ export default abstract class Compiler implements ICompiler {
     })
   }
   
-  protected compileSelectClause ({ isDistinct, fields }: ISelect): string {
-    return `select ${isDistinct ? 'distinct ' : ''}${this.join(isEmpty(fields) ? ['*'] : fields)}`
+  protected compileSelectClause ({ distinct, results }: IStatement): string {
+    return `select ${distinct ? 'distinct ' : ''}${isEmpty(results) ? '*' : this.join(results)}`
   }
   
-  protected compileFromClause ({ table, joins }: ISelect): string {
-    if (!table) return ''
+  protected compileFromClause ({ source, joins }: IStatement): string {
+    if (!source) return ''
     
     if (isEmpty(joins)) {
-      return `from ${this.escape(table)}`
+      return `from ${this.escape(source)}`
     }
     
-    return `from ${this.escape(table)} ${this.join(joins, ' ')}`
+    return `from ${this.escape(source)} ${this.join(joins, ' ')}`
   }
   
-  protected compileGroupByClause ({ groups, havings }: ISelect): string {
+  protected compileGroupByClause ({ groups, havings }: IStatement): string {
     if (isEmpty(groups)) return ''
     
     if (isEmpty(havings)) {
@@ -173,24 +185,24 @@ export default abstract class Compiler implements ICompiler {
     return `group by ${this.join(groups)} having ${this.compileConditions(havings)}`
   }
   
-  protected compileInsertClause ({ table, columns }: IInsert): string {
-    if (isEmpty(columns)) return 'insert into ' + this.escape(table)
+  protected compileInsertClause ({ source, columns }: IStatement): string {
+    if (isEmpty(columns)) return 'insert into ' + this.escape(source)
     
-    return `insert into ${this.escape(table)} (${this.columnize(columns)})`
+    return `insert into ${this.escape(source)} (${this.columnize(columns)})`
   }
   
-  protected compileInsertValues ({ values }: IInsert): string {
-    return values ? this.escape(values, false) : 'default values'
+  protected compileInsertValues ({ values }: IStatement): string {
+    return isEmpty(values) ? 'default values' : this.escape(values, false)
   }
   
-  protected compileUpdateClause ({ table }: IUpdate): string {
-    return 'update ' + this.escape(table)
+  protected compileUpdateClause ({ source }: IStatement): string {
+    return 'update ' + this.escape(source)
   }
   
-  protected compileSetClause ({ values }: IUpdate): string {
+  protected compileSetClause ({ values }: IStatement): string {
     let expr = []
     
-    each(values.reduce(extend, {}), (value, name: string) => {
+    each(values, (value, name: string) => {
       expr.push(`${this.compileIdentifier(<IIdentifier>{ name })} = ${this.parameter(value, true)}`)
     })
 
@@ -211,8 +223,8 @@ export default abstract class Compiler implements ICompiler {
     return isEmpty(orders) ? '' : 'order by ' + this.join(orders)
   }
   
-  protected compileDeleteClause ({ table }: IDelete): string {
-    return 'delete from ' + this.escape(table)
+  protected compileDeleteClause ({ source }: IStatement): string {
+    return 'delete from ' + this.escape(source)
   }
   
   protected compileWhereClause ({ conditions }: IConditional): string {
@@ -236,9 +248,7 @@ export default abstract class Compiler implements ICompiler {
   protected compileCommonTable ({ value, name, columns }: ICommonTable): string {
     let alias = this.compileIdentifier(<IIdentifier>{ name })
     
-    if (isEmpty(columns)) {
-      return `${alias} as ${this.escape(value)}`
-    }
+    if (isEmpty(columns)) return `${alias} as ${this.escape(value)}`
     
     return `${alias} (${this.columnize(columns)}) as ${this.escape(value)}`
   }
@@ -266,6 +276,10 @@ export default abstract class Compiler implements ICompiler {
   }
   
   protected parameter (value, setDefault = false): string {
+    // escape query builders
+    if (value && isFunction(value.toExpression))
+      value = (<IBuilder>value).toExpression()
+    
     // escape expressions
     if (value instanceof Expression) return this.escape(value)
     
@@ -285,15 +299,18 @@ export default abstract class Compiler implements ICompiler {
   protected escape (value, wrapStatement = true): string {
     if (value === '*') return value
     
+    // escape query builders
+    if (value && isFunction(value.toExpression))
+      value = (<IBuilder>value).toExpression()
+    
     // wrap statements
-    // we can't use a direct 
-    if (wrapStatement && value && typeof value.toQuery === 'function')
+    if (wrapStatement && value instanceof Statement)
       return `(${value.compile(this)})`
     
     // compile expressions
-    if (value instanceof Expression) return value.compile(this)
+    if (value instanceof Expression)return value.compile(this)
     
-    if (isBoolean(value)) return String(Number(value))
+    if (isBoolean(value)) return Number(value).toString()
     
     return `'${String(value).replace(/'/g, "''")}'`
   }

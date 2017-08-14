@@ -2,7 +2,7 @@
   "name": "vitamin-query",
   "version": "1.0.0-alpha",
   "description": "A fluent SQL query builder for node.js applications",
-  "main": "dist/index.js",
+  "main": "index.js",
   "scripts": {
     "prepublish": "tsc",
     "test": "tsc && mocha"

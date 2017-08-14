@@ -5,9 +5,9 @@ import Compiler from '../compiler'
 export default class extends Compiler {
   public compileUnion ({ query, filter }: IUnion): string {
     if (
-      !(<ISelect>query).limit && 
-      !(<ISelect>query).offset && 
-      isEmpty((<ISelect>query).orders)
+      !(<IStatement>query).limit && 
+      !(<IStatement>query).offset && 
+      isEmpty((<IStatement>query).orders)
     ) {
       return super.compileUnion(arguments[0])
     }
@@ -29,7 +29,7 @@ export default class extends Compiler {
     }
   }
   
-  protected compileWithClause (query: IStatement): string {
+  protected compileWithClause (query): string {
     // TODO print a notice
     return ''
   }
@@ -38,8 +38,8 @@ export default class extends Compiler {
     return (value === '*') ? value : '`' + String(value).replace(/`/g, '``') + '`'
   }
   
-  protected compileFromClause ({ table }: ISelect): string {
-    return table ? super.compileFromClause(arguments[0]) : 'from dual'
+  protected compileFromClause ({ source }: IStatement): string {
+    return source ? super.compileFromClause(arguments[0]) : 'from dual'
   }
   
   protected compileLimitClause ({ limit, offset }: ILimitable): string {
@@ -50,14 +50,14 @@ export default class extends Compiler {
     return super.compileLimitClause(arguments[0])
   }
   
-  protected compileInsertClause ({ table, values }: IInsert): string {
+  protected compileInsertClause ({ source, values }: IStatement): string {
     // compile default columns
-    if (!values) return `insert into ${this.escape(table)} ()`
+    if (isEmpty(values)) return `insert into ${this.escape(source)} ()`
     
     return super.compileInsertClause(arguments[0])
   }
   
-  protected compileInsertValues ({ values }: IInsert): string {
-    return values ? super.compileInsertValues(arguments[0]) : 'values ()'
+  protected compileInsertValues ({ values }: IStatement): string {
+    return isEmpty(values) ? 'values ()' : super.compileInsertValues(arguments[0])
   }
 }

@@ -1,47 +1,57 @@
 
-import Alias from './alias'
-import Literal from './literal'
-import { isString } from 'lodash'
-import Compiler from '../compiler'
 import Expression from '../expression'
-import createCompiler from '../compiler/factory'
+import { assign, upperFirst } from 'lodash'
 
-export default abstract class Statement extends Expression implements IStatement {
-  public table: IExpression
-  
+export default class Statement extends Expression implements IStatement {
+  public unions: IUnion[]
+  public distinct:boolean
+  public columns: string[]
   public cte: IExpression[]
-  
-  public constructor (table?: IExpression, cte = []) {
+  public source: IExpression
+  public havings: ICriteria[]
+  public joins: IExpression[]
+  public groups: IExpression[]
+  public orders: IExpression[]
+  public results: IExpression[]
+  public conditions: ICriteria[]
+  public limit: number | IExpression
+  public offset: number | IExpression
+  public values: { [key: string]: any } | IExpression
+  public type: "select" | "insert" | "update" | "delete" | "compound"
+
+  public constructor (base?: {}) {
     super()
-    
-    this.cte = cte
-    this.table = table
+
+    this.distinct = false
+    this.type = 'select'
+    assign(this, base)
   }
-  
-  public toQuery (dialect: string, options: ICompilerOptions): IQuery
-  public toQuery (dialect: ICompiler): IQuery
-  public toQuery (dialect, options = {}) {
-    if (isString(dialect)) dialect = createCompiler(dialect, options)
-    
-    if (dialect instanceof Compiler) return dialect.toQuery(this)
-    
-    throw new TypeError('Invalid statement compiler')
+
+  public clone (): Statement {
+    return new Statement(this)
   }
-  
-  public as (name: string, ...columns: string[]): Alias {
-    return new Alias(this, name, columns)
+
+  public compile (compiler: ICompiler): string {
+    return compiler[`compile${upperFirst(this.type)}Statement`](this)
   }
-  
-  public hasTable (): boolean {
-    return this.table != null
+
+  public isSelect (): boolean {
+    return this.type === 'select'
   }
-  
-  public hasCTE (): boolean {
-    return this.cte.length > 0
+
+  public isInsert (): boolean {
+    return this.type === 'insert'
   }
-  
-  public addCTE (value: IExpression): IStatement {
-    this.cte.push(Literal.from(value))
-    return this
+
+  public isUpdate (): boolean {
+    return this.type === 'update'
+  }
+
+  public isDelete (): boolean {
+    return this.type === 'delete'
+  }
+
+  public isCompound (): boolean {
+    return this.type === 'compound'
   }
 }

@@ -3,7 +3,7 @@ import Compiler from '../compiler'
 import { isEmpty, first } from 'lodash'
 
 export default class extends Compiler {
-  public compileFunction ({ name, args = [] }) {
+  public compileFunction ({ name, args = [] }: IFunction) {
     switch (name) {
       case 'trim':
         return `rtrim(ltrim(${this.parameter(first(args))}))`
@@ -64,12 +64,12 @@ export default class extends Compiler {
     return `datepart(${part}, ${this.parameter(value)})`
   }
   
-  protected compileSelectClause ({ isDistinct, fields, limit, offset }: ISelect): string {
+  protected compileSelectClause ({ distinct, results, limit, offset }: IStatement): string {
     if (limit && !offset) {
       let parts = [
-        'select' + (isDistinct ? ' distinct' : ''),
+        'select' + (distinct ? ' distinct' : ''),
         `top (${this.parameter(limit)})`,
-        this.join(isEmpty(fields) ? ['*'] : fields)
+        this.join(isEmpty(results) ? ['*'] : results)
       ]
 
       return parts.join(' ')
@@ -78,7 +78,7 @@ export default class extends Compiler {
     return super.compileSelectClause(arguments[0])
   }
   
-  protected compileOrderByClause ({ offset, limit, unions }: ICompound): string {
+  protected compileOrderByClause ({ offset, limit, unions }: IStatement): string {
     let hasUnions = !isEmpty(unions)
     let hasLimitAndUnions = limit && hasUnions
     let out = super.compileOrderByClause(arguments[0])
@@ -93,7 +93,6 @@ export default class extends Compiler {
     } else if (hasLimitAndUnions) {
       // we add a fake offset to construct the query
       out += ` offset 0 rows`
-      offset = true
     }
 
     if (limit && (offset || hasUnions)) {
@@ -107,27 +106,29 @@ export default class extends Compiler {
     return ''
   }
   
-  protected compileInsertClause ({ results }: IInsert): string {
+  protected compileInsertClause ({ results }: IStatement): string {
     return this.appendOutputClause(super.compileInsertClause(arguments[0]), results)
   }
   
-  protected compileSetClause ({ results }: IUpdate): string {
+  protected compileSetClause ({ results }: IStatement): string {
     return this.appendOutputClause(super.compileSetClause(arguments[0]), results)
   }
   
-  protected compileDeleteClause ({ results }: IDelete) {
+  protected compileDeleteClause ({ results }: IStatement) {
     return this.appendOutputClause(super.compileDeleteClause(arguments[0]), results, 'deleted')
   }
   
-  protected appendOutputClause (sql: string, columns: string[], prefix = 'inserted'): string {
+  protected appendOutputClause (sql: string, columns: IExpression[], prefix = 'inserted'): string {
     if (isEmpty(columns)) return sql
 
     // add the inserted or deleted prefix for each column
-    columns = columns.map((name) => {
-      return /^inserted|deleted/i.test(name) ? name : `${prefix}.${name}`
+    let cols = columns.map((value) => {
+      let name = this.escape(value)
+
+      return /inserted|deleted/i.test(name) ? name : `${prefix}.${name}`
     })
 
-    return `${sql} output ${this.columnize(columns)}`
+    return `${sql} output ${cols.join(', ')}`
   }
   
   protected quote (value): string {

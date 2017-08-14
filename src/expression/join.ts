@@ -1,6 +1,7 @@
 
 import Literal from './literal'
 import Criteria from './criteria'
+import Identifier from './identifier'
 import Expression from '../expression'
 
 export default class Join extends Expression implements IJoin {
@@ -26,7 +27,7 @@ export default class Join extends Expression implements IJoin {
     
     if (table instanceof Literal) return table
     
-    return new Join(Literal.from(table), type)
+    return new Join(Identifier.from(table), type)
   }
   
   public compile (compiler: ICompiler): string {

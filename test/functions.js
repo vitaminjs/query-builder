@@ -5,7 +5,7 @@ var {
   upper, lower, concat, esc, id, length, replace, substr, trim, rtrim, ltrim,
   left, right, strpos, repeat, space, abs, rand, round, utc, now, today, curtime,
   date, time, day, month, year, hour, minute, second, values
-} = require('../dist')
+} = require('../lib/helpers')
 
 describe('test SQL functions:', function () {
   support.test(

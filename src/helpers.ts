@@ -6,8 +6,6 @@ import Values from './expression/values'
 import Literal from './expression/literal'
 import Function from './expression/function'
 import Identifier from './expression/identifier'
-import Select from './expression/statement/select'
-import Insert from './expression/statement/insert'
 
 export function raw (expr: string, ...args): ILiteral {
   return new Literal(expr, args)
@@ -47,14 +45,6 @@ export function val (value): ILiteral {
 
 export function values (...data: any[][]): IValues {
   return new Values(data)
-}
-
-export function select (...fields): ISelect {
-  return new Select().select(...fields)
-}
-
-export function selectFrom (table): ISelect {
-  return new Select(id(table))
 }
 
 export function abs (expr): IFunction {

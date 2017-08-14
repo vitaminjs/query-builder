@@ -7,15 +7,15 @@ export default class extends Compiler {
     return '$' + this.bindings.length
   }
   
-  public compileInsertStatement ({ results }: IInsert): string {
+  public compileInsertStatement ({ results }: IStatement): string {
     return this.appendReturningClause(super.compileInsertStatement(arguments[0]), results)
   }
   
-  public compileUpdateStatement ({ results }: IUpdate): string {
+  public compileUpdateStatement ({ results }: IStatement): string {
     return this.appendReturningClause(super.compileUpdateStatement(arguments[0]), results)
   }
   
-  public compileDeleteStatement ({ results }: IDelete): string {
+  public compileDeleteStatement ({ results }: IStatement): string {
     return this.appendReturningClause(super.compileDeleteStatement(arguments[0]), results)
   }
   
@@ -61,8 +61,8 @@ export default class extends Compiler {
     return nulls ? `${expr} nulls ${nulls === 'last' ? 'last' : 'first'}` : expr
   }
   
-  protected appendReturningClause (sql: string, columns: string[]): string {
-    return isEmpty(columns) ? sql : `${sql} returning ${this.columnize(columns)}`
+  protected appendReturningClause (sql: string, columns: IExpression[]): string {
+    return isEmpty(columns) ? sql : `${sql} returning ${this.join(columns)}`
   }
   
   protected compileExtractFunction (part: string, expr): string {

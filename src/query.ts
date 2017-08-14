@@ -13,8 +13,7 @@ export default class Query implements IQuery {
   }
   
   protected escape (value): string {
-    if (isBoolean(value))
-      return String(Number(value))
+    if (isBoolean(value)) return String(Number(value))
     
     return String(value).replace(/'/g, "''")
   }

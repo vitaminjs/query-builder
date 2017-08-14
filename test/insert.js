@@ -1,12 +1,13 @@
 /* global describe */
 
 var support = require('./support')
-var { table, selectFrom } = require('../dist')
+var id = require('../lib/helpers').id
+var qb = require('../lib/builder').factory
 
 describe('test building insert queries:', () => {
   support.test(
     'accepts a plain object data for single row insert',
-    table('people').insert({ name: 'foo', age: 30 }),
+    qb('people').insert({ name: 'foo', age: 30 }),
     {
       pg: 'insert into "people" ("name", "age") values ($1, $2)',
       mysql: 'insert into `people` (`name`, `age`) values (?, ?)',
@@ -21,7 +22,7 @@ describe('test building insert queries:', () => {
 
   support.test(
     'accepts an array of plain objects for multirow insert',
-    table('people').insert({ name: 'foo', age: 30 }, { name: 'bar', age: 40 }),
+    qb('people').insert({ name: 'foo', age: 30 }, { name: 'bar', age: 40 }),
     {
       pg: 'insert into "people" ("name", "age") values ($1, $2), ($3, $4)',
       mysql: 'insert into `people` (`name`, `age`) values (?, ?), (?, ?)',
@@ -38,7 +39,7 @@ describe('test building insert queries:', () => {
 
   support.test(
     'inserts an new row with default values',
-    table('foo').insert().defaultValues(),
+    qb('foo').insert().defaultValues(),
     {
       pg: 'insert into "foo" default values',
       mysql: 'insert into `foo` () values ()',
@@ -49,7 +50,7 @@ describe('test building insert queries:', () => {
 
   support.test(
     'replaces missing bindings with defaults for multirow insert',
-    table('coords').insert({ x: 20 }, { y: 40 }, { x: 10, y: 30 }),
+    qb('coords').insert({ x: 20 }, { y: 40 }, { x: 10, y: 30 }),
     {
       pg: 'insert into "coords" ("x", "y") values ($1, default), (default, $2), ($3, $4)',
       mysql: 'insert into `coords` (`x`, `y`) values (?, default), (default, ?), (?, ?)',
@@ -66,7 +67,7 @@ describe('test building insert queries:', () => {
 
   support.test(
     'adds a returning clause',
-    table('users').insert({ fname: 'foo', lname: 'bar' }).returning('id'),
+    qb('users').insert({ fname: 'foo', lname: 'bar' }).returning(id('id')),
     {
       pg: 'insert into "users" ("fname", "lname") values ($1, $2) returning "id"',
       mssql: 'insert into [users] ([fname], [lname]) output inserted.[id] values (?, ?)'
@@ -79,7 +80,7 @@ describe('test building insert queries:', () => {
 
   support.test(
     'using a select query as values',
-    selectFrom('another_table').take(3).into('target', 'a', 'b'),
+    qb('another_table').limit(3).into('target', 'a', 'b'),
     {
       pg: 'insert into "target" ("a", "b") select * from "another_table" limit $1',
       mysql: 'insert into `target` (`a`, `b`) select * from `another_table` limit ?',
