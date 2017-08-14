@@ -21,30 +21,30 @@ $ npm install --save vitamin-query
 
 ```js
 // import the query builder
-import { table, select, selectFrom } from 'vitamin-query'
+import qb from 'vitamin-query'
 
 // Select query
-let query = table('employees').select('count(*)').where('salary between ? and (?1 * 2)', 1500).toQuery('pg')
+let query = qb('employees').select('count(*)').where('salary between ? and (?1 * 2)', 1500).toQuery('pg')
 assert.equal(query.sql, 'select count(*) from employees where salary between $1 and ($2 * 2)')
 assert.deepEqual(query.params, [ 1500, 1500 ])
 
 // Compound query
-let query = selectFrom('t').where('a is null').union(selectFrom('t').where('b is null')).toQuery('pg')
+let query = qb('t').where('a is null').union(qb('t').where('b is null')).toQuery('pg')
 assert.equal(query.sql, 'select * from t where a is null union select * from t where b is null')
 
 // Insert query
 let fred = { name: "Fred", score: 30 }
-let query = table('players').insert(fred).returning('*').toQuery('mssql')
+let query = qb('players').insert(fred).returning('*').toQuery('mssql')
 assert.equal(query.sql, 'insert into players (name, score) output inserted.* values (?, ?)')
 assert.deepEqual(query.params, [ 'Fred', 30 ])
 
 // Update query
-let query = table('books').update('status', 'archived').where('publish_date <= ?', 2000).toQuery('mysql')
+let query = qb('books').update({ status: 'archived' }).where('publish_date <= ?', 2000).toQuery('mysql')
 assert.equal(query.sql, 'update books set status = ? where publish_date <= ?')
 assert.deepEqual(query.params, [ 'archived', 2000 ])
 
 // Delete query
-let query = table('accounts').delete().where({ activated: false, deleted: true }).toQuery('sqlite')
+let query = qb('accounts').delete().where({ activated: false, deleted: true }).toQuery('sqlite')
 assert.equal(query.sql, 'delete from accounts where activated = ? and deleted = ?')
 assert.deepEqual(query.params, [ false, true ])
 ```
@@ -62,7 +62,7 @@ class MariaCompiler extends MysqlCompiler { ... }
 // later, you can use its instance with any query instance
 import qb from 'vitamin-query'
 
-let query = qb.select().from('table').toQuery(new MariaCompiler({ /* options */ }))
+let query = qb().select().from('foo').toQuery(new MariaCompiler({ /* options */ }))
 ```
 
 ## API
@@ -77,11 +77,9 @@ These Helpers are functions that return Expression instances:
 - **table**(value: string | IExpression): ITable
 - **func**(name: string, ...args): IFunction
 - **raw**(expr: string, ...args): ILiteral
-- **values**(data: any[][]): IValues
+- **values**(...data: any[][]): IValues
 - **id**(name: string): IIdentifier
 - **esc**(value: string): ILiteral
-- **selectFrom**(table): ISelect
-- **select**(...fields): ISelect
 - **val**(value): ILiteral
 - **desc**(expr): IOrder
 - **asc**(expr): IOrder
@@ -129,6 +127,15 @@ $ npm test
 ## Change log
 
 - **v1.0.0-alpha** - _TypeScript version of the library_
+  - Breaking changes and many API are unsupported
+  - Supports
+    - sql functions
+    - Clonable expressions
+    - Join precedences (#21)
+    - common table expressions
+    - order by nulls first or last
+    - compound queries using unions
+  - drop support for multiple tables in select queries
 
 - **v0.2.1** - _Add support for common table expressions_
   - Deprecate `Query::toSQL()` and add `Query::build()` instead
