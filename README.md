@@ -1,10 +1,10 @@
 [![Build Status](https://travis-ci.org/vitaminjs/query-builder.svg?branch=master)](https://travis-ci.org/vitaminjs/query-builder)
 
-A fluent SQL query builder for Node.
+A fluent SQL query builder for Node.js
 It provides support for:
+- **PostgreSQL** (v9.5+)
 - **SQLite** (v3.15.0+)
 - **MySQL** (v5.7+)
-- **PostgreSQL** (v9.5+)
 - **MSSQL** (2012+)
 
 ## Installing
@@ -15,91 +15,110 @@ $ npm install --save vitamin-query
 
 ## Getting started
 
-`vitamin-query` is composed of a set of useful functions to build SQL queries easily
+`vitamin-query` is composed of a set of useful expressions and helpers to build SQL queries easily
 
 ### building queries
 
 ```js
 // import the query builder
-import { select, insert, update, deleteFrom, raw, not, lt, table, column } from 'vitamin-query'
+import { table, select, selectFrom } from 'vitamin-query'
 
+// Select query
+let query = table('employees').select('count(*)').where('salary between ? and (?1 * 2)', 1500).toQuery('pg')
+assert.equal(query.sql, 'select count(*) from employees where salary between $1 and ($2 * 2)')
+assert.deepEqual(query.params, [ 1500, 1500 ])
 
-let selectQuery = select().from('employees').where(raw('salary > ?', 1500)).build('pg')
-assert.equal(selectQuery.sql, 'select * from employees where salary > $1')
-assert.deepEqual(selectQuery.params, [ 1500 ])
+// Compound query
+let query = selectFrom('t').where('a is null').union(selectFrom('t').where('b is null')).toQuery('pg')
+assert.equal(query.sql, 'select * from t where a is null union select * from t where b is null')
 
-
+// Insert query
 let fred = { name: "Fred", score: 30 }
-let insertQuery = insert(fred).into('players').returning('*').build('mssql')
-assert.equal(insertQuery.sql, 'insert into players (name, score) output inserted.* values (?, ?)')
-assert.deepEqual(insertQuery.params, [ 'Fred', 30 ])
+let query = table('players').insert(fred).returning('*').toQuery('mssql')
+assert.equal(query.sql, 'insert into players (name, score) output inserted.* values (?, ?)')
+assert.deepEqual(query.params, [ 'Fred', 30 ])
 
+// Update query
+let query = table('books').update('status', 'archived').where('publish_date <= ?', 2000).toQuery('mysql')
+assert.equal(query.sql, 'update books set status = ? where publish_date <= ?')
+assert.deepEqual(query.params, [ 'archived', 2000 ])
 
-let updateQuery = update('books').set('status', 'archived').where({ publish_date: not(lt(2000)) }).build('mysql')
-assert.equal(updateQuery.sql, 'update books set status = ? where (publish_date >= ?)')
-assert.deepEqual(updateQuery.params, [ 'archived', 2000 ])
-
-
-let deleteQuery = deleteFrom(table('accounts')).where(column('activated'), false).build('sqlite')
-assert.equal(deleteQuery.sql, 'delete from "accounts" where "activated" = ?')
-assert.deepEqual(deleteQuery.params, [ false ])
+// Delete query
+let query = table('accounts').delete().where({ activated: false, deleted: true }).toQuery('sqlite')
+assert.equal(query.sql, 'delete from accounts where activated = ? and deleted = ?')
+assert.deepEqual(query.params, [ false, true ])
 ```
 
 ### Custom compiler
 
-If you may use a custom query compiler instead of the built-in ones, you can pass its instance to `build()`
+If you may use a custom query compiler instead of the built-in ones, you can pass its instance to `toQuery()`
 
 ```js
 // in path/to/maria-compiler.js
 import MysqlCompiler from 'vitamin-query/compiler/mysql'
 
-class MariaCompiler extends MysqlCompiler {
-  
-  ...
-  
-}
+class MariaCompiler extends MysqlCompiler { ... }
 
 // later, you can use its instance with any query instance
-import * as qb from 'vitamin-query'
+import qb from 'vitamin-query'
 
-let query = qb.selectFrom('table').build(new MariaCompiler())
+let query = qb.select().from('table').toQuery(new MariaCompiler({ /* options */ }))
 ```
 
-### API
+## API
 
-For examples of usage, please refer to the tests.
+For examples of usage, please refer to the tests
 
-| query | Expression | Aggregates | Conditional | Functions |
-| ----- | ---------- | ---------- | ----------- | --------- |
-| select | column | sum | eq | upper, ucase |
-| selectFrom | table | avg | ne | lower, lcase |
-| insert | sq | max | gt | replace |
-| insertInto | raw | min | lt | substr, substring |
-| update | esc | count | gte | concat |
-| deleteFrom | cast | | lte | len, length |
-| | cte | | between | repeat |
-| | values | | in, $in | space |
-| | | | between | strpos, position |
-| | | | startsWith | left |
-| | | | like | right |
-| | | | and | trim |
-| | | | not | ltrim |
-| | | | or | rtrim |
-| | | | exists | abs |
-| | | | contatins | round |
-| | | | | rand, random |
-| | | | | now, datetime |
-| | | | | utc |
-| | | | | today, curdate |
-| | | | | clock, curtime |
-| | | | | date |
-| | | | | time |
-| | | | | day |
-| | | | | month |
-| | | | | year |
-| | | | | hour |
-| | | | | minute |
-| | | | | second |
+### Expression helpers
+
+These Helpers are functions that return Expression instances:
+
+- **alias**(expr, name: string; ...columns: string[]): IAlias
+- **table**(value: string | IExpression): ITable
+- **func**(name: string, ...args): IFunction
+- **raw**(expr: string, ...args): ILiteral
+- **values**(data: any[][]): IValues
+- **id**(name: string): IIdentifier
+- **esc**(value: string): ILiteral
+- **selectFrom**(table): ISelect
+- **select**(...fields): ISelect
+- **val**(value): ILiteral
+- **desc**(expr): IOrder
+- **asc**(expr): IOrder
+
+### Function helpers
+
+Helpers to emulate the SQL built-in functions
+
+- **substr | substring**(expr, start: number, length?: number): IFunction
+- **replace**(expr, pattern, replacement): IFunction
+- **strpos | position**(str, substr): IFunction
+- **repeat**(expr, count: number): IFunction
+- **right**(expr, length: number): IFunction
+- **left**(expr, length: number): IFunction
+- **round**(expr, n: number): IFunction
+- **space**(length: number): IFunction
+- **upper | ucase**(expr): IFunction
+- **lower | lcase**(expr): IFunction
+- **len | length**(expr): IFunction
+- **today | curdate**(): IFunction
+- **clock | curtime**(): IFunction
+- **concat**(...parts): IFunction
+- **now | datetime**(): IFunction
+- **rand | random**(): IFunction
+- **minute**(expr): IFunction
+- **second**(expr): IFunction
+- **ltrim**(expr): IFunction
+- **rtrim**(expr): IFunction
+- **month**(expr): IFunction
+- **date**(expr): IFunction
+- **time**(expr): IFunction
+- **trim**(expr): IFunction
+- **year**(expr): IFunction
+- **hour**(expr): IFunction
+- **abs**(expr): IFunction
+- **day**(expr): IFunction
+- **utc**(): IFunction
 
 ## Testing
 
@@ -108,6 +127,8 @@ $ npm test
 ```
 
 ## Change log
+
+- **v1.0.0-alpha** - _TypeScript version of the library_
 
 - **v0.2.1** - _Add support for common table expressions_
   - Deprecate `Query::toSQL()` and add `Query::build()` instead
