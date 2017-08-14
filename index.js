@@ -1,5 +1,5 @@
 
-var helpers = require('./lib/index')
+var helpers = require('./lib/helpers')
 
 exports = require('./lib/builder').factory
 
