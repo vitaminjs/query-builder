@@ -4,8 +4,9 @@
   "description": "A fluent SQL query builder for node.js applications",
   "main": "index.js",
   "scripts": {
-    "prepublish": "tsc",
-    "test": "tsc && mocha"
+    "prepublish": "npm run snyk-protect; tsc",
+    "test": "tsc && mocha",
+    "snyk-protect": "snyk protect"
   },
   "repository": {
     "type": "git",
@@ -28,12 +29,14 @@
   },
   "homepage": "https://github.com/vitaminjs/query-builder#readme",
   "dependencies": {
-    "lodash": "^4.16.6"
+    "lodash": "^4.16.6",
+    "snyk": "^1.189.0"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.70",
     "assert": "*",
     "mocha": "^3.2.0",
     "typescript": "^2.4.2"
-  }
+  },
+  "snyk": true
 }
